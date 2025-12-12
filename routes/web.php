@@ -161,7 +161,7 @@ Route::get('/test-supabase-register', function () {
 
 //Route::middleware(['web', 'auth'])->group(function () {
 Route::middleware('auth')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    //Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     //Route::get('/dashboard', [PagesController::class, 'dashboardsCrmAnalytics'])->name('index');
     
     Route::get('/membres/dashboard', [DashboardController::class, 'index'])->name('dashboard');
