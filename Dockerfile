@@ -28,8 +28,12 @@ RUN php artisan view:cache || echo "Warning: view cache failed"
 RUN npm install
 RUN npm run build
 
+<<<<<<< HEAD
 # Exposer le port (utile si FPM n'est pas derrière Nginx)
 EXPOSE 9000
 
 # Ne pas utiliser 'php artisan serve' en prod, FPM s'en charge
 CMD ["php-fpm"]
+=======
+CMD ["php-fpm"]
+>>>>>>> 86d1ad8 (Add Dockerfile for Laravel + Vite)
