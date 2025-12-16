@@ -27,7 +27,7 @@ Homestead.yaml
 
 # Node / Vite
 /node_modules
-#/public/build
+# public/build
 /public/hot
 
 # Storage Laravel (on garde le dossier, pas le contenu)
