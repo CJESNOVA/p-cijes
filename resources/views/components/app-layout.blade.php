@@ -18,8 +18,8 @@
     <!-- CSS & JS Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-<!-- <link rel="stylesheet" href="https://p-cijes.cjes.africa/Laravel/resources/css/app2.css">
-<script type="module" src="https://p-cijes.cjes.africa/Laravel/resources/js/app2.js"></script> -->
+<link rel="stylesheet" href="https://p-cijes.cjes.africa/Laravel/resources/css/app2.css">
+<script type="module" src="https://p-cijes.cjes.africa/Laravel/resources/js/app2.js"></script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
