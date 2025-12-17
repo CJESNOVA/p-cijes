@@ -34,5 +34,7 @@ RUN php artisan config:cache
 RUN php artisan route:cache
 RUN php artisan view:cache
 
+RUN npm run build
+
 EXPOSE 9000
 CMD ["php-fpm"]
