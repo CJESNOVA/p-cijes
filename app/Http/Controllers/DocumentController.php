@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
+use App\Services\SupabaseStorageService;
+
 class DocumentController extends Controller
 {
     public function indexForm()
@@ -47,8 +49,14 @@ class DocumentController extends Controller
             $inputName = 'document_' . $documenttype->id;
 
             if ($request->hasFile($inputName)) {
-                $fichier = $request->file($inputName)->store('documents', 'public');
-                
+                //$fichier = $request->file($inputName)->store('documents', 'public');
+
+                $storage = new \App\Services\SupabaseStorageService();
+                $file = $request->file($inputName);
+                $path = 'documents/' . time() . '_' . $file->getClientOriginalName();
+                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                $fichier = $path;
+
                 Document::updateOrCreate(
                     [
                         'membre_id' => $membre->id,

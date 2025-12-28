@@ -10,6 +10,8 @@ use App\Models\Messageforum;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
+use App\Services\SupabaseStorageService;
+
 class SujetController extends Controller
 {
     /**
@@ -75,7 +77,13 @@ class SujetController extends Controller
 
         // Gestion du fichier ou texte de vignette
         if ($request->hasFile('vignette')) {
-            $validated['vignette'] = $request->file('vignette')->store('sujets', 'public');
+            //$validated['vignette'] = $request->file('vignette')->store('sujets', 'public');
+
+                $storage = new \App\Services\SupabaseStorageService();
+                $file = $request->file('vignette');
+                $path = 'sujets/' . time() . '_' . $file->getClientOriginalName();
+                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                $validated['vignette'] = $path;
         }
 
         Sujet::create($validated);
@@ -117,10 +125,16 @@ class SujetController extends Controller
 
         if ($request->hasFile('vignette')) {
             // Supprimer ancienne vignette si existante
-            if ($sujet->vignette && Storage::disk('public')->exists($sujet->vignette)) {
+            /*if ($sujet->vignette && Storage::disk('public')->exists($sujet->vignette)) {
                 Storage::disk('public')->delete($sujet->vignette);
-            }
-            $validated['vignette'] = $request->file('vignette')->store('sujets', 'public');
+            }*/
+            //$validated['vignette'] = $request->file('vignette')->store('sujets', 'public');
+
+                $storage = new \App\Services\SupabaseStorageService();
+                $file = $request->file('vignette');
+                $path = 'sujets/' . time() . '_' . $file->getClientOriginalName();
+                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                $validated['vignette'] = $path;
         }
 
         $sujet->update($validated);

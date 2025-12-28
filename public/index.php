@@ -17,4 +17,7 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
+//
+// $app->bind('path.public', function() { return __DIR__; });
+
 $app->handleRequest(Request::capture());

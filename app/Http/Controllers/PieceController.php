@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
+use App\Services\SupabaseStorageService;
+
 class PieceController extends Controller
 {
     public function indexForm()
@@ -66,7 +68,13 @@ class PieceController extends Controller
 
             if ($request->hasFile($inputName)) {
                 // Stockage du fichier dans le disque public sous le dossier pieces
-                $fichier = $request->file($inputName)->store('pieces', 'public');
+                //$fichier = $request->file($inputName)->store('pieces', 'public');
+
+                $storage = new \App\Services\SupabaseStorageService();
+                $file = $request->file($inputName);
+                $path = 'pieces/' . time() . '_' . $file->getClientOriginalName();
+                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                $fichier = $path;
 
                 // On met à jour ou crée une pièce suivant l'entreprise et le type
                 Piece::updateOrCreate(
