@@ -1,0 +1,1 @@
+INSERT INTO "public"."roles" ("id", "name", "slug") VALUES ('e3d1f94e-ec43-4a8e-bc69-346f84e89442', 'User', 'user');

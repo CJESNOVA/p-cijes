@@ -1,0 +1,1 @@
+INSERT INTO "public"."languages" ("id", "code", "name") VALUES ('f9a16e49-d975-4d63-b201-5aee5888ac44', 'FR', 'Français');

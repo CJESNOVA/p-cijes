@@ -9,6 +9,8 @@ use App\Models\Pays;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Services\SupabaseStorageService;
+
 class ExpertController extends Controller
 {
     public function index()
@@ -61,7 +63,13 @@ class ExpertController extends Controller
             'fichier' => 'nullable|file|max:2048',
         ]);
 
-        $path = $request->file('fichier')?->store('experts', 'public');
+        //$path = $request->file('fichier')?->store('experts', 'public');
+
+                $storage = new \App\Services\SupabaseStorageService();
+                $file = $request->file('fichier');
+                $path = 'experts/' . time() . '_' . $file->getClientOriginalName();
+                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                //$path = $path;
 
         Expert::create([
             'domaine' => $request->domaine,
@@ -103,7 +111,13 @@ class ExpertController extends Controller
             'fichier' => 'nullable|file|max:2048',
         ]);
 
-        $path = $request->file('fichier')?->store('experts', 'public');
+        //$path = $request->file('fichier')?->store('experts', 'public');
+
+                $storage = new \App\Services\SupabaseStorageService();
+                $file = $request->file('fichier');
+                $path = 'experts/' . time() . '_' . $file->getClientOriginalName();
+                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                //$path = $path;
 
         $expert->update([
             'domaine' => $request->domaine,

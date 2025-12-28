@@ -8,6 +8,8 @@ use App\Models\Membrestatut;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Services\SupabaseStorageService;
+
 class MembreController extends Controller
 {
     public function createOrEdit()
@@ -25,7 +27,7 @@ class MembreController extends Controller
         return view('membre.create-or-edit', compact('membre', 'membretypes', 'membrestatuts', 'payss'));
     }
 
-    public function storeOrUpdate(Request $request)
+    public function storeOrUpdate(Request $request, SupabaseStorageService $storage)
     {
         $userId = Auth::id();
 
@@ -51,11 +53,20 @@ class MembreController extends Controller
         );
 
         // Si image (vignette)
-        if ($request->hasFile('vignette')) {
+        /*if ($request->hasFile('vignette')) {
             $path = $request->file('vignette')->store('vignettes', 'public');
             $membre->vignette = $path;
             $membre->save();
+        }*/
+
+        if ($request->hasFile('vignette')) {
+            $file = $request->file('vignette');
+            $path = 'vignettes/' . time() . '_' . $file->getClientOriginalName();
+            $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+            $membre->vignette = $path;
+            $membre->save();
         }
+
 
         return redirect()->back()->with('success', 'Membre enregistré avec succès.');
     }

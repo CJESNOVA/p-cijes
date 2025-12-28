@@ -12,6 +12,8 @@ use App\Models\Membre;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
+use App\Services\SupabaseStorageService;
+
 class EntrepriseController extends Controller
 {
     public function index()
@@ -86,7 +88,13 @@ class EntrepriseController extends Controller
         $validated = $this->validateData($request);
 
         if ($request->hasFile('vignette')) {
-            $validated['vignette'] = $request->file('vignette')->store('entreprises', 'public');
+            //$validated['vignette'] = $request->file('vignette')->store('entreprises', 'public');
+
+                $storage = new \App\Services\SupabaseStorageService();
+                $file = $request->file('vignette');
+                $path = 'entreprises/' . time() . '_' . $file->getClientOriginalName();
+                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                $validated['vignette'] = $path;
         }
 
         $entreprise = new Entreprise($validated);
@@ -114,7 +122,13 @@ class EntrepriseController extends Controller
         $validated = $this->validateData($request);
 
         if ($request->hasFile('vignette')) {
-            $validated['vignette'] = $request->file('vignette')->store('entreprises', 'public');
+            //$validated['vignette'] = $request->file('vignette')->store('entreprises', 'public');
+
+                $storage = new \App\Services\SupabaseStorageService();
+                $file = $request->file('vignette');
+                $path = 'entreprises/' . time() . '_' . $file->getClientOriginalName();
+                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                $validated['vignette'] = $path;
         }
 
         $entreprise->update($validated);
