@@ -50,7 +50,7 @@
             <div class="card">
                 @if($espace && $espace->vignette)
                 <div class="p-2.5">
-                    <img src="{{ env('APP_URL2') . '' . $espace->vignette }}" class="h-48 w-full rounded-lg object-cover object-center"
+                    <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $espace->vignette }}" class="h-48 w-full rounded-lg object-cover object-center"
                         alt="{{ $espace->titre }}" />
                 </div>
                 @endif

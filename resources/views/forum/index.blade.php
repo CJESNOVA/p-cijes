@@ -49,7 +49,7 @@
                
                 {{-- Image de couverture si disponible --}}
                 @if($forum->vignette)
-                    <img src="{{ env('APP_URL2') . '' . $forum->vignette }}" 
+                    <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $forum->vignette }}" 
                          alt="{{ $forum->titre }}" 
                          class="h-40 w-full object-cover group-hover:scale-105 transition duration-300">
                 @endif
