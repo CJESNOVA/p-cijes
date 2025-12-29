@@ -51,7 +51,7 @@
       <div class="card">
                 <div class="p-2.5">
                     @if($evenement && $evenement->vignette)
-                    <img src="{{ env('APP_URL2') . '' . $evenement->vignette }}" class="h-48 w-full rounded-lg object-cover object-center"
+                    <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $evenement->vignette }}" class="h-48 w-full rounded-lg object-cover object-center"
                         alt="{{ $evenement->titre }}" />
                     @endif
                 </div>

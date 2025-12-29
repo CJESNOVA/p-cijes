@@ -51,7 +51,7 @@
 
                         @if($evenement && $evenement->vignette)
                         <img class="mt-5 h-80 w-full rounded-lg object-cover object-center"
-                            src="{{ env('APP_URL2') . '' . $evenement->vignette }}" alt="{{ $evenement->titre }}" />
+                            src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $evenement->vignette }}" alt="{{ $evenement->titre }}" />
                         <p class="mt-1 text-center text-xs-plus text-slate-400 dark:text-navy-300">
                             <span> {{ $evenement->evenementtype->titre ?? '-' }} </span>
                         </p>
