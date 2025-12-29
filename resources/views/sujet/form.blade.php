@@ -95,7 +95,7 @@
 
                     @if(!empty($sujet?->vignette))
                         <div class="mt-3">
-                            <img src="{{ env('APP_URL') . 'storage/' . $sujet->vignette }}"
+                            <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $sujet->vignette }}"
                                  alt="Vignette actuelle"
                                  class="w-32 h-32 object-cover rounded shadow-md border border-gray-300 dark:border-gray-600">
                             <p class="text-xs text-gray-500 mt-1">Image actuelle</p>

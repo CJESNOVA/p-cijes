@@ -113,7 +113,7 @@
 
                                         @if($expert->fichier)
                                             <p class="mt-2 text-sm text-gray-600">
-                                                Fichier actuel : <a href="{{ env('APP_URL') . 'storage/' . $expert->fichier }}" target="_blank" class="underline">{{ basename($expert->fichier) }}</a>
+                                                Fichier actuel : <a href="{{ env('SUPABASE_BUCKET_URL') . '/' . $expert->fichier }}" target="_blank" class="underline">{{ basename($expert->fichier) }}</a>
                                             </p>
                                         @endif
 

@@ -16,7 +16,7 @@
                 <div class="avatar">
                     <img 
                         src="{{ $msg->membre && $msg->membre->vignette 
-                                ? env('APP_URL') . 'storage/' . $msg->membre->vignette 
+                                ? env('SUPABASE_BUCKET_URL') . '/' . $msg->membre->vignette 
                                 : asset('images/200x200.png') }}" 
                         alt="Avatar"
                         class="rounded-full w-10 h-10 object-cover"

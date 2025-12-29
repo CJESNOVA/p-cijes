@@ -121,7 +121,7 @@
                 @if ($existing)
                     <p class="mb-1 text-sm text-gray-600">
                         Piece existant :
-                        <a href="{{ env('APP_URL') . 'storage/' . $existing->fichier }}" target="_blank" class="text-blue-600 underline">
+                        <a href="{{ env('SUPABASE_BUCKET_URL') . '/' . $existing->fichier }}" target="_blank" class="text-blue-600 underline">
                             Voir le piece
                         </a>
                     </p>
@@ -173,7 +173,7 @@
                                             <td class="px-3 py-2">{{ $piece->entreprise->nom ?? '—' }}</td>
                                             <td class="px-3 py-2">{{ $piece->piecetype->titre ?? '—' }}</td>
                                             <td class="px-3 py-2">
-                                                <a href="{{ env('APP_URL') . 'storage/' . $piece->fichier }}" target="_blank"
+                                                <a href="{{ env('SUPABASE_BUCKET_URL') . '/' . $piece->fichier }}" target="_blank"
                                                    class="text-blue-600 underline">Voir</a>
                                             </td>
                                             <td class="px-3 py-2">{{ \Carbon\Carbon::parse($piece->datedocument)->format('d/m/Y') }}</td>

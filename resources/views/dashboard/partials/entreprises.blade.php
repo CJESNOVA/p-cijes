@@ -10,7 +10,7 @@
                 <div class="flex flex-col bg-white rounded-xl shadow hover:shadow-lg transition-shadow duration-300 p-5 space-y-3">
                     <div class="flex items-center space-x-4">
                         @if($entreprise->vignette)
-                            <img src="{{ env('APP_URL') . 'storage/' . $entreprise->vignette }}" 
+                            <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $entreprise->vignette }}" 
                                  alt="{{ $entreprise->nom }}" 
                                  class="w-14 h-14 rounded-full object-cover">
                         @else

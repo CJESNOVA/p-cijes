@@ -59,7 +59,7 @@
                     {{-- Image du membre --}}
                     <div class="relative h-40 w-full bg-slate-200 dark:bg-navy-600">
                         @if($m->vignette)
-                            <img src="{{ env('APP_URL') . 'storage/' . $m->vignette }}"
+                            <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $m->vignette }}"
                                  alt="{{ $m->prenom }} {{ $m->nom }}"
                                  class="h-full w-full object-cover group-hover:scale-105 transition duration-300">
                         @else

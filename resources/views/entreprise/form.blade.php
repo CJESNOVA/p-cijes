@@ -213,7 +213,7 @@
                 </div>   
                 <div>
             @if($entreprise && $entreprise->vignette)
-                <img src="{{ env('APP_URL') . 'storage/' . $entreprise->vignette }}" alt="Vignette" width="100">
+                <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $entreprise->vignette }}" alt="Vignette" width="100">
             @endif
                   
                 </div>   

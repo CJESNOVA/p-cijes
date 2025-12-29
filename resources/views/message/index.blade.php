@@ -66,7 +66,7 @@
 
                 {{-- Avatar du correspondant --}}
                 <div class="relative flex-shrink-0">
-                    <img src="{{ env('APP_URL') . 'storage/' . $autre->vignette ?? asset('images/200x200.png') }}"
+                    <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $autre->vignette ?? asset('images/200x200.png') }}"
                          alt="avatar"
                          class="w-12 h-12 rounded-full border border-slate-200 dark:border-navy-600 object-cover">
                     <span class="absolute bottom-0 right-0 block w-3 h-3 rounded-full 

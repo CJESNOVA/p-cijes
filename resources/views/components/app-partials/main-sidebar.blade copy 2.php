@@ -191,7 +191,7 @@
                             $user = Auth::user();
                             $membre = \App\Models\Membre::where('user_id', $user->id)->first();
                             $vignette = $membre && $membre->vignette
-                                ? env('APP_URL') . 'storage/' . $membre->vignette
+                                ? env('SUPABASE_BUCKET_URL') . '/' . $membre->vignette
                                 : env('APP_URL') . 'images/200x200.png';
                         @endphp
 

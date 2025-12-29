@@ -51,7 +51,7 @@
         <div class="flex items-end {{ $isMine ? 'justify-end' : 'justify-start' }}">
             {{-- Avatar --}}
             @unless($isMine)
-                <img src="{{ env('APP_URL') . 'storage/' . $msg->membre->vignette ?? asset('images/200x200.png') }}"
+                <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $msg->membre->vignette ?? asset('images/200x200.png') }}"
                      alt="avatar"
                      class="w-10 h-10 rounded-full border border-slate-300 dark:border-navy-600 mr-3">
             @endunless
@@ -71,7 +71,7 @@
 
             {{-- Avatar for own message (optional) --}}
             @if($isMine)
-                <img src="{{ env('APP_URL') . 'storage/' . $membre->vignette ?? asset('images/200x200.png') }}"
+                <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $membre->vignette ?? asset('images/200x200.png') }}"
                      alt="avatar"
                      class="w-10 h-10 rounded-full border border-slate-300 dark:border-navy-600 ml-3">
             @endif
