@@ -18,7 +18,7 @@
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-lg">
                                     @if($exp->membre && $exp->membre->vignette)
-                                    <img class="rounded-full " src="{{ env('APP_URL') . 'storage/' . $exp->membre->vignette }}" alt="avatar" />
+                                    <img class="rounded-full " src="{{ env('SUPABASE_BUCKET_URL') . '/' . $exp->membre->vignette }}" alt="avatar" />
                                 @endif
                                 </div>
                                 <div class="flex-1">
@@ -58,7 +58,7 @@
                         {{-- Initiales ou avatar --}}
                         <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
                             @if($c->conseiller->membre && $c->conseiller->membre->vignette)
-                                    <img class="rounded-full " src="{{ env('APP_URL') . 'storage/' . $c->conseiller->membre->vignette }}" alt="avatar" />
+                                    <img class="rounded-full " src="{{ env('SUPABASE_BUCKET_URL') . '/' . $c->conseiller->membre->vignette }}" alt="avatar" />
                                 @endif
                         </div>
 

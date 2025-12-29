@@ -126,7 +126,7 @@
     {{-- Fichier joint --}}
     @if ($expert->fichier)
         <div class="mt-6">
-            <a href="{{ env('APP_URL') . 'storage/' . $expert->fichier }}" target="_blank"
+            <a href="{{ env('SUPABASE_BUCKET_URL') . '/' . $expert->fichier }}" target="_blank"
                class="btn bg-primary text-white hover:bg-primary-focus rounded-lg">
                 📂 Voir le fichier joint
             </a>

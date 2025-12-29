@@ -106,7 +106,7 @@
                 @if ($existing)
                     <p class="mb-1 text-sm text-gray-600">
                         Document existant :
-                        <a href="{{ env('APP_URL') . 'storage/' . $existing->fichier }}" target="_blank" class="text-blue-600 underline">
+                        <a href="{{ env('SUPABASE_BUCKET_URL') . '/' . $existing->fichier }}" target="_blank" class="text-blue-600 underline">
                             Voir le document
                         </a>
                     </p>

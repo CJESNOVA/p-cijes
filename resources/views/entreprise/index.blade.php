@@ -55,7 +55,7 @@
             <div class="card grow items-center p-4 sm:p-5">
                 <div class="avatar size-20">
                   @if($em->entreprise && $em->entreprise->vignette)
-                    <img class="rounded-full " src="{{ env('APP_URL') . 'storage/' . $em->entreprise->vignette }}" alt="avatar" />
+                    <img class="rounded-full " src="{{ env('SUPABASE_BUCKET_URL') . '/' . $em->entreprise->vignette }}" alt="avatar" />
                     @endif
                   @if($em->entreprise && $em->entreprise->spotlight)
                     <div
