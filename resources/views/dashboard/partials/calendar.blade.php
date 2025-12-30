@@ -20,7 +20,7 @@
             {{-- Vignette de l’événement --}}
             <div class="flex-shrink-0">
                 @if(!empty($event->vignette))
-                    <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $event->vignette }}" 
+                    <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $event->vignette }}" 
                          alt="{{ $event->titre }}" 
                          class="w-16 h-16 object-cover rounded-md border border-slate-200 dark:border-navy-500">
                 @else
@@ -79,7 +79,7 @@
                 <div class="flex items-center space-x-3">
                     {{-- Vignette de l’espace --}}
                     @if($espace->vignette)
-                        <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $espace->vignette }}"
+                        <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $espace->vignette }}"
                              alt="{{ $espace->titre }}"
                              class="w-14 h-14 rounded-lg object-cover shadow-sm">
                     @else

@@ -73,7 +73,7 @@
                                 <td class="whitespace-nowrap px-4 py-3 sm:px-5">
                                     @if($r->espace && $r->espace->vignette)
                                     <img class="size-24 rounded-lg object-cover object-center"
-                                        src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $r->espace->vignette }}" alt="{{ $r->espace->titre }}" />
+                                        src="{{ env('SUPABASE_BUCKET_URL') . '/' . $r->espace->vignette }}" alt="{{ $r->espace->titre }}" />
                                     @endif
                                 {{ $r->espace->titre }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 sm:px-5">
