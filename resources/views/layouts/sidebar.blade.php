@@ -19,7 +19,7 @@
     @if($espace && $espace->vignette)
     <div class="h-24 rounded-t-lg bg-primary dark:bg-accent">
         <img class="h-full w-full rounded-t-lg object-cover object-center"
-            src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $espace->vignette }}" alt="{{ $espace->titre }}" />
+            src="{{ env('SUPABASE_BUCKET_URL') . '/' . $espace->vignette }}" alt="{{ $espace->titre }}" />
     </div>
     @endif
     <div class="px-4 pt-2 pb-5 sm:px-5">
@@ -82,7 +82,7 @@
     @if($evenement && $evenement->vignette)
     <div class="h-24 rounded-t-lg bg-primary dark:bg-accent">
         <img class="h-full w-full rounded-t-lg object-cover object-center"
-            src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $evenement->vignette }}" alt="{{ $evenement->titre }}" />
+            src="{{ env('SUPABASE_BUCKET_URL') . '/' . $evenement->vignette }}" alt="{{ $evenement->titre }}" />
     </div>
     @endif
     <div class="px-4 pt-2 pb-5 sm:px-5">

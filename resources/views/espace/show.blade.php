@@ -48,7 +48,7 @@
                         </h1>
                         @if($espace && $espace->vignette)
                         <img class="mt-5 h-80 w-full rounded-lg object-cover object-center"
-                            src="{{ env('SUPABASE_BUCKET_URL') . '/' . '' . $espace->vignette }}" alt="{{ $espace->titre }}" />
+                            src="{{ env('SUPABASE_BUCKET_URL') . '/' . $espace->vignette }}" alt="{{ $espace->titre }}" />
                         <p class="mt-1 text-center text-xs-plus text-slate-400 dark:text-navy-300">
                             <span> {{ $espace->espacetype->titre ?? '-' }} </span>
                         </p>
