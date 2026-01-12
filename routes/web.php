@@ -9,6 +9,7 @@ use App\Http\Controllers\PieceController;
 use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\DiagnosticController;
 use App\Http\Controllers\DiagnosticentrepriseController;
+use App\Http\Controllers\DiagnosticentrepriseQualificationController;
 use App\Http\Controllers\EspaceController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ExpertController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\PrestationController;
 use App\Http\Controllers\SujetController;
 use App\Http\Controllers\ForumController;
+use App\Http\Controllers\CotisationController;
+use App\Http\Controllers\CotisationressourceController;
 use App\Http\Controllers\ConseillerController;
 use App\Http\Controllers\FormationController;
 use App\Http\Controllers\AccompagnementController;
@@ -125,6 +128,10 @@ Route::get('/test-mail', function () {
 |
 */
 
+Route::get('/', function () {
+    return view('welcome');
+});
+
 Route::middleware(['web', 'guest'])->group(function () {
 //Route::middleware('guest')->group(function () {
     Route::get('/login', [\App\Http\Controllers\AuthController::class, 'loginView'])->name('loginView');
@@ -137,8 +144,6 @@ Route::middleware(['web', 'guest'])->group(function () {
 
     Route::get('/reset-password', [\App\Http\Controllers\AuthController::class, 'resetPasswordView'])->name('resetPasswordView');
     Route::post('/reset-password', [\App\Http\Controllers\AuthController::class, 'resetPassword'])->name('resetPassword');
-    
-
     
 });
 
@@ -340,6 +345,15 @@ Route::middleware('auth')->group(function () {
         return view('diagnosticentreprise.success');
     })->name('diagnosticentreprise.success');
 
+    // Routes pour le test de qualification (diagnosticmoduletype_id = 3)
+    Route::get('/diagnostics/diagnosticentreprise-qualification', [DiagnosticentrepriseQualificationController::class, 'indexForm'])->name('diagnosticentreprisequalification.indexForm');
+    Route::get('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/form', [DiagnosticentrepriseQualificationController::class, 'showForm'])->name('diagnosticentreprisequalification.showForm');
+    Route::get('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/form/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'showForm'])->name('diagnosticentreprisequalification.showModule');
+    Route::post('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/save/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'saveModule'])->name('diagnosticentreprisequalification.saveModule');
+    Route::post('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/store/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'store'])->name('diagnosticentreprisequalification.store');
+    Route::get('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/results', [DiagnosticentrepriseQualificationController::class, 'results'])->name('diagnosticentreprisequalification.results');
+    Route::get('/diagnostics/diagnosticentreprise-qualification/success', [DiagnosticentrepriseQualificationController::class, 'success'])->name('diagnosticentreprisequalification.success');
+
 
     Route::get('/evenements/espaces', [EspaceController::class, 'index'])->name('espace.index');
     Route::get('/evenements/espace/{id}', [EspaceController::class, 'show'])->name('espace.show');
@@ -375,6 +389,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/prestations/les-prestations', [PrestationController::class, 'liste'])->name('prestation.liste');
     Route::get('/prestations/{id}/inscription', [PrestationController::class, 'inscrireForm'])->name('prestation.inscrire.form');
     Route::post('/prestations/{id}/inscription', [PrestationController::class, 'inscrireStore'])->name('prestation.inscrire.store');
+
+    // Routes pour la gestion des cotisations (réservé aux entreprises membres CJES)
+    Route::get('/entreprises/cotisations', [CotisationController::class, 'index'])->name('cotisation.index');
+    Route::get('/entreprises/cotisations/create/{entrepriseId}', [CotisationController::class, 'create'])->name('cotisation.create');
+    Route::post('/entreprises/cotisations', [CotisationController::class, 'store'])->name('cotisation.store');
+    Route::get('/entreprises/cotisations/{id}/edit', [CotisationController::class, 'edit'])->name('cotisation.edit');
+    Route::put('/entreprises/cotisations/{id}', [CotisationController::class, 'update'])->name('cotisation.update');
+    Route::delete('/entreprises/cotisations/{id}', [CotisationController::class, 'destroy'])->name('cotisation.destroy');
+    Route::post('/entreprises/cotisations/{id}/mark-as-paid', [CotisationController::class, 'markAsPaid'])->name('cotisation.markAsPaid');
     
     Route::get('/forums/forums', [ForumController::class, 'index'])->name('forum.index');
     Route::get('/forums/forums/{forumId}/sujets', [SujetController::class, 'index'])->name('sujet.index');
@@ -516,6 +539,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/forums/conversations/nouveau', [ConversationController::class, 'create'])->name('conversation.create');
     Route::post('/forums/conversations', [ConversationController::class, 'store'])->name('conversation.store');
 
+    // Cotisations payées
+    Route::get('/entreprises/cotisations/payees', [CotisationressourceController::class, 'index'])->name('cotisationressource.index');
+    Route::get('/entreprises/cotisations/payees/{id}', [CotisationressourceController::class, 'show'])->name('cotisationressource.show');
 
 
 });

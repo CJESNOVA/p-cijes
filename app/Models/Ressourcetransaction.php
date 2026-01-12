@@ -56,13 +56,19 @@ class Ressourcetransaction extends Model
         return $this->hasOne(Espaceressource::class, 'reference', 'reference');
     }
 
-    // Méthode pratique pour obtenir l'origine (formation, prestation, événement, espace)
+    public function cotisationRessource()
+    {
+        return $this->hasOne(Cotisationressource::class, 'reference', 'reference');
+    }
+
+    // Méthode pratique pour obtenir l'origine (formation, prestation, événement, espace, cotisation)
     public function origine()
     {
         if ($this->formationRessource) return $this->formationRessource;
         if ($this->prestationRessource) return $this->prestationRessource;
         if ($this->evenementRessource) return $this->evenementRessource;
         if ($this->espaceRessource) return $this->espaceRessource;
+        if ($this->cotisationRessource) return $this->cotisationRessource;
 
         return null;
     }

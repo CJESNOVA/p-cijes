@@ -46,7 +46,14 @@
     @if(session('success'))
       <div class="alert flex rounded-lg bg-success px-4 py-4 text-white sm:px-5">{{ session('success') }}</div>
     @endif
-          
+
+    @if(session('error'))
+      <div class="alert flex rounded-lg bg-danger px-4 py-4 text-white sm:px-5">{{ session('error') }}</div>
+    @endif
+
+    @if(session('info'))
+      <div class="alert flex rounded-lg bg-info px-4 py-4 text-white sm:px-5">{{ session('info') }}</div>
+    @endif
 
 @if($entreprises)
               <div class="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-2 lg:gap-6 xl:grid-cols-2">
@@ -64,7 +71,73 @@
                     @endif
                 </div>
                 <h3 class="pt-3 text-lg font-medium text-slate-700 dark:text-navy-100">
-                    {{ $em->entreprise->nom }}
+                    {{ $em->entreprise->nom }}<br />
+                    @if($em->entreprise && $em->entreprise->entrepriseprofil && $em->entreprise->est_membre_cijes)
+                        <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            @switch($em->entreprise->entrepriseprofil->id)
+                                @case(1)
+                                    bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                                @break
+                                @case(2)
+                                    bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                                @break
+                                @case(3)
+                                    bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                @break
+                                @default
+                                    bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200
+                            @endswitch
+                        ">
+                            @switch($em->entreprise->entrepriseprofil->id)
+                                @case(1)
+                                    <i class="fas fa-seedling mr-1"></i>{{ $em->entreprise->entrepriseprofil->titre ?? 'CJES' }}
+                                @break
+                                @case(2)
+                                    <i class="fas fa-chart-line mr-1"></i>{{ $em->entreprise->entrepriseprofil->titre ?? 'CJES' }}
+                                @break
+                                @case(3)
+                                    <i class="fas fa-trophy mr-1"></i>{{ $em->entreprise->entrepriseprofil->titre ?? 'CJES' }}
+                                @break
+                            @endswitch
+                        </span>
+                    @endif
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        @php
+                            // Vérifier si un test est en cours pour cette entreprise
+                            $testEnCours = \App\Models\Diagnostic::where('entreprise_id', $em->entreprise->id)
+                                ->where('membre_id', $em->membre_id ?? auth()->id())
+                                ->where('diagnostictype_id', 3)
+                                ->where('diagnosticstatut_id', 1) // En cours
+                                ->first();
+                            
+                            // Vérifier si un test est terminé pour cette entreprise
+                            $testTermine = \App\Models\Diagnostic::where('entreprise_id', $em->entreprise->id)
+                                ->where('membre_id', $em->membre_id ?? auth()->id())
+                                ->where('diagnostictype_id', 3)
+                                ->where('diagnosticstatut_id', 2) // Terminé
+                                ->first();
+                        @endphp
+                        
+                        @if($testEnCours)
+                            <a href="{{ route('diagnosticentreprisequalification.showForm', $em->entreprise->id) }}" 
+                               class="btn bg-warning text-white hover:bg-warning-focus text-sm px-3 py-1 rounded-full">
+                                <i class="fas fa-clipboard-check mr-1"></i>
+                                Continuer le test
+                            </a>
+                        @elseif($testTermine)
+                            <a href="{{ route('diagnosticentreprisequalification.results', $em->entreprise->id) }}" 
+                               class="btn bg-info text-white hover:bg-info-focus text-sm px-3 py-1 rounded-full">
+                                <i class="fas fa-chart-bar mr-1"></i>
+                                Résultats du test
+                            </a>
+                        @else
+                            <a href="{{ route('diagnosticentreprisequalification.showForm', $em->entreprise->id) }}" 
+                               class="btn bg-warning text-white hover:bg-warning-focus text-sm px-3 py-1 rounded-full">
+                                <i class="fas fa-clipboard-check mr-1"></i>
+                                Test de qualification
+                            </a>
+                        @endif
+                    </div>
                 </h3>
                 <p class="text-xs-plus">{!! $em->entreprise->description !!}</p>
                 <div class="my-4 h-px w-full bg-slate-200 dark:bg-navy-500"></div>
@@ -103,6 +176,33 @@
                         </div>
                         <p>{{ $em->entreprise->adresse }}</p>
                     </div>
+                    @if($em->entreprise->entrepriseprofil)
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="flex size-7 items-center rounded-lg bg-info/10 p-2 text-info dark:bg-info-light/10 dark:text-info-light">
+                            <i class="fa fa-briefcase text-xs"></i>
+                        </div>
+                        <p>{{ $em->entreprise->entrepriseprofil->titre }}</p>
+                    </div>
+                    @endif
+                    @if($em->entreprise->est_membre_cijes)
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="flex size-7 items-center rounded-lg bg-success/10 p-2 text-success dark:bg-success-light/10 dark:text-success-light">
+                            <i class="fa fa-star text-xs"></i>
+                        </div>
+                        <p class="text-success font-medium">Membre CJES</p>
+                    </div>
+                    @endif
+                    @if($em->entreprise->annee_creation)
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="flex size-7 items-center rounded-lg bg-slate-100 p-2 text-slate-600 dark:bg-navy-100 dark:text-navy-300">
+                            <i class="fa fa-calendar text-xs"></i>
+                        </div>
+                        <p>Créée en {{ $em->entreprise->annee_creation }}</p>
+                    </div>
+                    @endif
                 </div>
                 
                 <a href="{{ route('entreprise.edit', $em->entreprise->id) }}"

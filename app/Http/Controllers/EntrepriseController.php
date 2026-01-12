@@ -30,7 +30,7 @@ class EntrepriseController extends Controller
         }
 
         // Récupérer les entreprises du membre
-        $entreprises = Entreprisemembre::with('entreprise')
+        $entreprises = Entreprisemembre::with(['entreprise', 'entreprise.entrepriseprofil'])
             ->where('membre_id', $membre->id)
             ->get();
 
@@ -43,7 +43,7 @@ class EntrepriseController extends Controller
         $membre = Membre::where('user_id', $userId)->first();
 
         if (!$membre) {
-            return redirect()->route('membre.createOrEdit')->with('error', 'Vous devez d’abord créer votre profil membre.');
+            return redirect()->route('membre.createOrEdit')->with('error', 'Vous devez d\'abord créer votre profil membre.');
         }
 
         $secteurs = Secteur::where('etat', 1)->get();
@@ -82,10 +82,23 @@ class EntrepriseController extends Controller
         $membre = Membre::where('user_id', $userId)->first();
 
         if (!$membre) {
-            return redirect()->route('membre.createOrEdit')->with('error', 'Vous devez d’abord créer votre profil membre.');
+            return redirect()->route('membre.createOrEdit')->with('error', 'Vous devez d\'abord créer votre profil membre.');
         }
 
         $validated = $this->validateData($request);
+
+        // Vérifier si l'entreprise essaie d'être membre CJES sans être éligible
+        $messageInfo = null;
+        if (isset($validated['annee_creation']) && $validated['annee_creation']) {
+            $anneeMin = date('Y') - 10;
+            if ($validated['annee_creation'] < $anneeMin) {
+                // Forcer à false si l'entreprise a plus de 10 ans
+                if (isset($validated['est_membre_cijes']) && $validated['est_membre_cijes']) {
+                    $messageInfo = "L'entreprise a été enregistrée mais ne peut pas être membre CJES car elle a plus de 10 ans.";
+                }
+                $validated['est_membre_cijes'] = 0;
+            }
+        }
 
         if ($request->hasFile('vignette')) {
             //$validated['vignette'] = $request->file('vignette')->store('entreprises', 'public');
@@ -109,7 +122,7 @@ class EntrepriseController extends Controller
             'etat' => 1,
         ]);
 
-        return redirect()->route('entreprise.index')->with('success', 'Entreprise créée avec succès.');
+        return redirect()->route('entreprise.index')->with('success', 'Entreprise créée avec succès.')->with('info', $messageInfo);
     }
 
     public function update(Request $request, $id)
@@ -120,6 +133,19 @@ class EntrepriseController extends Controller
         $entreprise = Entreprise::findOrFail($id);
 
         $validated = $this->validateData($request);
+
+        // Vérifier si l'entreprise essaie d'être membre CJES sans être éligible
+        $messageInfo = null;
+        if (isset($validated['annee_creation']) && $validated['annee_creation']) {
+            $anneeMin = date('Y') - 10;
+            if ($validated['annee_creation'] < $anneeMin) {
+                // Forcer à false si l'entreprise a plus de 10 ans
+                if (isset($validated['est_membre_cijes']) && $validated['est_membre_cijes']) {
+                    $messageInfo = "L'entreprise a été mise à jour mais ne peut pas être membre CJES car elle a plus de 10 ans.";
+                }
+                $validated['est_membre_cijes'] = 0;
+            }
+        }
 
         if ($request->hasFile('vignette')) {
             //$validated['vignette'] = $request->file('vignette')->store('entreprises', 'public');
@@ -138,7 +164,7 @@ class EntrepriseController extends Controller
             ['fonction' => $request->fonction, 'bio' => $request->bio, 'etat' => 1]
         );
 
-        return redirect()->route('entreprise.index')->with('success', 'Entreprise mise à jour avec succès.');
+        return redirect()->route('entreprise.index')->with('success', 'Entreprise mise à jour avec succès.')->with('info', $messageInfo);
     }
 
     private function validateData(Request $request)
@@ -151,6 +177,8 @@ class EntrepriseController extends Controller
             'description' => 'nullable|string',
             'secteur_id' => 'required|exists:secteurs,id',
             'entreprisetype_id' => 'required|exists:entreprisetypes,id',
+            'annee_creation' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'est_membre_cijes' => 'nullable|boolean',
             'pays_id' => 'required',
             'vignette' => 'nullable|image|max:2048',
             'fonction' => 'nullable|string|max:255',

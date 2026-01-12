@@ -51,6 +51,24 @@
         <div class="alert flex rounded-lg bg-success px-4 py-4 text-white sm:px-5">{{ session('success') }}</div>
     @endif
 
+    @if (session('error'))
+        <div class="alert flex rounded-lg bg-danger px-4 py-4 text-white sm:px-5">{{ session('error') }}</div>
+    @endif
+
+    @if (session('info'))
+        <div class="alert flex rounded-lg bg-info px-4 py-4 text-white sm:px-5">{{ session('info') }}</div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert flex rounded-lg bg-warning px-4 py-4 text-white sm:px-5">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
 
           <!-- Input Validation -->
           <div class="card px-4 pb-4 sm:px-5">
@@ -83,22 +101,22 @@
 
                 <div>
                   <label class="block">
-                    <span>Secteur d’activité </span>
-                <select name="secteur_id" 
+                    <span>Secteur d'activité</span>
+            <select name="secteur_id" 
       class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" required>
-                    <option value="">-- Choisir --</option>
+    <option value="">-- Choisir --</option>
                     @foreach ($secteurs as $secteur)
                         <option value="{{ $secteur->id }}" {{ old('secteur_id', $entreprise->secteur_id ?? '') == $secteur->id ? 'selected' : '' }}>
                             {{ $secteur->titre }}
                         </option>
                     @endforeach
-                </select>
+            </select>
                   </label>
                 </div>
 
                 <div>
                   <label class="block">
-                    <span>Type d’entreprise</span>
+                    <span>Type d'entreprise</span>
             <select name="entreprisetype_id" 
       class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" required>
     <option value="">-- Choisir --</option>
@@ -138,6 +156,50 @@
                   </label>
                 </div>
 
+                <div>
+                  <label class="block">
+                    <span>Année de création</span>
+                  <input
+                    class="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    placeholder="Année de création"
+                    type="number" name="annee_creation" value="{{ old('annee_creation', $entreprise->annee_creation ?? '') }}" min="1900" max="{{ date('Y') }}"
+                  />
+                  </label>
+                </div>
+
+                <div>
+                  <label class="block">
+                    <span>Statut CJES</span>
+                    <div class="mt-2">
+                        @php
+                            $anneeMin = date('Y') - 10;
+                            $peutEtreMembre = !$entreprise || ($entreprise->annee_creation && $entreprise->annee_creation >= $anneeMin);
+                        @endphp
+                        
+                        @if($peutEtreMembre)
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="est_membre_cijes" value="1" {{ old('est_membre_cijes', $entreprise->est_membre_cijes ?? 0) ? 'checked' : '' }} class="form-checkbox is-outline size-5 rounded-sm border-slate-400/70 bg-slate-100 before:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-500 dark:bg-navy-900 dark:before:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent">
+                                <span class="ml-2">Membre CJES</span>
+                            </label>
+                            <small class="block text-xs text-slate-400 mt-1">
+                                @if($entreprise && $entreprise->annee_creation)
+                                    Cette entreprise peut être membre CJES (créée en {{ $entreprise->annee_creation }})
+                                @else
+                                    Les entreprises de moins de 10 ans peuvent être membres CJES
+                                @endif
+                            </small>
+                        @else
+                            <div class="inline-flex items-center text-slate-500">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <span>Non éligible au membre CJES</span>
+                            </div>
+                            <small class="block text-xs text-red-400 mt-1">
+                                Cette entreprise ne peut pas être membre CJES (plus de 10 ans)
+                            </small>
+                        @endif
+                    </div>
+                  </label>
+                </div>
 
                 <div>
                   <label class="block">

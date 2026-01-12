@@ -46,6 +46,7 @@ class RessourcecompteController extends Controller
                   'prestationRessource.prestation',
                   'evenementRessource.evenement',
                   'espaceRessource.espace',
+                  'cotisationRessource.cotisation',
               ])
               ->where('etat', 1)
               ->orderByDesc('created_at'); // ✅ transactions les plus récentes en premier

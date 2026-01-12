@@ -5,16 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Offretype extends Model
+class Entrepriseprofil extends Model
 {
     use HasFactory;
 
-    protected $table = 'offretypes'; 
+    protected $table = 'entrepriseprofils';
 
     protected $fillable = [
         'titre',
         'etat',
     ];
+
+    public function entreprises()
+    {
+        return $this->hasMany(Entreprise::class);
+    }
+
+    public function cotisationtypes()
+    {
+        return $this->hasMany(Cotisationtype::class);
+    }
 
     public function reductiontypes()
     {

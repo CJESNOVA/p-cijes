@@ -13,6 +13,17 @@ class Membretype extends Model
 
     protected $fillable = [
         'titre',
+        'membrecategorie_id',
         'etat',
     ];
+
+    public function membrecategorie()
+    {
+        return $this->belongsTo(Membrecategorie::class);
+    }
+
+    public function membres()
+    {
+        return $this->hasMany(Membre::class);
+    }
 }
