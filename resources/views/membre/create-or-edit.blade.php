@@ -61,6 +61,18 @@
               >
                 <div>
                   <label class="block">
+                    <span>Numéro d'identifiant</span>
+                  <input
+                    class="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    placeholder="Numéro d'identifiant"
+                    type="text" name="numero_identifiant" value="{{ old('numero_identifiant', $membre->numero_identifiant ?? 'MBR' . date('Y') . '00000') }}" readonly
+                  />
+                  <small class="text-xs text-slate-400">Format: MBRYYYYXXXXX (généré automatiquement)</small>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="block">
                     <span>Nom </span>
                   <input
                     class="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
@@ -100,7 +112,7 @@
     <option value="0">Choisir un type</option>
                 @foreach ($membretypes as $membretype)
                     <option value="{{ $membretype->id }}" {{ (old('membretype_id', $membre->membretype_id ?? '') == $membretype->id) ? 'selected' : '' }}>
-                        {{ $membretype->titre }}
+                        {{ $membretype->titre }} @if($membretype->membrecategorie) ({{ $membretype->membrecategorie->titre }})@endif
                     </option>
                 @endforeach
             </select>
@@ -159,6 +171,11 @@
                 <div>
             @if($membre && $membre->vignette)
                 <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $membre->vignette }}" alt="Vignette" width="100">
+            @endif
+            @if($membre && $membre->numero_identifiant)
+                <div class="mt-2">
+                    <strong>ID Membre:</strong> {{ $membre->numero_identifiant }}
+                </div>
             @endif
                   
                 </div>   

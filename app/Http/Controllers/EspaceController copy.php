@@ -16,7 +16,6 @@ use App\Models\Ressourcetypeoffretype;
 use App\Models\Ressourcecompte;
 use App\Models\Espaceressource;
 use App\Models\Accompagnement;
-use App\Models\Reductiontype;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -85,122 +84,6 @@ public function reserverForm($id)
     return view('espace.reserver', compact('espace', 'ressources', 'accompagnements'));
 }
 
-/**
- * Récupérer les réductions applicables pour un espace et un membre
- */
-private function getReductionsApplicables($membre, $espace)
-{
-    // Vérifier si le membre est CJES et à jour dans ses cotisations
-    if (!$this->membreEstCjesEtAJour($membre)) {
-        return collect(); // Retourner une collection vide
-    }
-
-    // Récupérer les entreprises du membre
-    $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)
-        ->pluck('entreprise_id')
-        ->toArray();
-
-    // Récupérer toutes les réductions applicables (génériques + spécifiques aux profils des entreprises du membre)
-    $toutesReductions = Reductiontype::where('etat', true)
-        ->where('offretype_id', 4) // 4 = espaces
-        ->where(function($query) use ($entrepriseIds) {
-            $query->where('entrepriseprofil_id', 0) // Génériques
-                  ->orWhereIn('entrepriseprofil_id', function($subQuery) use ($entrepriseIds) {
-                      // Récupérer les profils des entreprises du membre
-                      return $subQuery->from('entreprises')
-                          ->select('entrepriseprofil_id')
-                          ->whereIn('id', $entrepriseIds)
-                          ->whereNotNull('entrepriseprofil_id');
-                  });
-        })
-        ->where(function($query) use ($membre, $entrepriseIds) {
-            $query->whereNull('date_debut')
-                  ->orWhere(function($subQuery) {
-                      $subQuery->where('date_debut', '<=', now())
-                            ->where('date_fin', '>=', now());
-                  });
-        })
-        ->orderBy('pourcentage', 'desc')
-        ->orderBy('montant', 'desc')
-        ->get();
-
-    // Trouver la meilleure réduction active
-    $meilleureReduction = null;
-    $meilleureEconomie = 0;
-
-    foreach ($toutesReductions as $reduction) {
-        if ($reduction->isPromotionActive()) {
-            // Calculer l'économie potentielle sur un prix de base de 10000 XOF
-            $prixBase = 10000;
-            $economie = $reduction->calculateReduction($prixBase);
-            
-            if ($economie > $meilleureEconomie) {
-                $meilleureEconomie = $economie;
-                $meilleureReduction = $reduction;
-            }
-        }
-    }
-
-    // Retourner seulement la meilleure réduction
-    return $meilleureReduction ? collect([$meilleureReduction]) : collect();
-}
-
-/**
- * Vérifier si le membre est CJES et à jour dans ses cotisations
- */
-private function membreEstCjesEtAJour($membre)
-{
-    // Récupérer les entreprises du membre
-    $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)
-        ->pluck('entreprise_id')
-        ->toArray();
-
-    // Vérifier si au moins une entreprise du membre est CJES
-    $entrepriseCjes = \App\Models\Entreprise::whereIn('id', $entrepriseIds)
-        ->where('est_membre_cijes', true)
-        ->exists();
-
-    if (!$entrepriseCjes) {
-        return false;
-    }
-
-    // Vérifier si au moins une entreprise du membre est à jour dans ses cotisations
-    $cotisationValide = \App\Models\Cotisation::whereIn('entreprise_id', $entrepriseIds)
-        ->where('statut', 'paye')
-        ->where('est_a_jour', true)
-        ->where('date_fin', '>=', now())
-        ->exists();
-
-    return $cotisationValide;
-}
-
-/**
- * Calculer le meilleur montant avec réduction
- */
-private function calculerMontantAvecReduction($montantOriginal, $reductions)
-{
-    $meilleurMontant = $montantOriginal;
-    $meilleureReduction = null;
-
-    foreach ($reductions as $reduction) {
-        if ($reduction->isPromotionActive()) {
-            $montantAvecReduction = $reduction->getPrixAvecReduction($montantOriginal);
-            
-            if ($montantAvecReduction < $meilleurMontant) {
-                $meilleurMontant = $montantAvecReduction;
-                $meilleureReduction = $reduction;
-            }
-        }
-    }
-
-    return [
-        'montant_final' => $meilleurMontant,
-        'montant_original' => $montantOriginal,
-        'reduction' => $meilleureReduction,
-        'economie' => $montantOriginal - $meilleurMontant
-    ];
-}
-
 
 public function reserverStore(Request $request, $id)
 {
@@ -211,17 +94,9 @@ public function reserverStore(Request $request, $id)
 
     $espace = Espace::where('etat', 1)->findOrFail($id);
 
-    // Récupérer les réductions applicables pour cet espace
-    $reductions = $this->getReductionsApplicables($membre, $espace);
-
-    $montantOriginal = $request->input('montant') !== null 
+    $montant = $request->input('montant') !== null 
         ? (float) $request->input('montant') 
         : (float) ($espace->prix ?? 0);
-
-    // Calculer le montant avec la meilleure réduction
-    $calculReduction = $this->calculerMontantAvecReduction($montantOriginal, $reductions);
-    $montant = $calculReduction['montant_final'];
-    
     $accompagnementId = $request->input('accompagnement_id');
 
     $rules = [
@@ -319,22 +194,8 @@ public function reserverStore(Request $request, $id)
 
         DB::commit();
 
-        // Préparer le message de succès avec informations de réduction
-        $messageSuccess = '✅ Réservation réussie.';
-        if ($montant > 0) {
-            if ($calculReduction['reduction']) {
-                $economie = number_format($calculReduction['economie'], 2);
-                $reductionTitre = $calculReduction['reduction']->titre_complet;
-                $messageSuccess = "✅ Réservation et paiement réussis avec réduction : {$reductionTitre} (Économie : {$economie} XOF)";
-            } else {
-                $messageSuccess = '✅ Réservation et paiement réussis.';
-            }
-        } else {
-            $messageSuccess = '✅ Réservation gratuite réussie.';
-        }
-
         return redirect()->route('espace.index')
-            ->with('success', $messageSuccess);
+            ->with('success', $montant > 0 ? '✅ Réservation et paiement réussis.' : '✅ Réservation gratuite réussie.');
 
     } catch (\Exception $e) {
         DB::rollBack();

@@ -112,6 +112,7 @@
                                                         @elseif($tx->prestationRessource) bg-green-200 text-green-800
                                                         @elseif($tx->evenementRessource) bg-orange-200 text-orange-800
                                                         @elseif($tx->espaceRessource) bg-purple-200 text-purple-800
+                                                        @elseif($tx->cotisationRessource) bg-red-200 text-red-800
                                                         @else bg-gray-200 text-gray-800 @endif">
                                                         @if($tx->formationRessource)
                                                             Formation - {{ $tx->formationRessource->formation->titre ?? 'N/A' }}
@@ -121,6 +122,8 @@
                                                             Événement - {{ $tx->evenementRessource->evenement->titre ?? 'N/A' }}
                                                         @elseif($tx->espaceRessource)
                                                             Espace - {{ $tx->espaceRessource->espace->titre ?? 'N/A' }}
+                                                        @elseif($tx->cotisationRessource)
+                                                            Cotisation - {{ $tx->cotisationRessource->cotisation->cotisationtype->titre ?? 'N/A' }}
                                                         @else
                                                         {{ $tx->ressourcecompte->entreprise ? $tx->ressourcecompte->entreprise->nom : '' }}
                                                         @endif

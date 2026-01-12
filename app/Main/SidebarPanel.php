@@ -73,6 +73,14 @@ class SidebarPanel
                         'title' => 'Mes pièces administratives',
                         'route_name' => 'pieces.form'
                     ],
+                    'cotisation' => [
+                        'title' => 'Mes cotisations',
+                        'route_name' => 'cotisation.index'
+                    ],
+                    'cotisationressource' => [
+                        'title' => 'Cotisations payées',
+                        'route_name' => 'cotisationressource.index'
+                    ],
                 ],
             ]
         ];
@@ -580,7 +588,7 @@ class SidebarPanel
 
     public static function all(){
         return [
-            self::membres(),
+            self::membres(), 
             self::entreprises(), 
             self::diagnostics(), 
             self::accompagnements(), 

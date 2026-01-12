@@ -23,6 +23,9 @@ class Entreprise extends Model
         'secteur_id',
         'vignette',
         'entreprisetype_id',
+        'entrepriseprofil_id',
+        'est_membre_cijes',
+        'annee_creation',
         'pays_id',
         'supabase_startup_id',
         'spotlight',
@@ -37,6 +40,26 @@ class Entreprise extends Model
     public function entreprisetype()
     {
         return $this->belongsTo(Entreprisetype::class);
+    }
+
+    public function entrepriseprofil()
+    {
+        return $this->belongsTo(Entrepriseprofil::class);
+    }
+
+    public function cotisations()
+    {
+        return $this->hasMany(Cotisation::class);
+    }
+
+    public function membres()
+    {
+        return $this->hasMany(Membre::class);
+    }
+
+    public function entreprisesmembres()
+    {
+        return $this->hasMany(Entreprisemembre::class);
     }
 
     public function pays()

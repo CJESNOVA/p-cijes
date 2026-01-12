@@ -15,6 +15,7 @@ class Membre extends Model
      * @var array
      */
     protected $fillable = [
+        'numero_identifiant',
         'nom',
         'prenom',
         'email',
@@ -35,6 +36,11 @@ class Membre extends Model
     public function membretype()
     {
         return $this->belongsTo(Membretype::class);
+    }
+
+    public function membrecategorie()
+    {
+        return $this->hasOneThrough(Membrecategorie::class, Membretype::class, 'id', 'id', 'membretype_id', 'membrecategorie_id');
     }
 
     public function user()
@@ -67,5 +73,31 @@ public function entreprises()
 {
     return $this->belongsToMany(Entreprise::class, 'entreprisemembres', 'membre_id', 'entreprise_id');
 }
+
+/**
+     * Génère un numéro d'identifiant unique
+     */
+    public static function generateNumeroIdentifiant()
+    {
+        do {
+            $numero = 'MBR' . date('Y') . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+        } while (self::where('numero_identifiant', $numero)->exists());
+        
+        return $numero;
+    }
+
+    /**
+     * Boot the model
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($membre) {
+            if (empty($membre->numero_identifiant)) {
+                $membre->numero_identifiant = self::generateNumeroIdentifiant();
+            }
+        });
+    }
 
 }
