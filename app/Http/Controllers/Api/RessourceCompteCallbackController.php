@@ -21,6 +21,8 @@ class RessourceCompteCallbackController extends Controller
         Log::info("📩 Callback SEMOA reçu", [
             'transaction_id' => $transactionId,
             'payload' => $payload,
+            'method' => $request->method(),
+            'headers' => $request->headers->all(),
         ]);
 
         // Récupérer la transaction locale
@@ -34,6 +36,13 @@ class RessourceCompteCallbackController extends Controller
             ], 404);
         }
 
+        Log::info("📋 Transaction trouvée", [
+            'id' => $transaction->id,
+            'etat_actuel' => $transaction->etat,
+            'montant' => $transaction->montant,
+            'ressourcecompte_id' => $transaction->ressourcecompte_id,
+        ]);
+
         // Décision succès / échec
         $success = false;
 
@@ -46,13 +55,26 @@ class RessourceCompteCallbackController extends Controller
         }
 
         // Mise à jour transaction
+        $ancienEtat = $transaction->etat;
         $transaction->etat = $success ? 1 : -1;
         $transaction->save();
 
+        Log::info("🔄 Transaction mise à jour", [
+            'transaction_id' => $transaction->id,
+            'ancien_etat' => $ancienEtat,
+            'nouvel_etat' => $transaction->etat,
+            'success' => $success,
+        ]);
+
         // Recalcul total du solde
-        $compte = $transaction->ressourcecompte;
+        //$compte = $transaction->ressourcecompte;
+        $compte = \App\Models\Ressourcecompte::find($transaction->ressourcecompte_id);
 
         if ($compte) {
+            Log::info("💼 Compte trouvé", [
+                'compte_id' => $compte->id,
+                'solde_actuel' => $compte->solde,
+            ]);
             $nouveauSolde = Ressourcetransaction::where('ressourcecompte_id', $compte->id)
                 ->where('etat', 1) // uniquement validées
                 ->get()

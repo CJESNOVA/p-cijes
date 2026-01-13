@@ -27,7 +27,7 @@ class Ressourcetransaction extends Model
     
     public function ressourcecompte()
     {
-        return $this->belongsTo(Ressourcecompte::class);
+        return $this->belongsTo(Ressourcecompte::class, 'ressourcecompte_id');
     }
 
     public function operationtype()

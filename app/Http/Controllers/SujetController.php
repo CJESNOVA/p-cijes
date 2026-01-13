@@ -81,7 +81,8 @@ class SujetController extends Controller
 
                 $storage = new \App\Services\SupabaseStorageService();
                 $file = $request->file('vignette');
-                $path = 'sujets/' . time() . '_' . $file->getClientOriginalName();
+                $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
+                $path = 'sujets/' . time() . '_' . $cleanName;
                 $url = $storage->upload($path, file_get_contents($file->getRealPath()));
                 $validated['vignette'] = $path;
         }
@@ -132,7 +133,8 @@ class SujetController extends Controller
 
                 $storage = new \App\Services\SupabaseStorageService();
                 $file = $request->file('vignette');
-                $path = 'sujets/' . time() . '_' . $file->getClientOriginalName();
+                $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
+                $path = 'sujets/' . time() . '_' . $cleanName;
                 $url = $storage->upload($path, file_get_contents($file->getRealPath()));
                 $validated['vignette'] = $path;
         }

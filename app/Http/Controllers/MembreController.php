@@ -63,7 +63,8 @@ class MembreController extends Controller
 
         if ($request->hasFile('vignette')) {
             $file = $request->file('vignette');
-            $path = 'vignettes/' . time() . '_' . $file->getClientOriginalName();
+            $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
+            $path = 'vignettes/' . time() . '_' . $cleanName;
             $url = $storage->upload($path, file_get_contents($file->getRealPath()));
             $membre->vignette = $path;
             $membre->save();
