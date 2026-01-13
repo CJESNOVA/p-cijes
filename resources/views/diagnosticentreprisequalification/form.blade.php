@@ -59,6 +59,8 @@
                             <h3 class="text-xl font-bold text-slate-800 dark:text-white">
                                 {{ $currentModule->titre }}
                             </h3>
+                        </div>
+                        <div class="flex items-center space-x-4">
                             @if($currentModule->description)
                                 <p class="text-sm text-slate-600 dark:text-navy-300 mt-1">
                                     {{ $currentModule->description }}
