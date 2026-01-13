@@ -67,7 +67,8 @@ class ExpertController extends Controller
 
                 $storage = new \App\Services\SupabaseStorageService();
                 $file = $request->file('fichier');
-                $path = 'experts/' . time() . '_' . $file->getClientOriginalName();
+                $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
+                $path = 'experts/' . time() . '_' . $cleanName;
                 $url = $storage->upload($path, file_get_contents($file->getRealPath()));
                 //$path = $path;
 
@@ -115,7 +116,8 @@ class ExpertController extends Controller
 
                 $storage = new \App\Services\SupabaseStorageService();
                 $file = $request->file('fichier');
-                $path = 'experts/' . time() . '_' . $file->getClientOriginalName();
+                $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
+                $path = 'experts/' . time() . '_' . $cleanName;
                 $url = $storage->upload($path, file_get_contents($file->getRealPath()));
                 //$path = $path;
 

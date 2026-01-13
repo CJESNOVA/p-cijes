@@ -53,7 +53,8 @@ class DocumentController extends Controller
 
                 $storage = new \App\Services\SupabaseStorageService();
                 $file = $request->file($inputName);
-                $path = 'documents/' . time() . '_' . $file->getClientOriginalName();
+                $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
+                $path = 'documents/' . time() . '_' . $cleanName;
                 $url = $storage->upload($path, file_get_contents($file->getRealPath()));
                 $fichier = $path;
 

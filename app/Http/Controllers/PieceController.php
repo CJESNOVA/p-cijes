@@ -72,7 +72,8 @@ class PieceController extends Controller
 
                 $storage = new \App\Services\SupabaseStorageService();
                 $file = $request->file($inputName);
-                $path = 'pieces/' . time() . '_' . $file->getClientOriginalName();
+                $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
+                $path = 'pieces/' . time() . '_' . $cleanName;
                 $url = $storage->upload($path, file_get_contents($file->getRealPath()));
                 $fichier = $path;
 
