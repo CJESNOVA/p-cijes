@@ -42,8 +42,7 @@ class MembreController extends Controller
             'vignette' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Générer le numéro d'identifiant automatiquement
-        $validated['numero_identifiant'] = 'MBR' . date('Y') . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+        // Le numero_identifiant sera généré automatiquement par le modèle dans la méthode boot
 
         $membre = Membre::updateOrCreate(
             ['user_id' => $userId],
