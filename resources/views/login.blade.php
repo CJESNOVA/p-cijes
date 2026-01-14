@@ -1,4 +1,4 @@
-<x-base-layout title="Login">
+<x-base-layout title="Connexion">
     <div class="fixed top-0 hidden p-6 lg:block lg:px-12">
         <a href="#" class="flex items-center space-x-2">
             <img class="" src="{{ asset('images/app-logo2.png') }}" alt="logo" />
@@ -53,7 +53,7 @@
                     <label class="relative flex">
                         <input
                             class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900"
-                            placeholder="Password" type="password" name="password"
+                            placeholder="Mot de passe" type="password" name="password"
                             value="{{ old('password') ?? '' }}" required />
                         <span
                             class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -78,7 +78,7 @@
                     </label>
                     
                     <a href="{{ route('forgotPasswordView') }}"
-                        class="text-xs text-slate-400 transition-colors line-clamp-1 hover:text-slate-800 focus:text-slate-800 dark:text-navy-300 dark:hover:text-navy-100 dark:focus:text-navy-100">Mot de pas oublié ?</a>
+                        class="text-xs text-slate-400 transition-colors line-clamp-1 hover:text-slate-800 focus:text-slate-800 dark:text-navy-300 dark:hover:text-navy-100 dark:focus:text-navy-100">Mot de passe oublié ?</a>
                 </div>
                 <button type="submit" style="background-color: #4FBD96 !important;"
                     class="btn mt-10 h-10 w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
