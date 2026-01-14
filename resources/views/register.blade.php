@@ -55,7 +55,7 @@
                     <div>
                         <label class="relative flex">
                             <input
-                                class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900"
+                                class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900 border border-slate-300 focus:border-primary hover:border-primary"
                                 placeholder="Nom complet" type="text" name="name" value="{{ old('name') }}" />
                             <span
                                 class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -73,7 +73,7 @@
                     <div>
                         <label class="relative flex">
                             <input
-                                class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900"
+                                class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900 border border-slate-300 focus:border-primary hover:border-primary"
                                 placeholder="Adresse e-mail" type="text" name="email" value="{{ old('email') }}" />
                             <span
                                 class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -91,7 +91,7 @@
                     <div>
                         <label class="relative flex">
                             <input
-                                class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900"
+                                class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900 border border-slate-300 focus:border-primary hover:border-primary"
                                 placeholder="Mot de passe" type="password" name="password" />
                             <span
                                 class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -109,7 +109,7 @@
                     <div>
                         <label class="relative flex">
                             <input
-                                class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900"
+                                class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900 border border-slate-300 focus:border-primary hover:border-primary"
                                 placeholder="Confirmer le mot de passe" type="password" name="password_confirmation" />
                             <span
                                 class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
@@ -131,12 +131,12 @@
                         <input
                             class="form-checkbox is-outline size-5 rounded-sm border-slate-400/70 bg-slate-100 before:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-500 dark:bg-navy-900 dark:before:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
                             type="checkbox" name="condition_general" id="condition_general" />
-                        <span class="">Je comprends et j'accepte la <a style="color: blue !important;" href="{{ env('APP_URL2') }}page/6-Politique-de-Confidentialité.html" target="_blank">Politique de Confidentialité</a> et les <a style="color: blue !important;" href="{{ env('APP_URL2') }}page/7-Conditions-Générales-d-Utilisation.html" target="_blank">Conditions Générales d'Utilisation</a> </span>
+                        <span class="">Je comprends et j'accepte la <a style="color: #4FBE96 !important;" href="{{ env('APP_URL2') }}page/6-Politique-de-Confidentialité.html" target="_blank">Politique de Confidentialité</a> et les <a style="color: #4FBE96 !important;" href="{{ env('APP_URL2') }}page/7-Conditions-Générales-d-Utilisation.html" target="_blank">Conditions Générales d'Utilisation</a> </span>
                     </label>
                     
                 </div>
 
-                <button type="submit" style="background-color: #4FBD96 !important;"
+                <button type="submit" style="background-color: #4FBE96 !important;"
                     class="btn mt-10 h-10 w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
                     S'incrire
                 </button>
