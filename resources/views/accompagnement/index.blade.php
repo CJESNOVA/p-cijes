@@ -69,7 +69,7 @@
                                           $diagnosticPME = $accompagnement->diagnostics->where('membre_id', $accompagnement->membre_id)->where('entreprise_id', 0)->first();
                                         @endphp
                                         <!-- Bouton pour voir les plans PME -->
-                                        @if($diagnosticPME)
+                                        @if($diagnosticPME && $diagnosticPME->diagnosticstatut_id == 2)
                                           <a href="{{ route('diagnostic.plans', $diagnosticPME->id) }}" 
                                            class="btn w-full bg-blue-500 text-white flex items-center justify-center gap-2">
                                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -86,7 +86,7 @@
                                             // Récupérer le diagnostic Entreprise
                                             $diagnosticEntreprise = $accompagnement->diagnostics->where('entreprise_id', $accompagnement->entreprise_id)->first();
                                           @endphp
-                                          @if($diagnosticEntreprise)
+                                          @if($diagnosticEntreprise && $diagnosticEntreprise->diagnosticstatut_id == 2)
                                             <a href="{{ route('diagnosticentreprise.plans', $diagnosticEntreprise->id) }}" 
                                                class="btn w-full bg-purple-500 text-white flex items-center justify-center gap-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
