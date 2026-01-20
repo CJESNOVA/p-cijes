@@ -74,25 +74,52 @@
                             {{-- Sélection de l'accompagnement --}}
                             @if($accompagnements->count() > 0)
                             <div class="mb-4">
-                                <label class="block font-medium mb-1">Accompagnement</label>
-                                <select name="accompagnement_id" class="w-full border rounded p-2 @error('accompagnement_id') border-red-500 @enderror">
-                                    <option value="">-- Sélectionner un accompagnement --</option>
-                                    @foreach($accompagnements as $acc)
-                                        <option value="{{ $acc->id }}" {{ old('accompagnement_id') == $acc->id ? 'selected' : '' }}>
+                                @if($doitChoisirAccompagnement)
+                                    <label class="block font-medium mb-1">Choisir un accompagnement</label>
+                                    <select name="accompagnement_id" class="w-full border rounded p-2 @error('accompagnement_id') border-red-500 @enderror">
+                                        <option value="">-- Sélectionner un accompagnement --</option>
+                                        @foreach($accompagnements as $acc)
+                                            <option value="{{ $acc->id }}" {{ old('accompagnement_id') == $acc->id ? 'selected' : '' }}>
+                                                {{ 
+                                                    optional($acc->entreprise)->nom 
+                                                        ? 'Accompagnement # ' . optional($acc->entreprise)->nom 
+                                                        : (optional($acc->membre)->nom 
+                                                            ? 'Accompagnement # ' . optional($acc->membre)->nom . ' ' . optional($acc->membre)->prenom 
+                                                            : 'Accompagnement # ' . $acc->id)
+                                                }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('accompagnement_id')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                @else
+                                    {{-- Un seul accompagnement : sélection automatique --}}
+                                    <input type="hidden" name="accompagnement_id" value="{{ $accompagnementAuto->id }}">
+                                    <div class="p-3 bg-green-50 border border-green-200 rounded mb-4">
+                                        <p class="text-sm text-green-800">
+                                            <strong>Accompagnement sélectionné automatiquement :</strong> 
                                             {{ 
-                                                optional($acc->entreprise)->nom 
-                                                    ? 'Accompagnement # ' . optional($acc->entreprise)->nom 
-                                                    : (optional($acc->membre)->nom 
-                                                        ? 'Accompagnement # ' . optional($acc->membre)->nom . ' ' . optional($acc->membre)->prenom 
-                                                        : 'Accompagnement # ' . $acc->id)
+                                                optional($accompagnementAuto->entreprise)->nom 
+                                                    ? 'Accompagnement # ' . optional($accompagnementAuto->entreprise)->nom 
+                                                    : (optional($accompagnementAuto->membre)->name 
+                                                        ? 'Accompagnement # ' . optional($accompagnementAuto->membre)->nom . ' ' . optional($accompagnementAuto->membre)->prenom 
+                                                        : 'Accompagnement # ' . $accompagnementAuto->id)
                                             }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('accompagnement_id')
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
+                                        </p>
+                                    </div>
+                                @endif
                             </div>
+                            @else
+                                {{-- Aucun accompagnement disponible --}}
+                                <div class="mb-4">
+                                    <div class="p-3 bg-blue-50 border border-blue-200 rounded">
+                                        <p class="text-sm text-blue-800">
+                                            <strong>ℹ️ Aucun accompagnement disponible</strong><br>
+                                            Vous pouvez continuer votre réservation sans accompagnement.
+                                        </p>
+                                    </div>
+                                </div>
                             @endif
 
                     <div></div> 

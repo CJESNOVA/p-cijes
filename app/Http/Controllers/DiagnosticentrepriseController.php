@@ -9,6 +9,9 @@ use App\Models\Diagnosticmodule;
 use App\Models\Diagnosticquestion;
 use App\Models\Diagnosticreponse;
 use App\Models\Diagnosticresultat;
+use App\Models\Diagnosticmodulescore;
+use App\Models\Plantemplate;
+use App\Models\Plan;
 use App\Models\Membre;
 use App\Models\Entreprise;
 use App\Models\Entreprisemembre;
@@ -54,7 +57,11 @@ class DiagnosticentrepriseController extends Controller
             ->get();
 
         // Diagnostic existant pour cette entreprise
-        $diagnostic = Diagnostic::where('entreprise_id', $entrepriseId)->first();
+        $diagnostic = Diagnostic::where('entreprise_id', $entrepriseId)
+            ->where('diagnosticstatut_id', 1)
+            ->where('diagnostictype_id', 2) 
+            ->latest()
+            ->first();
 
         // Préparer les réponses existantes (déjà cochées)
         $existing = [];
@@ -183,6 +190,9 @@ class DiagnosticentrepriseController extends Controller
             $diagnostic->update([
                 'accompagnement_id' => $accompagnement->id,
             ]);
+
+            // 🎯 GÉNÉRATION AUTOMATIQUE DES PLANS D'ACCOMPAGNEMENT
+            $this->genererPlansAutomatiques($diagnostic);
         });
 
             // 🏆 Vérifie si c’est le premier diagnostic PME du membre
@@ -200,13 +210,211 @@ class DiagnosticentrepriseController extends Controller
             }
 
         return redirect()->route('diagnosticentreprise.success')
-            ->with('success', "✅ Diagnostic terminé. Score : {$totalScore}");
+            ->with('success', "✅ Diagnostic terminé. Score : {$totalScore}")
+            ->with('diagnostic_id', $diagnostic->id);
     }
 
     return redirect()->route('diagnosticentreprise.success')
         ->with('info', "🕓 Diagnostic partiellement rempli. Score actuel : {$totalScore}");
 }
 
+    /**
+     * Affiche la liste des plans d'accompagnement pour un diagnostic entreprise
+     */
+    public function listePlans($diagnosticId)
+    {
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->firstOrFail();
+
+        // Récupérer les entreprises du membre
+        $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)
+            ->pluck('entreprise_id')
+            ->toArray();
+
+        // Vérifier que le diagnostic appartient au membre ou à ses entreprises
+        $diagnostic = Diagnostic::where('id', $diagnosticId)
+            ->where(function ($query) use ($membre, $entrepriseIds) {
+                $query->where('membre_id', $membre->id)
+                      ->orWhereIn('entreprise_id', $entrepriseIds);
+            })
+            ->with(['accompagnement.plans', 'diagnosticmodulescores.diagnosticmodule'])
+            ->firstOrFail();
+
+        return view('diagnosticentreprise.plans', compact('diagnostic'));
+    }
+
+    /**
+     * Convertit un score de réponse (1-4) en niveau (A-D)
+     * Note: D est la valeur maximale dans notre système
+     */
+    private function convertirScoreEnNiveau($score)
+    {
+        $conversion = [
+            1 => 'A', // Faible
+            2 => 'B', // Moyen
+            3 => 'C', // Bon
+            4 => 'D', // Excellent (maximal)
+        ];
+        
+        return $conversion[$score] ?? 'A';
+    }
+
+    /**
+     * Calcule le niveau moyen pour un module basé sur toutes les réponses
+     */
+    private function calculerNiveauModule($diagnosticId, $moduleId)
+    {
+        // Récupérer toutes les réponses pour ce module
+        $reponses = Diagnosticresultat::where('diagnostic_id', $diagnosticId)
+            ->whereHas('diagnosticquestion', function($q) use ($moduleId) {
+                $q->where('diagnosticmodule_id', $moduleId);
+            })
+            ->with('diagnosticreponse')
+            ->get();
+
+        if ($reponses->isEmpty()) {
+            return 'A'; // Niveau par défaut
+        }
+
+        // Calculer le score moyen
+        $scoreTotal = $reponses->sum(function($reponse) {
+            return $reponse->diagnosticreponse->score ?? 0;
+        });
+        
+        $scoreMoyen = $scoreTotal / $reponses->count();
+        
+        // Convertir en niveau
+        return $this->convertirScoreEnNiveau(round($scoreMoyen));
+    }
+
+    /**
+     * Génère automatiquement les plans d'action basés sur les scores du diagnostic
+     */
+    private function genererPlansAutomatiques($diagnostic)
+    {
+        try {
+            // Récupérer l'accompagnement
+            $accompagnement = Accompagnement::find($diagnostic->accompagnement_id);
+            
+            if (!$accompagnement) {
+                \Log::warning('Aucun accompagnement trouvé pour le diagnostic ' . $diagnostic->id);
+                return;
+            }
+
+            // Récupérer tous les modules du diagnostic (type 2 pour entreprise)
+            $modules = Diagnosticmodule::where('diagnosticmoduletype_id', 2)
+                ->whereHas('diagnosticquestions', function($q) use ($diagnostic) {
+                    $q->whereHas('diagnosticresultats', function($subQ) use ($diagnostic) {
+                        $subQ->where('diagnostic_id', $diagnostic->id);
+                    });
+                })
+                ->get();
+
+            $plansCrees = 0;
+            
+            foreach ($modules as $module) {
+                // Calculer le niveau pour ce module
+                $niveau = $this->calculerNiveauModule($diagnostic->id, $module->id);
+                
+                // Créer ou mettre à jour le score du module
+                $moduleScore = Diagnosticmodulescore::updateOrCreate(
+                    [
+                        'diagnostic_id' => $diagnostic->id,
+                        'diagnosticmodule_id' => $module->id,
+                    ],
+                    [
+                        'niveau' => $niveau,
+                        'score_pourcentage' => $this->convertirNiveauEnPourcentage($niveau),
+                        'score_max' => 100,
+                        'score_total' => $this->convertirNiveauEnScore($niveau),
+                    ]
+                );
+
+                \Log::info('Score module créé/mis à jour (entreprise)', [
+                    'diagnostic_id' => $diagnostic->id,
+                    'module_id' => $module->id,
+                    'niveau' => $niveau,
+                    'module_score_id' => $moduleScore->id,
+                    'was_created' => $moduleScore->wasRecentlyCreated
+                ]);
+
+                // Chercher les templates correspondants
+                $templates = Plantemplate::where('diagnosticmodule_id', $module->id)
+                    ->where('niveau', $niveau)
+                    ->actif()
+                    ->get();
+
+                \Log::info('Templates trouvés (entreprise)', [
+                    'module_id' => $module->id,
+                    'niveau' => $niveau,
+                    'templates_count' => $templates->count()
+                ]);
+
+                foreach ($templates as $template) {
+                    \Log::info('Traitement template (entreprise)', [
+                        'template_id' => $template->id,
+                        'priorite' => $template->priorite,
+                        'priorite_type' => gettype($template->priorite)
+                    ]);
+                    // Vérifier si le plan n'existe pas déjà
+                    $planExistant = Plan::where('accompagnement_id', $accompagnement->id)
+                        ->where('objectif', $template->objectif)
+                        ->where('actionprioritaire', $template->actionprioritaire)
+                        ->exists();
+
+                    if (!$planExistant) {
+                        Plan::create([
+                            'objectif' => $template->objectif,
+                            'actionprioritaire' => $template->actionprioritaire,
+                            'dateplan' => now()->addDays((int)$template->priorite * 7), // Priorité = délai en semaines
+                            'accompagnement_id' => $accompagnement->id,
+                            'etat' => 1,
+                            'spotlight' => 0,
+                        ]);
+                        $plansCrees++;
+                    }
+                }
+            }
+
+            \Log::info("Génération automatique entreprise : {$plansCrees} plans créés pour le diagnostic {$diagnostic->id}");
+            
+        } catch (\Exception $e) {
+            \Log::error("Erreur lors de la génération automatique des plans entreprise : " . $e->getMessage());
+            // Ne pas bloquer le processus de diagnostic
+        }
+    }
+
+    /**
+     * Convertit un niveau (A-D) en pourcentage
+     * Note: D est la valeur maximale (90%)
+     */
+    private function convertirNiveauEnPourcentage($niveau)
+    {
+        $conversion = [
+            'A' => 25, // Faible
+            'B' => 50, // Moyen
+            'C' => 75, // Bon
+            'D' => 90, // Excellent (maximal)
+        ];
+        
+        return $conversion[$niveau] ?? 25;
+    }
+
+    /**
+     * Convertit un niveau (A-D) en score numérique
+     * Note: D est la valeur maximale (90)
+     */
+    private function convertirNiveauEnScore($niveau)
+    {
+        $conversion = [
+            'A' => 25, // Faible
+            'B' => 50, // Moyen
+            'C' => 75, // Bon
+            'D' => 90, // Excellent (maximal)
+        ];
+        
+        return $conversion[$niveau] ?? 25;
+    }
 
 
 }

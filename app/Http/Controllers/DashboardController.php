@@ -100,8 +100,9 @@ class DashboardController extends Controller
             ->get();
 
         // 🔹 4. MODULES DE DIAGNOSTIC déjà réalisés par le membre avec score
-            $diagnostics = Diagnostic::with(['diagnostictype', 'entreprise', 'membre', 'accompagnement'])
+        $diagnostics = Diagnostic::with(['diagnostictype', 'entreprise', 'membre', 'accompagnement'])
             ->where('membre_id', $membre->id)
+            ->where('diagnosticstatut_id', 2) // Uniquement les diagnostics validés
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -149,6 +150,14 @@ class DashboardController extends Controller
 
         // 🔹 8. STATS du tableau de bord (cartes + graphiques)
         $stats = $this->getStats($membre);
+        
+        // Créer la variable pour la vue
+        $diagnosticsModules = $diagnostics;
+        
+        // Créer la variable myExperts à partir des conseillers
+        $myExperts = $conseillers->map(function($conseiller) {
+            return $conseiller->conseiller;
+        })->filter();
 
         return view('dashboard.dashboard', compact(
             'membre',
@@ -156,8 +165,9 @@ class DashboardController extends Controller
             'stats',
             'entreprises',
             'experts',
+            'myExperts',
             'conseillers',
-            'diagnostics',
+            'diagnosticsModules',
             'reservations',
             'messages',
             'calendarEvents',
@@ -198,14 +208,14 @@ class DashboardController extends Controller
     // Nombre d'experts liés au membre
     $experts = Expert::where('membre_id', $membre->id)->count();
 
-    // Nombre de diagnostics réalisés par le membre
-    $diagnostics = Diagnosticmodule::whereHas('diagnosticquestions.diagnosticresultats', function ($q) use ($membre) {
-        $q->whereHas('diagnostic', fn($q2) => $q2->where('membre_id', $membre->id));
-    })->count();
+    // Nombre de diagnostics réalisés par le membre (uniquement les diagnostics validés)
+    $diagnosticsCount = Diagnostic::where('membre_id', $membre->id)
+        ->where('diagnosticstatut_id', 2) // Uniquement les diagnostics validés (statut 2)
+        ->count();
 
     // Nombre d'entreprises "pepite" liées au membre
     $pepite = Entreprise::whereIn('id', $entrepriseIds)
-        ->where('spotlight', 1)
+        ->where('entrepriseprofil_id', 1)
         ->count();
 
     // Nombre de membres associés aux entreprises du membre
@@ -213,7 +223,7 @@ class DashboardController extends Controller
 
     // Nombre de PME parmi les entreprises du membre
     $pme = Entreprise::whereIn('id', $entrepriseIds)
-        ->whereHas('entreprisetype', fn($q) => $q->where('titre', 'PME'))
+        ->where('entreprisetype_id', 3)
         ->count();
 
     return [
@@ -222,7 +232,7 @@ class DashboardController extends Controller
         'inscriptions'      => $inscriptions,
         'entreprises'       => count($entrepriseIds),
         'experts'           => $experts,
-        'diagnostics'       => $diagnostics,
+        'diagnostics'       => $diagnosticsCount,
         'pepite'            => $pepite,
         'membres_associes'  => $membres_associes,
         'pme'               => $pme,

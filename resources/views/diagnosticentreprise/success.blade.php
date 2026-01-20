@@ -49,7 +49,18 @@
     @if (session('success'))
         <div class="mt-10 text-center">
             <h1 class="text-2xl font-bold text-green-600">{{ session('success') }}</h1>
-            <!--<a href="{{ route('diagnosticentreprise.indexForm') }}" class="mt-4 inline-block btn bg-primary text-white">Retour un diagnostic</a>-->
+            <p class="text-gray-600 mt-2">Votre accompagnement d'entreprise a été créé. Vous pouvez maintenant consulter et gérer vos plans d'action.</p>
+            
+            <div class="mt-6 space-x-4">
+                <a href="{{ route('diagnosticentreprise.indexForm') }}" class="inline-block btn bg-gray-500 text-white hover:bg-gray-600">
+                    <i class="fas fa-arrow-left mr-2"></i>Retour aux diagnostics
+                </a>
+                @if(session('diagnostic_id'))
+                    <a href="{{ route('diagnosticentreprise.plans', session('diagnostic_id')) }}" class="inline-block btn bg-purple-500 text-white hover:bg-purple-600">
+                        <i class="fas fa-tasks mr-2"></i>Voir les plans d'accompagnement
+                    </a>
+                @endif
+            </div>
         </div>
     @endif
 

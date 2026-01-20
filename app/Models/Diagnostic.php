@@ -51,4 +51,9 @@ class Diagnostic extends Model
         return $this->belongsTo(Entreprise::class);
     }
 
+    public function diagnosticmodulescores()
+    {
+        return $this->hasMany(Diagnosticmodulescore::class);
+    }
+
 }

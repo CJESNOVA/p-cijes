@@ -48,7 +48,18 @@
    
         <div class="mt-10 text-center">
             <h1 class="text-2xl font-bold text-green-600">Diagnostic enregistré avec succès !</h1>
-            <a href="{{ route('diagnostic.form') }}" class="mt-4 inline-block btn bg-primary text-white">Refaire un diagnostic</a>
+            <p class="text-gray-600 mt-2">Votre accompagnement a été créé. Vous pouvez maintenant consulter et gérer vos plans d'action.</p>
+            
+            <div class="mt-6 space-x-4">
+                <a href="{{ route('diagnostic.form') }}" class="inline-block btn bg-gray-500 text-white hover:bg-gray-600">
+                    <i class="fas fa-arrow-left mr-2"></i>Refaire un diagnostic
+                </a>
+                @if(session('diagnostic_id'))
+                    <a href="{{ route('diagnostic.plans', session('diagnostic_id')) }}" class="inline-block btn bg-primary text-white hover:bg-blue-600">
+                        <i class="fas fa-tasks mr-2"></i>Voir les plans d'accompagnement
+                    </a>
+                @endif
+            </div>
         </div>
 
               </div>

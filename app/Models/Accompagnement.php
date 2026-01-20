@@ -44,4 +44,14 @@ class Accompagnement extends Model
         return $this->belongsTo(Accompagnementstatut::class);
     }
 
+    public function plans()
+    {
+        return $this->hasMany(Plan::class);
+    }
+    
+    public function diagnostics()
+    {
+        return $this->hasMany(Diagnostic::class);
+    }
+
 }
