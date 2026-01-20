@@ -337,13 +337,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/diagnostics/diagnostic/success', function () {
     return view('diagnostic.success');
     })->name('diagnostic.success');
+    Route::get('/diagnostics/diagnostic/{diagnosticId}/plans', [DiagnosticController::class, 'listePlans'])->name('diagnostic.plans');
    
     Route::get('/diagnostics/diagnosticentreprise', [DiagnosticentrepriseController::class, 'indexForm'])->name('diagnosticentreprise.indexForm');
+    Route::get('/diagnostics/diagnosticentreprise/choix-entreprise', [DiagnosticentrepriseController::class, 'choix_entreprise'])->name('diagnosticentreprise.choix_entreprise');
     Route::get('/diagnostics/diagnosticentreprise/{entrepriseId}/form', [DiagnosticentrepriseController::class, 'showForm'])->name('diagnosticentreprise.showForm');
     Route::post('/diagnostics/diagnosticentreprise/store', [DiagnosticentrepriseController::class, 'store'])->name('diagnosticentreprise.store');
     Route::get('/diagnostics/diagnosticentreprise/success', function() {
         return view('diagnosticentreprise.success');
     })->name('diagnosticentreprise.success');
+    Route::get('/diagnostics/diagnosticentreprise/{diagnosticId}/plans', [DiagnosticentrepriseController::class, 'listePlans'])->name('diagnosticentreprise.plans');
 
     // Routes pour le test de qualification (diagnosticmoduletype_id = 3)
     Route::get('/diagnostics/diagnosticentreprise-qualification', [DiagnosticentrepriseQualificationController::class, 'indexForm'])->name('diagnosticentreprisequalification.indexForm');
@@ -436,6 +439,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/accompagnements/plans', [PlanController::class, 'index'])->name('plan.index');
     Route::get('/accompagnements/plans/create', [PlanController::class, 'create'])->name('plan.create');
     Route::post('/accompagnements/plans', [PlanController::class, 'store'])->name('plan.store');
+    Route::post('/plans/store', [PlanController::class, 'storeFromModal'])->name('plans.store');
+    Route::get('/plans/test', [PlanController::class, 'testStore'])->name('plans.test');
     Route::get('/accompagnements/plans/{plan}/edit', [PlanController::class, 'edit'])->name('plan.edit');
     Route::put('/accompagnements/plans/{plan}', [PlanController::class, 'update'])->name('plan.update');
     Route::delete('/accompagnements/plans/{plan}', [PlanController::class, 'destroy'])->name('plan.destroy');

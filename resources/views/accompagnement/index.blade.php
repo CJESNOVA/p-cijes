@@ -62,16 +62,46 @@
                                           <strong>Date :</strong> {{ \Carbon\Carbon::parse($accompagnement->dateaccompagnement)->format('d/m/Y') }}
                                       </p>
                                   </div>
-                                  <div class="mt-4">
-                                      <a @if($accompagnement->accompagnementstatut_id == 1) href="{{ route('plan.createFromAccompagnement', $accompagnement->id) }}" @endif
-                                        class="btn w-full bg-primary text-white flex items-center justify-center gap-2 {{ $accompagnement->accompagnementstatut_id != 1 ? 'disabled opacity-50 cursor-not-allowed' : '' }}"
-                                        @if($accompagnement->accompagnementstatut_id != 1) aria-disabled="true" @endif>
-                                          <!-- Icône + plan -->
-                                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                          </svg>
-                                          Ajouter un plan
-                                      </a>
+                                  <div class="mt-4 space-y-2">
+                                      @if($accompagnement->accompagnementstatut_id == 1)
+                                        @php
+                                          // Récupérer le diagnostic PME
+                                          $diagnosticPME = $accompagnement->diagnostics->where('membre_id', $accompagnement->membre_id)->where('entreprise_id', 0)->first();
+                                        @endphp
+                                        <!-- Bouton pour voir les plans PME -->
+                                        @if($diagnosticPME)
+                                          <a href="{{ route('diagnostic.plans', $diagnosticPME->id) }}" 
+                                           class="btn w-full bg-blue-500 text-white flex items-center justify-center gap-2">
+                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 012-2v10a2 2 0 012 2h2a2 2 0 012-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 012-2z"/>
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5.5a1 1 0 11.414 1.414L9 14z"/>
+                                              </svg>
+                                              Voir les plans PME
+                                          </a>
+                                        @endif
+                                        
+                                        <!-- Bouton pour voir les plans Entreprise -->
+                                        @if($accompagnement->entreprise)
+                                          @php
+                                            // Récupérer le diagnostic Entreprise
+                                            $diagnosticEntreprise = $accompagnement->diagnostics->where('entreprise_id', $accompagnement->entreprise_id)->first();
+                                          @endphp
+                                          @if($diagnosticEntreprise)
+                                            <a href="{{ route('diagnosticentreprise.plans', $diagnosticEntreprise->id) }}" 
+                                               class="btn w-full bg-purple-500 text-white flex items-center justify-center gap-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 012-2v10a2 2 0 012 2h2a2 2 0 012-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 012-2z"/>
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5.5a1 1 0 11.414 1.414L9 14z"/>
+                                                </svg>
+                                                Voir les plans Entreprise
+                                            </a>
+                                          @endif
+                                        @endif
+                                      @else
+                                        <span class="text-slate-400 text-sm text-center">
+                                          Les plans ne sont pas encore disponibles
+                                        </span>
+                                      @endif
                                   </div>
                               </div>
                           @endforeach

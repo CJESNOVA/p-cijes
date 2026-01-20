@@ -82,7 +82,17 @@ public function reserverForm($id)
         ->orWhereIn('entreprise_id', $entrepriseIds)
         ->get();
 
-    return view('espace.reserver', compact('espace', 'ressources', 'accompagnements'));
+    // Vérifier les conditions pour autoriser la réservation
+    if ($accompagnements->isEmpty() && empty($entrepriseIds)) {
+        return redirect()->route('espace.index')
+            ->with('error', '⚠️ Vous devez avoir au moins une entreprise ou un accompagnement pour effectuer une réservation.');
+    }
+
+    // Déterminer si l'utilisateur doit choisir un accompagnement
+    $doitChoisirAccompagnement = $accompagnements->count() > 1;
+    $accompagnementAuto = $accompagnements->count() === 1 ? $accompagnements->first() : null;
+
+    return view('espace.reserver', compact('espace', 'ressources', 'accompagnements', 'doitChoisirAccompagnement', 'accompagnementAuto'));
 }
 
 /**
@@ -99,6 +109,11 @@ private function getReductionsApplicables($membre, $espace)
     $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)
         ->pluck('entreprise_id')
         ->toArray();
+
+    // Vérifier que le membre a au moins une entreprise
+    if (empty($entrepriseIds)) {
+        return collect(); // Pas d'entreprise = pas de réduction
+    }
 
     // Récupérer toutes les réductions applicables (génériques + spécifiques aux profils des entreprises du membre)
     $toutesReductions = Reductiontype::where('etat', true)
@@ -155,17 +170,22 @@ private function membreEstCjesEtAJour($membre)
         ->pluck('entreprise_id')
         ->toArray();
 
-    // Vérifier si au moins une entreprise du membre est CJES
-    $entrepriseCjes = \App\Models\Entreprise::whereIn('id', $entrepriseIds)
-        ->where('est_membre_cijes', true)
-        ->exists();
-
-    if (!$entrepriseCjes) {
+    // Vérifier que le membre a au moins une entreprise
+    if (empty($entrepriseIds)) {
         return false;
     }
 
-    // Vérifier si au moins une entreprise du membre est à jour dans ses cotisations
-    $cotisationValide = \App\Models\Cotisation::whereIn('entreprise_id', $entrepriseIds)
+    // Récupérer uniquement les entreprises CJES du membre
+    $entreprisesCjes = \App\Models\Entreprise::whereIn('id', $entrepriseIds)
+        ->where('est_membre_cijes', true)
+        ->get();
+
+    if ($entreprisesCjes->isEmpty()) {
+        return false; // Aucune entreprise CJES
+    }
+
+    // Vérifier si au moins une entreprise CJES est à jour dans ses cotisations
+    $cotisationValide = \App\Models\Cotisation::whereIn('entreprise_id', $entreprisesCjes->pluck('id'))
         ->where('statut', 'paye')
         ->where('est_a_jour', true)
         ->where('date_fin', '>=', now())
@@ -224,11 +244,22 @@ public function reserverStore(Request $request, $id)
     
     $accompagnementId = $request->input('accompagnement_id');
 
+    // Si aucun accompagnement n'est fourni, essayer de le récupérer automatiquement
+    if (!$accompagnementId) {
+        $accompagnements = Accompagnement::where('membre_id', $membre->id)
+            ->orWhereIn('entreprise_id', $entrepriseIds)
+            ->get();
+        
+        if ($accompagnements->count() === 1) {
+            $accompagnementId = $accompagnements->first()->id;
+        }
+    }
+
     $rules = [
         'montant' => 'nullable|numeric|min:0',
         'datedebut' => 'required|date|after_or_equal:today',
         'datefin' => 'required|date|after:datedebut',
-        'accompagnement_id' => 'required|exists:accompagnements,id',
+        'accompagnement_id' => 'nullable|exists:accompagnements,id',
     ];
     if ($montant > 0) {
         $rules['ressourcecompte_id'] = 'required|exists:ressourcecomptes,id';
@@ -294,7 +325,7 @@ public function reserverStore(Request $request, $id)
         Espaceressource::create([
             'montant' => $montant,
             'reference' => $reference,
-            'accompagnement_id' => $accompagnementId,
+            'accompagnement_id' => $accompagnementId ?? null,
             'ressourcecompte_id' => $montant > 0 ? $ressourcecompte->id : null,
             'espace_id' => $espace->id,
             'paiementstatut_id' => 1, // 1 = payé

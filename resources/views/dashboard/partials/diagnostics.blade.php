@@ -5,13 +5,13 @@
         <h3 class="text-lg font-semibold text-slate-700">Diagnostics réalisés</h3>
     </div>
 
-    @if($diagnostics->isEmpty())
+    @if($diagnosticsModules->isEmpty())
         <div class="p-4 bg-yellow-50 rounded-lg text-yellow-800 text-center font-medium">
             Aucun diagnostic réalisé pour le moment.
         </div>
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            @foreach($diagnostics as $diag)
+            @foreach($diagnosticsModules as $diag)
                 <div class="flex flex-col bg-white rounded-xl shadow hover:shadow-lg transition-shadow duration-300 p-5 space-y-3">
                     <div class="flex-1">
                         @if(!empty($diag->entreprise))
