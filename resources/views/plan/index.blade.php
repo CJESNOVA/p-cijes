@@ -42,7 +42,7 @@
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
 
 @if($plans)
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-1 sm:gap-5 lg:grid-cols-1 lg:gap-6 xl:grid-cols-1">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-1 sm:gap-5 lg:grid-cols-2 lg:gap-6 xl:grid-cols-2 xl:gap-6">
 
 
 

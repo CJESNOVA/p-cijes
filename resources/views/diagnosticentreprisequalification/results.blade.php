@@ -29,41 +29,61 @@
                                 </p>
                             </div>
 
-                            <!-- Scores globaux -->
+                            <!-- Répartition des réponses -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
+                                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-700">
+                                    <div class="text-center">
+                                        <h4 class="text-sm font-semibold text-yellow-700 dark:text-yellow-300 mb-1">
+                                            Réponses A
+                                        </h4>
+                                        <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                                            {{ $countA ?? 0 }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
                                     <div class="text-center">
                                         <h4 class="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-1">
-                                            Score obtenu
+                                            Réponses B
                                         </h4>
                                         <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                            {{ $scoreObtenu }}
+                                            {{ $countB ?? 0 }}
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-navy-800 dark:to-navy-700 rounded-lg p-4 border border-slate-200 dark:border-navy-600">
+                                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
                                     <div class="text-center">
-                                        <h4 class="text-sm font-semibold text-slate-700 dark:text-navy-200 mb-1">
-                                            Score maximum
+                                        <h4 class="text-sm font-semibold text-green-700 dark:text-green-300 mb-1">
+                                            Réponses C
                                         </h4>
-                                        <div class="text-2xl font-bold text-slate-600 dark:text-navy-300">
-                                            {{ $scoreMaximum }}
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/5 dark:to-primary/10 rounded-lg p-4 border border-primary/20">
-                                    <div class="text-center">
-                                        <h4 class="text-sm font-semibold text-primary dark:text-primary-light mb-1">
-                                            Pourcentage
-                                        </h4>
-                                        <div class="text-2xl font-bold text-primary dark:text-primary">
-                                            {{ number_format($scorePourcentage, 1) }}%
+                                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                            {{ $countC ?? 0 }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Réponse majoritaire -->
+                            <!-- <div class="bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/5 dark:to-primary/10 rounded-lg p-6 mb-8 max-w-2xl mx-auto border border-primary/20">
+                                <div class="text-center">
+                                    <h4 class="text-lg font-semibold text-primary dark:text-primary-light mb-2">
+                                        Réponse majoritaire
+                                    </h4>
+                                    <div class="text-2xl font-bold text-slate-800 dark:text-navy-100">
+                                        @if(isset($reponseMajoritaire) && $reponseMajoritaire)
+                                            <span class="badge badge-lg badge-{{ $reponseMajoritaire === 'A' ? 'warning' : ($reponseMajoritaire === 'B' ? 'info' : 'success') }}">
+                                                {{ $reponseMajoritaire }}
+                                            </span>
+                                        @else
+                                            <span class="text-slate-600 dark:text-navy-400">
+                                                <i class="fas fa-question-circle mr-2"></i>Non déterminé
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div> -->
 
                             <!-- Profil de l'entreprise -->
                             <div class="bg-gradient-to-br from-success/10 to-success/20 dark:from-success/5 dark:to-success/10 rounded-lg p-6 mb-8 max-w-2xl mx-auto border border-success/20">
@@ -134,20 +154,10 @@
                                                         
                                                         <div class="ml-4 text-right">
                                                             <div class="text-sm text-slate-500 dark:text-navy-400 mb-1">
-                                                                Score obtenu
+                                                                Réponse
                                                             </div>
-                                                            <div class="text-lg font-bold text-primary dark:text-primary">
-                                                                {{ $reponse->diagnosticreponse->score ?? 0 }}
-                                                            </div>
-                                                            
-                                                            @php
-                                                                $scoreMax = $reponse->diagnosticquestion->diagnosticreponses->max('score') ?? 0;
-                                                            @endphp
-                                                            <div class="text-sm text-slate-500 dark:text-navy-400 mb-1 mt-2">
-                                                                Score maximum
-                                                            </div>
-                                                            <div class="text-lg font-bold text-slate-600 dark:text-navy-300">
-                                                                {{ $scoreMax }}
+                                                            <div class="text-lg font-bold {{ $reponse->diagnosticreponse->score === 'A' ? 'text-yellow-600 dark:text-yellow-400' : ($reponse->diagnosticreponse->score === 'B' ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400') }}">
+                                                                {{ $reponse->diagnosticreponse->score ?? '-' }}
                                                             </div>
                                                         </div>
                                                     </div>

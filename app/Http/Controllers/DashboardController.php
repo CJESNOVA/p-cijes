@@ -90,7 +90,7 @@ class DashboardController extends Controller
             ->get();
 
         // 🔹 3. EXPERTS du même pays que le membre (visibles sur le tableau de bord)
-        $experts = Expert::with(['experttype', 'membre'])
+        $experts = Expert::with(['experttype', 'secteur', 'membre'])
             ->whereHas('membre', function ($q) use ($membre) {
                 $q->where('pays_id', $membre->pays_id);
             })

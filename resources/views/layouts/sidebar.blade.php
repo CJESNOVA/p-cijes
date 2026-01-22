@@ -4,11 +4,29 @@
     use App\Models\Espace;
     use App\Models\Prestation;
     use App\Models\Formation;
+    use App\Models\Proposition;
 
+    $userId = auth()->id();
+    $membre = \App\Models\Membre::where('user_id', $userId)->first();
+    
     $evenements  = Evenement::where('etat', 1)->orderBy('dateevenement', 'asc')->take(5)->limit(1)->get();
     $espaces     = Espace::where('etat', 1)->limit(1)->get();
     $prestations = Prestation::where('etat', 1)->limit(2)->get();
     $formations  = Formation::where('etat', 1)->limit(2)->get();
+    
+    // Récupérer le nombre de propositions reçues
+    $propositionsRecuesCount = 0;
+    if ($membre) {
+        $plansIds = \App\Models\Plan::whereHas('accompagnement', function($query) use ($membre) {
+            $query->where('membre_id', $membre->id);
+        })->pluck('id');
+        
+        $propositionsRecuesCount = Proposition::whereIn('plan_id', $plansIds)
+            ->whereHas('statut', function($query) {
+                $query->where('titre', 'En attente');
+            })
+            ->count();
+    }
 @endphp
 
 <div>
@@ -134,5 +152,29 @@
                 @endforeach
     </div>
 @endif
+</div>
+
+{{-- Propositions reçues --}}
+@if($membre && $propositionsRecuesCount > 0)
+<div class="mt-5">
+    <p class="border-b border-slate-200 pb-2 text-base text-slate-800 dark:border-navy-600 dark:text-navy-100">
+        📋 Propositions reçues
+    </p>
+    <div class="mt-3">
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 border border-yellow-200 dark:border-yellow-800">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">En attente de réponse</p>
+                    <p class="text-xs text-yellow-600 dark:text-yellow-400">{{ $propositionsRecuesCount }} proposition{{ $propositionsRecuesCount > 1 ? 's' : '' }}</p>
+                </div>
+                <a href="{{ route('proposition.membre.index') }}" class="btn btn-sm btn-warning">
+                    Voir
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 </div>
 

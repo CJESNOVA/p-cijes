@@ -227,6 +227,10 @@ class SidebarPanel
                         'title' => 'Mes conseillers',
                         'route_name' => 'conseiller.mes_conseillers'
                     ],
+                    'propositions' => [
+                        'title' => 'Propositions reçues',
+                        'route_name' => 'proposition.membre.index'
+                    ],
                 ],
             ]
         ];
@@ -248,6 +252,14 @@ class SidebarPanel
                     'expertliste' => [
                         'title' => 'Experts disponibles',
                         'route_name' => 'expert.liste'
+                    ],
+                    'plans' => [
+                        'title' => 'Plans disponibles',
+                        'route_name' => 'expert.plans.index'
+                    ],
+                    'propositions' => [
+                        'title' => 'Mes propositions',
+                        'route_name' => 'proposition.index'
                     ],
                 ],
             ]
@@ -278,6 +290,10 @@ class SidebarPanel
                     'prescription' => [
                         'title' => 'Mes prescriptions',
                         'route_name' => 'conseiller.index'
+                    ],
+                    'propositions' => [
+                        'title' => 'Propositions reçues',
+                        'route_name' => 'proposition.membre.index'
                     ],
                 ],
             ]

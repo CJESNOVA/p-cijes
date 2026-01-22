@@ -47,7 +47,7 @@
 
         
 @if($prestations)
-              <div class="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-2 lg:gap-6 xl:grid-cols-2">
+              <div class="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-3">
 
             @foreach($prestations as $prestation)
                 <div class="card p-4 sm:p-5">

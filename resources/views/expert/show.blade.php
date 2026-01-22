@@ -50,7 +50,8 @@
                 {{ $expert->membre->nom ?? 'Expert inconnu' }} {{ $expert->membre->prenom ?? 'Expert inconnu' }}
             </h2>
             <p class="text-slate-500 dark:text-slate-400">
-                {{ $expert->experttype->titre ?? 'Type non défini' }}  
+                {{ $expert->secteur->titre ?? 'Secteur non défini' }}  
+                <span class="text-primary">|</span> {{ $expert->experttype->titre ?? 'Type non défini' }}  
                 <span class="text-primary">|</span> Domaine : {{ $expert->domaine }}
             </p>
         </div>

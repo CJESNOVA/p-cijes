@@ -54,4 +54,9 @@ class Accompagnement extends Model
         return $this->hasMany(Diagnostic::class);
     }
 
+    public function propositions()
+    {
+        return $this->hasMany(Proposition::class);
+    }
+    
 }
