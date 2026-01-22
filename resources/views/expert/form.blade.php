@@ -81,6 +81,28 @@
                                     </label>
                                 </div>
 
+                                {{-- Secteur d'activité --}}
+                                <div>
+                                    <label class="block">
+                                        <span>Secteur d'activité</span>
+                                        <select name="secteur_id" 
+                                                class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2
+                                                       hover:border-slate-400 focus:border-primary dark:border-navy-450
+                                                       dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
+                                            <option value="">-- Choisir --</option>
+                                            @foreach ($secteurs as $secteur)
+                                                <option value="{{ $secteur->id }}"
+                                                    {{ old('secteur_id', $expert->secteur_id) == $secteur->id ? 'selected' : '' }}>
+                                                    {{ $secteur->titre }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('secteur_id')
+                                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </label>
+                                </div>
+
                                 {{-- Domaine d'expertise --}}
                                 <div>
                                     <label class="block">

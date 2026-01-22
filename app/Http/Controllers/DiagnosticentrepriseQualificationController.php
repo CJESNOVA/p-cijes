@@ -292,11 +292,12 @@ class DiagnosticentrepriseQualificationController extends Controller
         $diagnostic = session('diagnostic');
         $success = session('success');
 
-        // Calculer les scores si le diagnostic existe
-        $scoreObtenu = 0;
-        $scoreMaximum = 0;
-        $scorePourcentage = 0;
+        // Calculer les scores selon le nouveau système A,B,C
+        $countA = 0;
+        $countB = 0;
+        $countC = 0;
         $profil = 0;
+        $reponseMajoritaire = '';
 
         if ($diagnostic) {
             // Récupérer tous les résultats avec les détails
@@ -304,37 +305,47 @@ class DiagnosticentrepriseQualificationController extends Controller
                 ->with(['diagnosticquestion', 'diagnosticreponse'])
                 ->get();
 
-            // Calculer le score obtenu et le score maximum
+            // Compter les réponses par type (A,B,C)
             foreach ($resultats as $resultat) {
-                // Score obtenu : score de la réponse choisie
-                $scoreObtenu += $resultat->diagnosticreponse->score ?? 0;
-
-                // Score maximum : score maximum de cette question
-                $scoreMaxQuestion = $resultat->diagnosticquestion->diagnosticreponses->max('score') ?? 0;
-                $scoreMaximum += $scoreMaxQuestion;
+                $score = $resultat->diagnosticreponse->score ?? '';
+                if ($score === 'A') {
+                    $countA++;
+                } elseif ($score === 'B') {
+                    $countB++;
+                } elseif ($score === 'C') {
+                    $countC++;
+                }
             }
 
-            // Calculer le pourcentage
-            $scorePourcentage = $scoreMaximum > 0 ? ($scoreObtenu / $scoreMaximum) * 100 : 0;
-            $scorePourcentage = round($scorePourcentage, 2);
-
-            // Déterminer le profil selon le score
-            if ($scorePourcentage >= 0 && $scorePourcentage < 34) {
+            // Déterminer la réponse majoritaire et le profil correspondant
+            if ($countA > $countB && $countA > $countC) {
                 $profil = 1;
-            } elseif ($scorePourcentage >= 34 && $scorePourcentage < 67) {
+                $reponseMajoritaire = 'A';
+            } elseif ($countB > $countA && $countB > $countC) {
                 $profil = 2;
-            } elseif ($scorePourcentage >= 67 && $scorePourcentage <= 100) {
+                $reponseMajoritaire = 'B';
+            } elseif ($countC > $countA && $countC > $countB) {
                 $profil = 3;
+                $reponseMajoritaire = 'C';
             } else {
-                $profil = 0;
+                // En cas d'égalité, on peut choisir la réponse la plus haute ou une logique spécifique
+                if ($countC >= $countB && $countC >= $countA) {
+                    $profil = 3;
+                    $reponseMajoritaire = 'C';
+                } elseif ($countB >= $countA && $countB >= $countC) {
+                    $profil = 2;
+                    $reponseMajoritaire = 'B';
+                } else {
+                    $profil = 1;
+                    $reponseMajoritaire = 'A';
+                }
             }
-
             
-        // Mettre à jour le diagnostic avec le score
-        $diagnostic->update([
-            'scoreglobal'         => $scoreObtenu,
-            'diagnosticstatut_id' => 2,
-        ]);
+            // Mettre à jour le diagnostic avec la réponse majoritaire
+            $diagnostic->update([
+                'scoreglobal'         => $reponseMajoritaire,
+                'diagnosticstatut_id' => 2,
+            ]);
 
             // Mettre à jour l'entreprise avec le profil calculé
             if ($entreprise) {
@@ -346,9 +357,10 @@ class DiagnosticentrepriseQualificationController extends Controller
             'entreprise',
             'diagnostic',
             'success',
-            'scoreObtenu',
-            'scoreMaximum',
-            'scorePourcentage',
+            'countA',
+            'countB',
+            'countC',
+            'reponseMajoritaire',
             'profil'
         ));
     }
@@ -379,49 +391,62 @@ class DiagnosticentrepriseQualificationController extends Controller
         // Récupérer l'entreprise avec son profil
         $entreprise = Entreprise::with('entrepriseprofil')->find($entrepriseId);
 
-        // Calculer les scores
-        $scoreObtenu = 0;
-        $scoreMaximum = 0;
-        $scorePourcentage = 0;
+        // Calculer les scores selon le nouveau système A,B,C
+        $countA = 0;
+        $countB = 0;
+        $countC = 0;
         $profil = 0;
+        $reponseMajoritaire = '';
 
         // Récupérer tous les résultats avec les détails
         $resultats = \App\Models\Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
             ->with(['diagnosticquestion', 'diagnosticreponse'])
             ->get();
 
-        // Calculer le score obtenu et le score maximum
+        // Compter les réponses par type (A,B,C)
         foreach ($resultats as $resultat) {
-            // Score obtenu : score de la réponse choisie
-            $scoreObtenu += $resultat->diagnosticreponse->score ?? 0;
-
-            // Score maximum : score maximum de cette question
-            $scoreMaxQuestion = $resultat->diagnosticquestion->diagnosticreponses->max('score') ?? 0;
-            $scoreMaximum += $scoreMaxQuestion;
+            $score = $resultat->diagnosticreponse->score ?? '';
+            if ($score === 'A') {
+                $countA++;
+            } elseif ($score === 'B') {
+                $countB++;
+            } elseif ($score === 'C') {
+                $countC++;
+            }
         }
 
-        // Calculer le pourcentage
-        $scorePourcentage = $scoreMaximum > 0 ? ($scoreObtenu / $scoreMaximum) * 100 : 0;
-        $scorePourcentage = round($scorePourcentage, 2);
-
-        // Déterminer le profil selon le score
-        if ($scorePourcentage >= 0 && $scorePourcentage < 34) {
+        // Déterminer la réponse majoritaire et le profil correspondant
+        if ($countA > $countB && $countA > $countC) {
             $profil = 1;
-        } elseif ($scorePourcentage >= 34 && $scorePourcentage < 67) {
+            $reponseMajoritaire = 'A';
+        } elseif ($countB > $countA && $countB > $countC) {
             $profil = 2;
-        } elseif ($scorePourcentage >= 67 && $scorePourcentage <= 100) {
+            $reponseMajoritaire = 'B';
+        } elseif ($countC > $countA && $countC > $countB) {
             $profil = 3;
+            $reponseMajoritaire = 'C';
         } else {
-            $profil = 0;
+            // En cas d'égalité, on peut choisir la réponse la plus haute ou une logique spécifique
+            if ($countC >= $countB && $countC >= $countA) {
+                $profil = 3;
+                $reponseMajoritaire = 'C';
+            } elseif ($countB >= $countA && $countB >= $countC) {
+                $profil = 2;
+                $reponseMajoritaire = 'B';
+            } else {
+                $profil = 1;
+                $reponseMajoritaire = 'A';
+            }
         }
 
         return view('diagnosticentreprisequalification.results', compact(
             'entreprise',
             'diagnostic',
             'resultats',
-            'scoreObtenu',
-            'scoreMaximum',
-            'scorePourcentage',
+            'countA',
+            'countB',
+            'countC',
+            'reponseMajoritaire',
             'profil'
         ));
     }

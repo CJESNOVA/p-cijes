@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('membrecategories', function (Blueprint $table) {
+        Schema::create('propositionstatuts', function (Blueprint $table) {
             $table->id();
             $table->string('titre');
-            $table->boolean('etat')->default(1);
+            $table->boolean('etat')->default(true);
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('membrecategories');
+        Schema::dropIfExists('propositionstatuts');
     }
 };

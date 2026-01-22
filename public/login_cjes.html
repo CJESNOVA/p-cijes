@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion e-CIJES</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center mb-6">Plateforme e-CIJES</h1>
+        
+        <form action="https://ecijes.cjet.tg/login" method="POST">
+            <!-- Token CSRF Laravel -->
+            <input type="hidden" name="_token" value="">
+            
+            <!-- Champ caché pour l'email -->
+            <input type="hidden" name="email" value="bahamelemarcel@gmail.com">
+            
+            <!-- Champ caché pour le mot de passe -->
+            <input type="hidden" name="password" value="azertyuiop">
+            
+            <!-- Option "Se souvenir de moi" -->
+            <input type="hidden" name="remember" value="true">
+            
+            <!-- Bouton de soumission -->
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                Aller à la plateforme e-CIJES
+            </button>
+        </form>
+        
+        <p class="text-center text-gray-600 text-sm mt-4">
+            Cliquez pour accéder à votre espace e-CIJES
+        </p>
+    </div>
+
+    <script>
+        // Récupérer le token CSRF depuis la page de login Laravel
+        fetch('https://ecijes.cjet.tg/login')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const token = doc.querySelector('input[name="_token"]');
+                if (token) {
+                    document.querySelector('input[name="_token"]').value = token.value;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération du token CSRF:', error);
+            });
+    </script>
+</body>
+</html>

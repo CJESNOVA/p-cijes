@@ -47,7 +47,7 @@
     @endif
 
 @if($formations)
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-1 sm:gap-5 lg:grid-cols-1 lg:gap-6 xl:grid-cols-1">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-1 sm:gap-5 lg:grid-cols-2 lg:gap-6 xl:grid-cols-2">
 
         @foreach($formations as $f)
             <div class="card p-4">

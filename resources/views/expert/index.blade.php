@@ -35,8 +35,12 @@
             <li>Mes profils experts</li>
           </ul> -->
 
-      <a href="{{ route('expert.form') }}"
-         class="btn bg-primary text-white hover:bg-primary-focus">Devenir un expert</a>
+      <div class="flex space-x-3">
+        <a href="{{ route('expert.form') }}"
+           class="btn bg-primary text-white hover:bg-primary-focus">Devenir un expert</a>
+        <a href="{{ route('expert.plans.index') }}"
+           class="btn bg-info text-white hover:bg-info-focus">Voir les plans disponibles</a>
+      </div>
 
         </div>
         <div class="grid grid-cols-12 lg:gap-6">

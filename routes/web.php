@@ -13,6 +13,8 @@ use App\Http\Controllers\DiagnosticentrepriseQualificationController;
 use App\Http\Controllers\EspaceController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ExpertController;
+use App\Http\Controllers\ExpertPlanController;
+use App\Http\Controllers\PropositionController;
 use App\Http\Controllers\DisponibiliteController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\PrestationController;
@@ -43,6 +45,7 @@ use App\Http\Controllers\RecompenseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PropositionMembreController;
 
 use App\Http\Controllers\RessourceSyncController;
 
@@ -139,6 +142,10 @@ Route::middleware(['web', 'guest'])->group(function () {
     Route::get('/register', [\App\Http\Controllers\AuthController::class, 'registerView'])->name('registerView');
     Route::post('/register', [\App\Http\Controllers\AuthController::class, 'register'])->name('register');
 
+    // Routes plateforme et plateforme provider
+    Route::get('/plateforme', [\App\Http\Controllers\AuthController::class, 'plateformeView'])->name('plateforme');
+    Route::get('/plateforme/provider', [\App\Http\Controllers\AuthController::class, 'plateformeProviderView'])->name('plateforme.provider');
+
     Route::get('/forgot-password', [\App\Http\Controllers\AuthController::class, 'forgotPasswordView'])->name('forgotPasswordView');
     Route::post('/forgot-password', [\App\Http\Controllers\AuthController::class, 'forgotPassword'])->name('forgotPassword');
 
@@ -166,7 +173,7 @@ Route::get('/test-supabase-register', function () {
 
 //Route::middleware(['web', 'auth'])->group(function () {
 Route::middleware('auth')->group(function () {
-    //Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     //Route::get('/dashboard', [PagesController::class, 'dashboardsCrmAnalytics'])->name('index');
     
     Route::get('/membres/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -374,6 +381,25 @@ Route::middleware('auth')->group(function () {
     Route::put('/experts/{expert}', [ExpertController::class, 'update'])->name('expert.update');
     Route::delete('/experts/{expert}', [ExpertController::class, 'destroy'])->name('expert.destroy');  
     Route::get('/experts/experts-disponibles', [ExpertController::class, 'liste'])->name('expert.liste');
+    
+    // Routes pour les plans d'accompagnement (experts)
+    Route::get('/experts/plans', [ExpertPlanController::class, 'index'])->name('expert.plans.index');
+    Route::get('/experts/plans/{plan}', [ExpertPlanController::class, 'show'])->name('expert.plans.show');
+
+    // Routes pour les propositions (experts)
+    Route::get('/experts/propositions', [PropositionController::class, 'index'])->name('proposition.index');
+    Route::get('/experts/propositions/{proposition}', [PropositionController::class, 'show'])->name('proposition.show');
+    Route::get('/experts/propositions/{proposition}/edit', [PropositionController::class, 'edit'])->name('proposition.edit');
+    Route::get('/experts/plans/{plan}/proposer', [PropositionController::class, 'create'])->name('proposition.create');
+    Route::post('/experts/propositions', [PropositionController::class, 'store'])->name('proposition.store');
+    Route::put('/experts/propositions/{proposition}', [PropositionController::class, 'update'])->name('proposition.update');
+    Route::delete('/experts/propositions/{proposition}', [PropositionController::class, 'destroy'])->name('proposition.destroy');
+
+    // Routes pour les propositions reçues (membres)
+    Route::get('/experts/propositions', [PropositionMembreController::class, 'index'])->name('proposition.membre.index');
+    Route::get('/experts/propositions/{proposition}', [PropositionMembreController::class, 'show'])->name('proposition.membre.show');
+    Route::post('/experts/propositions/{proposition}/accepter', [PropositionMembreController::class, 'accepter'])->name('proposition.membre.accepter');
+    Route::post('/experts/propositions/{proposition}/refuser', [PropositionMembreController::class, 'refuser'])->name('proposition.membre.refuser');
 
     Route::get('/experts/disponibilite/ajouter', [DisponibiliteController::class, 'create'])->name('disponibilite.create');
     Route::post('/experts/disponibilite', [DisponibiliteController::class, 'store'])->name('disponibilite.store');

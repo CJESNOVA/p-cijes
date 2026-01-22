@@ -12,7 +12,7 @@
                     <p class="text-sm font-medium text-slate-600 mb-2">Experts disponibles dans votre pays</p>
                     <a href="{{ route('expert.liste') }}" class="btn btn-outline btn-sm">Voir tous</a>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">
                     @forelse($experts as $exp)
                         <div class="flex flex-col bg-white rounded-xl shadow hover:shadow-lg transition-shadow duration-300 p-5 space-y-3">
                             <div class="flex items-center space-x-3">
@@ -24,7 +24,7 @@
                                 <div class="flex-1">
                                     <p class="font-medium text-slate-800">{{ $exp->domaine }}</p>
                                     <p class="text-xs text-slate-400">
-                                        {{ $exp->membre->prenom ?? '-' }} {{ $exp->membre->nom ?? '-' }} • {{ $exp->experttype->titre ?? '-' }}
+                                        {{ $exp->secteur->titre ?? '-' }} • {{ $exp->experttype->titre ?? '-' }} • {{ $exp->membre->prenom ?? '-' }} {{ $exp->membre->nom ?? '-' }}
                                     </p>
                                 </div>
                             </div>

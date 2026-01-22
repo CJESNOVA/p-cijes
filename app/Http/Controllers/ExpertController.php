@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Expert;
 use App\Models\Membre;
 use App\Models\Experttype;
+use App\Models\Secteur;
 use App\Models\Pays;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,7 +50,8 @@ class ExpertController extends Controller
     public function create()
     {
         $experttypes = Experttype::where('etat', 1)->get();
-        return view('expert.form', ['expert' => new Expert(), 'experttypes' => $experttypes]);
+        $secteurs = Secteur::where('etat', 1)->get();
+        return view('expert.form', ['expert' => new Expert(), 'experttypes' => $experttypes, 'secteurs' => $secteurs]);
     }
 
     public function store(Request $request)
@@ -60,6 +62,7 @@ class ExpertController extends Controller
         $request->validate([
             'domaine' => 'required|string|max:255',
             'experttype_id' => 'required|exists:experttypes,id',
+            'secteur_id' => 'nullable|exists:secteurs,id',
             'fichier' => 'nullable|file|max:2048',
         ]);
 
@@ -75,6 +78,7 @@ class ExpertController extends Controller
         Expert::create([
             'domaine' => $request->domaine,
             'experttype_id' => $request->experttype_id,
+            'secteur_id' => $request->secteur_id,
             'expertvalide_id' => 1,
             'membre_id' => $membre->id,
             'fichier' => $path,
@@ -94,7 +98,8 @@ class ExpertController extends Controller
         }
 
         $experttypes = Experttype::where('etat', 1)->get();
-        return view('expert.form', compact('expert', 'experttypes'));
+        $secteurs = Secteur::where('etat', 1)->get();
+        return view('expert.form', compact('expert', 'experttypes', 'secteurs'));
     }
 
     public function update(Request $request, Expert $expert)
@@ -109,6 +114,7 @@ class ExpertController extends Controller
         $request->validate([
             'domaine' => 'required|string|max:255',
             'experttype_id' => 'required|exists:experttypes,id',
+            'secteur_id' => 'nullable|exists:secteurs,id',
             'fichier' => 'nullable|file|max:2048',
         ]);
 
@@ -124,6 +130,7 @@ class ExpertController extends Controller
         $expert->update([
             'domaine' => $request->domaine,
             'experttype_id' => $request->experttype_id,
+            'secteur_id' => $request->secteur_id,
             'fichier' => $path ?? $expert->fichier,
         ]);
 
@@ -146,7 +153,7 @@ class ExpertController extends Controller
 
     public function show(Expert $expert)
     {
-        $expert->load(['membre', 'experttype', 'disponibilites.jour', 'evaluations.membre']);
+        $expert->load(['membre', 'experttype', 'secteur', 'disponibilites.jour', 'evaluations.membre']);
 
         return view('expert.show', compact('expert'));
     }
