@@ -12,7 +12,7 @@
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
                 {{-- Statistiques --}}
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-1 gap-4 mb-6">
             <div class="card bg-white dark:bg-navy-800 p-4 rounded-lg shadow">
                 <div class="flex items-center justify-between">
                     <div>
