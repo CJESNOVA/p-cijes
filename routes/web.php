@@ -396,10 +396,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/experts/propositions/{proposition}', [PropositionController::class, 'destroy'])->name('proposition.destroy');
 
     // Routes pour les propositions reçues (membres)
-    Route::get('/experts/propositions', [PropositionMembreController::class, 'index'])->name('proposition.membre.index');
-    Route::get('/experts/propositions/{proposition}', [PropositionMembreController::class, 'show'])->name('proposition.membre.show');
-    Route::post('/experts/propositions/{proposition}/accepter', [PropositionMembreController::class, 'accepter'])->name('proposition.membre.accepter');
-    Route::post('/experts/propositions/{proposition}/refuser', [PropositionMembreController::class, 'refuser'])->name('proposition.membre.refuser');
+    Route::get('/experts/propositions-recues', [PropositionMembreController::class, 'index'])->name('proposition.membre.index');
+    Route::get('/experts/propositions-recues/{proposition}', [PropositionMembreController::class, 'show'])->name('proposition.membre.show');
+    Route::post('/experts/propositions-recues/{proposition}/accepter', [PropositionMembreController::class, 'accepter'])->name('proposition.membre.accepter');
+    Route::post('/experts/propositions-recues/{proposition}/refuser', [PropositionMembreController::class, 'refuser'])->name('proposition.membre.refuser');
 
     Route::get('/experts/disponibilite/ajouter', [DisponibiliteController::class, 'create'])->name('disponibilite.create');
     Route::post('/experts/disponibilite', [DisponibiliteController::class, 'store'])->name('disponibilite.store');
