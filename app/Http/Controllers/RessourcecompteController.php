@@ -147,56 +147,30 @@ public function store(Request $request)
     // ----------------------------
     // 🔹 5. Préparer l'appel API SEMOA
     // ----------------------------
-    $username = env('SEMOA_API_LOGIN', 'api_cashpay.cjet');
-    $password = env('SEMOA_API_PASSWORD', 'iAnYyCYlor');
-    $clientId = env('SEMOA_CLIENT_ID', 'cashpay');
-    $clientReference = env('SEMOA_CLIENT_REFERENCE', 'Gg8SZh2ormAUrup4rvUq4hblxjKq9UMD');
-    $apiKey = env('SEMOA_API_KEY', 'k3cGVCzeetDmU4wuRx0gUyHilrhJB08dKprD');
-    $reference = env('SEMOA_API_REFERENCE', '336');
-    $apiUrl = env('SEMOA_API_URL', 'https://api.semoa-payments.ovh/prod');
+    $login  = env('SEMOA_API_LOGIN', 'api_cashpay.cjet');
+    $apikey = env('SEMOA_API_KEY', 'k3cGVCzeetDmU4wuRx0gUyHilrhJB08dKprD');
+    $salt   = rand(100000, 999999); // identifiant unique
+    $apiref = env('SEMOA_API_REFERENCE', '336');
 
-    // 1️⃣ Obtenir le token OAuth 2.0
-    $tokenResponse = Http::asForm()->post($apiUrl . '/oauth/token', [
-        'grant_type' => 'password',
-        'client_id' => $clientId,
-        'client_secret' => $clientReference,
-        'username' => $username,
-        'password' => $password,
-    ]);
+    // 1️⃣ Vérification d'authentification (Ping)
+    $apisecure = hash('sha256', $login . $apikey . $salt);
 
-    if ($tokenResponse->failed()) {
-        Log::error("❌ Erreur obtention token SEMOA", [
-            'response' => $tokenResponse->json(),
-            'http_code' => $tokenResponse->status(),
-        ]);
-        return back()->with('error', 'Erreur authentification SEMOA : ' . json_encode($tokenResponse->json()));
-    }
-
-    $accessToken = $tokenResponse->json('access_token');
-    
-    if (!$accessToken) {
-        Log::error("❌ SEMOA : access_token manquant", [
-            'response' => $tokenResponse->json(),
-        ]);
-        return back()->with('error', 'Erreur : token d\'accès introuvable.');
-    }
-
-    // 2️⃣ Création de l'ordre avec le token
+    // 2️⃣ Création de l'ordre
     $response = Http::withHeaders([
-        'Authorization' => 'Bearer ' . $accessToken,
-        'Content-Type' => 'application/json',
-        'X-API-Key' => $apiKey,
-        'X-Reference' => $reference,
-    ])->post($apiUrl . '/orders', [
+    'login'        => $login,
+    'apisecure'    => $apisecure,
+    'apireference' => $apiref,
+    'salt'         => $salt,
+    'Content-Type' => 'application/json',
+])->post(env('SEMOA_API_URL', 'https://api.semoa-payments.ovh/prod/orders'), [
     'amount'       => (int) $request->solde, // <- ici le montant réel
-    'description'  => "Recharge ressource : {$transaction->reference}",
+    'description'  => 'Recharge de ressource de ' . $transaction->reference . '',
     'client'       => [
         'lastname'  => $membre->nom ?? 'Inconnu',
         'firstname' => $membre->prenom ?? '',
         'phone'     => '+228' . ($membre->telephone ?? '90000000'),
     ],
-    //'callback_url' => route('ressourcecompte.callback', [$transaction->id]),
-    'callback_url' => route('api.callback.ressourcecompte', ['transaction' => $transaction->id], true),
+    'callback_url' => route('ressourcecompte.callback', [$transaction->id]),
     'redirect_url' => route('ressourcecompte.index'),
 ]);
 
