@@ -38,6 +38,18 @@
         </div>
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
+                @if(session('error'))
+                    <div class="alert flex rounded-lg bg-red-500 px-4 py-4 text-white sm:px-5 mb-4">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if(session('success'))
+                    <div class="alert flex rounded-lg bg-green-500 px-4 py-4 text-white sm:px-5 mb-4">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
                 <div class="card p-4 lg:p-6">
                     <!-- Author -->
 

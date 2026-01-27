@@ -16,6 +16,8 @@ use App\Models\Ressourcetypeoffretype;
 use App\Models\Ressourcecompte;
 use App\Models\Prestationressource;
 use App\Models\Accompagnement;
+use App\Models\Reductiontype;
+use App\Models\Cotisation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -174,70 +176,119 @@ class PrestationController extends Controller
     if (!$membre) {
         return redirect()
             ->route('membre.createOrEdit')
-            ->with('error', '⚠️ Vous devez d’abord créer votre profil membre.');
+            ->with('error', '⚠️ Vous devez d\'abord créer votre profil membre.');
     }
 
-    // Récupérer la prestation
     $prestation = Prestation::where('etat', 1)->findOrFail($id);
 
-    // IDs des entreprises liées au membre
+    // Récupérer les options de paiement du membre
+    $optionsPaiement = $this->getOptionsPaiementPourMembre($membre);
+
+    // Récupérer les entreprises du membre pour les ressources
     $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)
         ->pluck('entreprise_id')
         ->toArray();
 
     // Comptes ressources disponibles
-    $ressources = Ressourcecompte::where(function($q) use ($membre, $entrepriseIds) {
-        $q->where('membre_id', $membre->id);
-        if (!empty($entrepriseIds)) {
-            $q->orWhereIn('entreprise_id', $entrepriseIds);
-        }
-    })
-    ->where('etat', 1)
-    ->get();
-
-    // Récupérer les accompagnements du membre ou de ses entreprises
-    $accompagnements = Accompagnement::where('membre_id', $membre->id)
-        ->orWhereIn('entreprise_id', $entrepriseIds)
+    $ressources = Ressourcecompte::where(function ($q) use ($membre, $entrepriseIds) {
+            $q->where('membre_id', $membre->id);
+            if (!empty($entrepriseIds)) {
+                $q->orWhereIn('entreprise_id', $entrepriseIds);
+            }
+        })
+        ->where('etat', 1)
         ->get();
 
-    return view('prestation.inscrire', compact('prestation', 'ressources', 'accompagnements'));
+    return view('prestation.inscrire', compact('prestation', 'ressources', 'optionsPaiement'));
 }
 
 
 public function inscrireStore(Request $request, $id)
 {
     $membre = Membre::where('user_id', Auth::id())->firstOrFail();
-
-    $prestation = Prestation::where('etat', 1)->findOrFail($id);
-
-    // IDs des entreprises liées au membre
     $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)
         ->pluck('entreprise_id')
         ->toArray();
 
-    $montant = (float) $request->input('montant', 0);
-    $accompagnementId = $request->input('accompagnement_id');
+    $prestation = Prestation::where('etat', 1)->findOrFail($id);
 
-    // Validation
+    // Récupérer le contexte de paiement choisi
+    $contextePaiement = null;
+    $contexteType = $request->input('contexte_type'); // 'entreprise', 'accompagnement', 'membre'
+    $contexteId = null;
+
+    // Récupérer l'ID selon le type de contexte
+    switch ($contexteType) {
+        case 'entreprise':
+            $contexteId = $request->input('entreprise_id');
+            break;
+        case 'accompagnement':
+            $contexteId = $request->input('accompagnement_id');
+            break;
+        case 'membre':
+            $contexteId = $request->input('membre_id');
+            break;
+    }
+
+    if ($contexteType && $contexteId) {
+        $optionsPaiement = $this->getOptionsPaiementPourMembre($membre);
+
+        switch ($contexteType) {
+            case 'entreprise':
+                $contextePaiement = collect($optionsPaiement['entreprises'] ?? [])->firstWhere('id', $contexteId);
+                break;
+            case 'accompagnement':
+                $contextePaiement = collect($optionsPaiement['accompagnements'] ?? [])->firstWhere('id', $contexteId);
+                break;
+            case 'membre':
+                $contextePaiement = $optionsPaiement['membre'];
+                break;
+        }
+    }
+
+    // Si pas de contexte choisi, utiliser la logique automatique
+    if (!$contextePaiement) {
+        $optionsPaiement = $this->getOptionsPaiementPourMembre($membre);
+
+        if (count($optionsPaiement['accompagnements'] ?? []) === 1) {
+            $contextePaiement = $optionsPaiement['accompagnements'][0];
+        } elseif (count($optionsPaiement['entreprises'] ?? []) === 1 && empty($optionsPaiement['accompagnements'])) {
+            $contextePaiement = $optionsPaiement['entreprises'][0];
+        } else {
+            $contextePaiement = $optionsPaiement['membre'];
+        }
+    }
+
+    // Calculer les réductions selon le contexte
+    $reductions = $this->getReductionsPourContexte($contextePaiement, $prestation);
+
+    $montantOriginal = $request->input('montant') !== null 
+        ? (float) $request->input('montant') 
+        : (float) ($prestation->prix ?? 0);
+
+    // Calculer le montant avec la meilleure réduction
+    $calculReduction = $this->calculerMontantAvecReduction($montantOriginal, $reductions);
+    $montant = $calculReduction['montant_final'];
+
+    // Validation des règles
     $rules = [
-        'montant' => 'nullable|numeric|min:0',
-        'accompagnement_id' => 'required|exists:accompagnements,id',
+        'contexte_type' => 'required|in:entreprise,accompagnement,membre',
     ];
 
     if ($montant > 0) {
         $rules['ressourcecompte_id'] = 'required|exists:ressourcecomptes,id';
-    } else {
-        $rules['ressourcecompte_id'] = 'nullable|exists:ressourcecomptes,id';
     }
 
     $request->validate($rules);
 
-    // Vérifier si déjà réalisée via cet accompagnement
-    if (Prestationrealisee::where('prestation_id', $prestation->id)
-        ->where('accompagnement_id', $accompagnementId)
-        ->exists()
-    ) {
-        return back()->with('error', '⚠️ Cette prestation a déjà été enregistrée pour cet accompagnement.');
+    // Vérifier si déjà réalisée via cet accompagnement (si accompagnement)
+    if ($contextePaiement['type'] === 'accompagnement_entreprise' || $contextePaiement['type'] === 'accompagnement_membre') {
+        if (Prestationrealisee::where('prestation_id', $prestation->id)
+            ->where('accompagnement_id', $contextePaiement['id'])
+            ->exists()
+        ) {
+            return back()->with('error', '⚠️ Cette prestation a déjà été enregistrée pour cet accompagnement.');
+        }
     }
 
     $ressourcecompte = null;
@@ -245,7 +296,7 @@ public function inscrireStore(Request $request, $id)
         $ressourcecompte = Ressourcecompte::where('id', $request->ressourcecompte_id)
             ->where(function ($q) use ($membre, $entrepriseIds) {
                 $q->where('membre_id', $membre->id)
-                  ->orWhereIn('entreprise_id', $entrepriseIds);
+                    ->orWhereIn('entreprise_id', $entrepriseIds);
             })
             ->firstOrFail();
     }
@@ -265,7 +316,7 @@ public function inscrireStore(Request $request, $id)
         if ($montant > 0) {
             // Vérifier compatibilité ressource ↔ prestation
             $isCompatible = Ressourcetypeoffretype::where('ressourcetype_id', $ressourcecompte->ressourcetype_id)
-                ->where('offretype_id', 1) // 1 = prestation
+                ->where('offretype_id', 2) // 2 = prestations
                 ->exists();
 
             if (!$isCompatible) {
@@ -273,7 +324,7 @@ public function inscrireStore(Request $request, $id)
             }
 
             if ($ressourcecompte->solde < $montant) {
-                throw new \Exception("⚠️ Solde insuffisant dans ce compte ressource.");
+                throw new \Exception("⚠️ Solde insuffisant. Montant requis: {$montant} FCFA, Solde disponible: {$ressourcecompte->solde} FCFA");
             }
 
             // Débit
@@ -304,19 +355,30 @@ public function inscrireStore(Request $request, $id)
         }
 
 
-            // Enregistrer la trace du paiement (prestationressource)
-            Prestationressource::create([
-                'montant' => $montant,
-                'reference' => $reference,
-                'accompagnement_id' => $accompagnementId,
-                'ressourcecompte_id' => $montant > 0 ? $ressourcecompte->id : null,
-                'prestation_id' => $prestation->id,
-                'paiementstatut_id' => 1, // adapter selon ton mapping (1 = payé)
-                'membre_id' => $membre->id,
-                'entreprise_id' => $ressourcecompte->entreprise_id ?? null,
-                'spotlight' => 0,
-                'etat' => 1,
-            ]);
+            // Déterminer les IDs pour l'enregistrement
+        $accompagnementId = null;
+        $entrepriseId = null;
+
+        if ($contextePaiement['type'] === 'accompagnement_entreprise' || $contextePaiement['type'] === 'accompagnement_membre') {
+            $accompagnementId = $contextePaiement['id'];
+            $entrepriseId = $contextePaiement['entreprise_id'] ?? null;
+        } elseif ($contextePaiement['type'] === 'entreprise') {
+            $entrepriseId = $contextePaiement['id'];
+        }
+
+        // Enregistrer la trace du paiement (prestationressource)
+        Prestationressource::create([
+            'montant' => $montant,
+            'reference' => $reference,
+            'accompagnement_id' => $accompagnementId,
+            'ressourcecompte_id' => $montant > 0 ? $ressourcecompte->id : null,
+            'prestation_id' => $prestation->id,
+            'paiementstatut_id' => 1, // 1 = payé (paiement unique) ou gratuit
+            'membre_id' => $membre->id,
+            'entreprise_id' => $entrepriseId,
+            'spotlight' => 0,
+            'etat' => 1,
+        ]);
 
         // Créer la prestation réalisée
         $statutDefaut = Prestationrealiseestatut::where('etat', 1)->first();
@@ -325,22 +387,229 @@ public function inscrireStore(Request $request, $id)
             'accompagnement_id' => $accompagnementId,
             'daterealisation' => now(),
             'prestationrealiseestatut_id' => $statutDefaut?->id,
-            'note' => null,
-            'feedback' => null,
+            'note' => '',
+            'feedback' => '',
             'spotlight' => 0,
             'etat' => 1,
         ]);
 
         DB::commit();
 
+        // Message de succès selon le type d'inscription
+        if ($montant > 0) {
+            $message = "✅ Inscription à la prestation '{$prestation->titre}' bien effectuée ! Paiement de " . number_format($montant, 2) . " FCFA effectué.";
+        } else {
+            $message = "✅ Inscription à la prestation '{$prestation->titre}' bien effectuée ! Aucun paiement requis.";
+        }
+
+        // Ajouter les informations sur les réductions si applicable
+        if ($montantOriginal > $montant) {
+            $economie = $montantOriginal - $montant;
+            $pourcentage = round(($economie / $montantOriginal) * 100, 1);
+            $message .= " 🎉 Vous avez économisé " . number_format($economie, 2) . " FCFA ({$pourcentage}% de réduction) !";
+        }
+
         return redirect()->route('prestation.liste')
-            ->with('success', $montant > 0 ? '✅ Prestation enregistrée et payée.' : '✅ Prestation enregistrée gratuitement.');
+            ->with('success', $message);
 
     } catch (\Exception $e) {
         DB::rollBack();
         return back()->with('error', '⚠️ Erreur : ' . $e->getMessage());
     }
 }
+
+    /**
+     * Récupérer toutes les options de paiement pour le membre
+     */
+    private function getOptionsPaiementPourMembre($membre)
+    {
+        $options = [];
+        
+        // Récupérer les entreprises du membre
+        $entreprises = Entreprisemembre::where('membre_id', $membre->id)
+            ->with('entreprise')
+            ->get();
+        
+        // Ajouter les entreprises comme options
+        foreach ($entreprises as $entreprisemembre) {
+            $options['entreprises'][] = [
+                'id' => $entreprisemembre->entreprise_id,
+                'nom' => $entreprisemembre->entreprise->nom,
+                'type' => 'entreprise',
+                'est_cjes' => $entreprisemembre->entreprise->est_membre_cijes,
+                'profil_id' => $entreprisemembre->entreprise->entrepriseprofil_id,
+                'cotisation_a_jour' => $this->verifierCotisationsEntreprise($entreprisemembre->entreprise_id)
+            ];
+        }
+        
+        // Récupérer les accompagnements du membre
+        $accompagnements = Accompagnement::where('membre_id', $membre->id)
+            ->orWhereIn('entreprise_id', $entreprises->pluck('entreprise_id'))
+            ->with(['entreprise', 'membre'])
+            ->get();
+        
+        // Ajouter les accompagnements comme options
+        foreach ($accompagnements as $accompagnement) {
+            if ($accompagnement->entreprise_id) {
+                // Accompagnement d'entreprise
+                $entreprise = $accompagnement->entreprise;
+                $options['accompagnements'][] = [
+                    'id' => $accompagnement->id,
+                    'nom' => "Accompagnement - " . $entreprise->nom,
+                    'entreprise_nom' => $entreprise->nom,
+                    'type' => 'accompagnement_entreprise',
+                    'entreprise_id' => $entreprise->id,
+                    'est_cjes' => $entreprise->est_membre_cijes,
+                    'profil_id' => $entreprise->entrepriseprofil_id,
+                    'cotisation_a_jour' => $this->verifierCotisationsEntreprise($entreprise->id)
+                ];
+            } else {
+                // Accompagnement de membre
+                $options['accompagnements'][] = [
+                    'id' => $accompagnement->id,
+                    'nom' => "Accompagnement - " . $accompagnement->membre->nom_complet,
+                    'membre_nom' => $accompagnement->membre->nom_complet,
+                    'type' => 'accompagnement_membre',
+                    'entreprise_id' => null,
+                    'est_cjes' => false,
+                    'profil_id' => null,
+                    'cotisation_a_jour' => false
+                ];
+            }
+        }
+        
+        // Ajouter l'option membre seul
+        $options['membre'] = [
+            'id' => $membre->id,
+            'nom' => $membre->prenom . ' ' . $membre->nom,
+            'type' => 'membre',
+            'est_cjes' => false,
+            'profil_id' => null,
+            'cotisation_a_jour' => false
+        ];
+        
+        return $options;
+    }
+
+    /**
+     * Vérifier si une entreprise est à jour dans ses cotisations
+     */
+    private function verifierCotisationsEntreprise($entrepriseId)
+    {
+        return Cotisation::where('entreprise_id', $entrepriseId)
+            ->where('statut', 'paye')
+            ->where('est_a_jour', true)
+            ->where('date_fin', '>=', now())
+            ->exists();
+    }
+
+    /**
+     * Calculer les réductions selon le contexte de paiement
+     */
+    private function getReductionsPourContexte($contexte, $prestation)
+    {
+        $reductions = collect();
+        
+        // Si c'est une entreprise CJES à jour
+        if ($contexte['type'] === 'entreprise' || $contexte['type'] === 'accompagnement_entreprise') {
+            if ($contexte['est_cjes'] && $contexte['cotisation_a_jour'] && $contexte['profil_id']) {
+                $reductions = Reductiontype::where('etat', true)
+                    ->where('offretype_id', 2) // 2 = prestations
+                    ->where('entrepriseprofil_id', $contexte['profil_id'])
+                    ->where(function($query) {
+                        $query->whereNull('date_debut')
+                              ->orWhere(function($subQuery) {
+                                  $subQuery->where('date_debut', '<=', now())
+                                        ->where('date_fin', '>=', now());
+                              });
+                    })
+                    ->get();
+            }
+        }
+        
+        // Ajouter les réductions génériques (profil_id = 0)
+        $reductionsGeneriques = Reductiontype::where('etat', true)
+            ->where('offretype_id', 2) // 2 = prestations
+            ->where('entrepriseprofil_id', 0) // Génériques
+            ->where(function($query) {
+                $query->whereNull('date_debut')
+                      ->orWhere(function($subQuery) {
+                          $subQuery->where('date_debut', '<=', now())
+                                ->where('date_fin', '>=', now());
+                      });
+            })
+            ->get();
+        
+        return $reductions->merge($reductionsGeneriques);
+    }
+
+    /**
+     * Calculer le meilleur montant avec réduction
+     */
+    private function calculerMontantAvecReduction($montantOriginal, $reductions)
+    {
+        $meilleurMontant = $montantOriginal;
+        $meilleureReduction = null;
+
+        foreach ($reductions as $reduction) {
+            if ($reduction->isPromotionActive()) {
+                $montantAvecReduction = $reduction->getPrixAvecReduction($montantOriginal);
+                
+                if ($montantAvecReduction < $meilleurMontant) {
+                    $meilleurMontant = $montantAvecReduction;
+                    $meilleureReduction = $reduction;
+                }
+            }
+        }
+
+        return [
+            'montant_final' => $meilleurMontant,
+            'meilleure_reduction' => $meilleureReduction
+        ];
+    }
+
+    /**
+     * Calculer le montant avec réductions pour une prestation
+     */
+    public function calculerMontant(Request $request, $id)
+    {
+        $prestation = Prestation::findOrFail($id);
+        $contexte = $request->input('contexte');
+        $contexteId = $request->input('contexte_id');
+        $prixBase = $request->input('prix_base');
+        $quantite = $request->input('quantite', 1); // Quantité par défaut
+
+        try {
+            // Calculer le montant de base
+            $montantBase = $prixBase * $quantite;
+            
+            // Récupérer les réductions applicables
+            $reductions = $this->getReductionsPourContexte($contexte, $prestation);
+            
+            // Appliquer la meilleure réduction
+            $calculReduction = $this->calculerMontantAvecReduction($montantBase, $reductions);
+            $montantFinal = $calculReduction['montant_final'];
+            
+            // Calculer le montant de la réduction
+            $reductionMontant = $montantBase - $montantFinal;
+            
+            return response()->json([
+                'success' => true,
+                'montant_base' => $montantBase,
+                'montant_final' => $montantFinal,
+                'reduction' => $reductionMontant,
+                'reduction_pourcentage' => $reductionMontant > 0 ? round(($reductionMontant / $montantBase) * 100, 2) : 0,
+                'reduction_description' => $reductionMontant > 0 ? 'Réduction appliquée' : null,
+                'quantite' => $quantite
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du calcul du montant: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
 
 }

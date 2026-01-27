@@ -1,140 +1,146 @@
 <x-app-layout title="Ajouter une cotisation" is-sidebar-open="true" is-header-blur="true">
     <main class="main-content w-full px-[var(--margin-x)] pb-8">
-        <div class="flex items-center space-x-4 py-5 lg:py-6">
-            <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
-                Ajouter une cotisation
-            </h2>
-            <div class="hidden h-full py-1 sm:flex">
-                <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+
+        <!-- Header moderne -->
+        <div class="mb-2">
+            <div class="flex items-center gap-4 mb-2">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-primary-focus flex items-center justify-center shadow-lg">
+                    <i class="fas fa-wallet text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 dark:text-navy-50">
+                        Ajouter une cotisation
+                    </h1>
+                    <p class="mt-2 text-slate-600 dark:text-navy-200 text-lg">
+                        Paiement automatique via votre solde KOBO
+                    </p>
+                </div>
             </div>
         </div>
+
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
-                
+
+                {{-- Messages --}}
                 @if(session('error'))
-                    <div class="alert flex rounded-lg bg-danger px-4 py-4 text-white sm:px-5">{{ session('error') }}</div>
+                    <div class="alert flex rounded-lg bg-red-500 px-6 py-4 text-white mb-6 shadow-lg">
+                        <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
+                        {{ session('error') }}
+                    </div>
                 @endif
 
-                <!-- Information sur le paiement KOBO -->
-                <div class="alert flex rounded-lg bg-info px-4 py-4 text-white sm:px-5">
-                    <div class="flex items-start">
-                        <i class="fas fa-info-circle mr-3 mt-1"></i>
-                        <div>
-                            <p class="font-medium mb-1">Paiement automatique par KOBO</p>
-                            <p class="text-sm text-white/90">
-                                Cette cotisation sera payée automatiquement avec votre solde KOBO. 
-                                Le montant et les dates sont calculés automatiquement selon le type sélectionné.
+                {{-- Info KOBO --}}
+                <div class="alert flex rounded-lg bg-info px-6 py-4 text-white mb-6 shadow-lg">
+                    <i class="fas fa-info-circle mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold mb-1">Paiement automatique KOBO</p>
+                        <p class="text-sm opacity-90">
+                            Le montant, la période et les dates sont calculés automatiquement selon le type de cotisation sélectionné.
+                        </p>
+
+                        @if($entreprise->entrepriseprofil)
+                            <p class="text-sm mt-2">
+                                <i class="fas fa-building mr-1"></i>
+                                Profil de l'entreprise :
+                                <strong>{{ $entreprise->entrepriseprofil->titre }}</strong>
                             </p>
-                            @if($entreprise->entrepriseprofil)
-                                <p class="text-sm text-white/90 mt-2">
-                                    <i class="fas fa-building mr-1"></i>
-                                    Profil de l'entreprise : <strong>{{ $entreprise->entrepriseprofil->titre }}</strong>
-                                </p>
-                            @endif
-                        </div>
+                        @endif
                     </div>
                 </div>
 
-                <div class="card px-4 pb-4 sm:px-5">
-                    <div class="max-w-xxl">
-                        <form action="{{ route('cotisation.store') }}" method="POST" class="space-y-6">
-                            @csrf
-                            
-                            <input type="hidden" name="entreprise_id" value="{{ $entreprise->id }}">
+                <form action="{{ route('cotisation.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="entreprise_id" value="{{ $entreprise->id }}">
 
+                    <div class="card shadow-xl mb-6">
+                        <div class="card-header border-b border-slate-200 dark:border-navy-500 px-6 py-4">
+                            <h3 class="text-xl font-semibold text-slate-800 dark:text-navy-50 flex items-center">
+                                <i class="fas fa-list mr-2 text-primary"></i>
+                                Informations de la cotisation
+                            </h3>
+                        </div>
+
+                        <div class="card-body p-6">
                             <div class="grid grid-cols-1 gap-6">
+
+                                <!-- Type -->
                                 <div>
-                                    <label class="block">
-                                        <span>Type de cotisation <span class="text-danger">*</span></span>
-                                        <select name="cotisationtype_id" required id="cotisationtype_id"
-                                                class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
-                                            <option value="">Sélectionner un type</option>
-                                            @foreach($cotisationtypes as $type)
-                                                <option value="{{ $type->id }}" 
-                                                        data-montant="{{ $type->montant }}" 
-                                                        data-titre="{{ $type->titre }}"
-                                                        data-jours="{{ $type->nombre_jours }}"
-                                                        data-profil="{{ $type->entrepriseprofil?->titre ?? 'Générique' }}">
-                                                    {{ $type->titre }} - {{ number_format($type->montant, 2) }} XOF
-                                                    @if($type->nombre_jours > 0)
-                                                        ({{ $type->nombre_jours }} jours)
-                                                    @endif
-                                                    @if($type->entrepriseprofil)
-                                                        - {{ $type->entrepriseprofil->titre }}
-                                                    @endif
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <label class="block text-sm font-medium mb-2">
+                                        Type de cotisation <span class="text-red-500">*</span>
                                     </label>
+                                    <select name="cotisationtype_id" id="cotisationtype_id" required
+                                            class="form-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-primary">
+                                        <option value="">-- Sélectionner --</option>
+                                        @foreach($cotisationtypes as $type)
+                                            <option value="{{ $type->id }}"
+                                                    data-montant="{{ $type->montant }}"
+                                                    data-jours="{{ $type->nombre_jours }}"
+                                                    data-titre="{{ $type->titre }}">
+                                                {{ $type->titre }} – {{ number_format($type->montant, 2) }} XOF
+                                                @if($type->nombre_jours)
+                                                    ({{ $type->nombre_jours }} jours)
+                                                @endif
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
 
-                                <!-- Informations automatiques -->
+                                <!-- Infos auto -->
                                 <div id="auto-info" class="hidden">
-                                    <div class="bg-slate-50 dark:bg-navy-800 rounded-lg p-4 border border-slate-200 dark:border-navy-700">
-                                        <h4 class="font-semibold text-slate-700 dark:text-navy-200 mb-3">Informations automatiques</h4>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div class="rounded-lg border border-slate-200 bg-slate-50 dark:bg-navy-800 p-4">
+                                        <h4 class="font-semibold mb-3">Informations automatiques</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                            <div>Montant : <strong id="montant-affiche">-</strong></div>
+                                            <div>Période : <strong id="periode-affiche">-</strong></div>
+                                            <div>Début : <strong id="debut-affiche">-</strong></div>
+                                            <div>Fin : <strong id="fin-affiche">-</strong></div>
+                                            <div>Échéance : <strong id="echeance-affiche">-</strong></div>
                                             <div>
-                                                <span class="text-slate-600 dark:text-navy-400">Montant :</span>
-                                                <span class="font-medium text-slate-800 dark:text-navy-100" id="montant-affiche">-</span>
-                                            </div>
-                                            <div>
-                                                <span class="text-slate-600 dark:text-navy-400">Période :</span>
-                                                <span class="font-medium text-slate-800 dark:text-navy-100" id="periode-affiche">-</span>
-                                            </div>
-                                            <div>
-                                                <span class="text-slate-600 dark:text-navy-400">Date de début :</span>
-                                                <span class="font-medium text-slate-800 dark:text-navy-100" id="debut-affiche">-</span>
-                                            </div>
-                                            <div>
-                                                <span class="text-slate-600 dark:text-navy-400">Date de fin :</span>
-                                                <span class="font-medium text-slate-800 dark:text-navy-100" id="fin-affiche">-</span>
-                                            </div>
-                                            <div>
-                                                <span class="text-slate-600 dark:text-navy-400">Date d'échéance :</span>
-                                                <span class="font-medium text-slate-800 dark:text-navy-100" id="echeance-affiche">-</span>
-                                            </div>
-                                            <div>
-                                                <span class="text-slate-600 dark:text-navy-400">Statut :</span>
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                    <i class="fas fa-check mr-1"></i>Payée automatiquement
+                                                Statut :
+                                                <span class="ml-1 px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                                                    Payée automatiquement
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
+                                <!-- Commentaires -->
                                 <div>
-                                    <label class="block">
-                                        <span>Commentaires</span>
-                                        <textarea name="commentaires" rows="4" maxlength="1000"
-                                                  class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                                                  placeholder="Informations complémentaires sur la cotisation..."></textarea>
+                                    <label class="block text-sm font-medium mb-2">
+                                        Commentaires
                                     </label>
+                                    <textarea name="commentaires" rows="4"
+                                              class="form-textarea w-full rounded-lg border border-slate-300 px-3 py-2"
+                                              placeholder="Informations complémentaires..."></textarea>
                                 </div>
-                            </div>
 
-                            <div class="flex justify-end space-x-4 mt-6">
-                                <a href="{{ route('cotisation.index') }}" 
-                                   class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90">
-                                    <i class="fas fa-times mr-2"></i>
-                                    Annuler
-                                </a>
-                                <button type="submit" 
-                                        class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                                    <i class="fas fa-wallet mr-2"></i>
-                                    Créer et payer avec KOBO
-                                </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-4">
+                        <a href="{{ route('cotisation.index') }}"
+                           class="btn bg-slate-200 text-slate-800">
+                            Annuler
+                        </a>
+                        <button type="submit"
+                                class="btn bg-primary text-white">
+                            <i class="fas fa-wallet mr-2"></i>
+                            Créer et payer
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <div class="col-span-12 py-6 lg:sticky lg:bottom-0 lg:col-span-4 lg:self-end">
                 @include('layouts.sidebar')
-            </div>    
+            </div>
         </div>
     </main>
+
+    
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -208,3 +214,4 @@
         });
     </script>
 </x-app-layout>
+

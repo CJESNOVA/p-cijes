@@ -1,51 +1,44 @@
 <x-app-layout title="Ajouter une ressource ({{ $type->titre }})" is-sidebar-open="true" is-header-blur="true">
     <main class="main-content w-full px-[var(--margin-x)] pb-8">
-        <div class="flex items-center space-x-4 py-5 lg:py-6">
-          <h2
-            class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
-          >
-            Ajouter une ressource ({{ $type->titre }})
-          </h2>
-          <div class="hidden h-full py-1 sm:flex">
-            <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
-          </div>
-          <!-- <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
-            <li class="flex items-center space-x-2">
-              <a
-                class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
-                href="#"
-                >Forms</a
-              >
-              <svg
-                x-ignore
-                xmlns="http://www.w3.org/2000/svg"
-                class="size-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </li>
-            <li>Définir ma disponibilité </li>
-          </ul> -->
+        <!-- Header moderne -->
+        <div class="mb-2">
+            <div class="flex items-center gap-4 mb-2">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 dark:text-navy-50">
+                        Ajouter une ressource
+                    </h1>
+                    <p class="mt-2 text-slate-600 dark:text-navy-200 text-lg">
+                        Type: {{ $type->titre }}
+                    </p>
+                </div>
+            </div>
         </div>
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
 
+                <!-- Messages modernes -->
+                @if (session('success'))
+                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-            @if (session('success'))
-                <div class="alert flex rounded-lg bg-success px-4 py-4 text-white sm:px-5">{{ session('success') }}</div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert flex rounded-lg bg-error px-4 py-4 text-white sm:px-5">{{ session('error') }}</div>
-            @endif
+                @if (session('error'))
+                    <div class="alert flex rounded-lg bg-red-500 px-6 py-4 text-white mb-6 shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ session('error') }}
+                    </div>
+                @endif
 
         <form method="POST" action="{{ route('ressourcecompte.store') }}" class="space-y-4">
     @csrf

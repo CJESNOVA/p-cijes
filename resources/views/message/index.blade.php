@@ -1,52 +1,44 @@
 <x-app-layout title="Mes conversations" is-sidebar-open="true" is-header-blur="true">
     <main class="main-content w-full px-[var(--margin-x)] pb-8">
-        <div class="flex items-center space-x-4 py-5 lg:py-6">
-          <h2
-            class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
-          >
-            💬 Mes conversations
-          </h2>
-          <div class="hidden h-full py-1 sm:flex">
-            <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
-          </div>
-          <!-- <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
-            <li class="flex items-center space-x-2">
-              <a
-                class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
-                href="#"
-                >💬 Mes conversations</a
-              >
-              <svg
-                x-ignore
-                xmlns="http://www.w3.org/2000/svg"
-                class="size-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </li>
-            <li>💬 Mes conversations</li>
-          </ul> -->
-          
-          <a href="{{ route('conversation.create') }}"
-   class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary-focus transition">
-   ➕ Nouvelle conversation
-</a>
-
+        <!-- Header moderne -->
+        <div class="mb-2">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-4">
+                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-slate-800 dark:text-navy-50">
+                            Mes conversations
+                        </h1>
+                        <p class="mt-2 text-slate-600 dark:text-navy-200 text-lg">
+                            Gérez vos messages et échanges
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('conversation.create') }}"
+                   class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Nouvelle conversation
+                </a>
+            </div>
         </div>
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
               
-        @if(session('success'))
-            <div class="alert flex rounded-lg bg-success px-4 py-4 text-white sm:px-5">{{ session('success') }}</div>
-        @endif
+                <!-- Messages modernes -->
+                @if(session('success'))
+                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ session('success') }}
+                    </div>
+                @endif
 
 @if($conversations->count())
     <div class="space-y-3">
