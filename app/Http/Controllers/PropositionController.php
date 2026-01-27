@@ -31,8 +31,12 @@ class PropositionController extends Controller
         // Récupérer les statuts de proposition disponibles
         $statuts = Propositionstatut::where('etat', true)->get();
         
-        // Récupérer les prestations disponibles
-        $prestations = Prestation::where('etat', true)->get();
+        // Récupérer les prestations de l'expert connecté
+        // L'expert est un membre qui peut être associé à une ou plusieurs entreprises
+        $entreprisesIds = $membre->entreprisemembres()->pluck('entreprise_id');
+        $prestations = Prestation::where('etat', true)
+            ->whereIn('entreprise_id', $entreprisesIds)
+            ->get();
 
         return view('proposition.create', compact('plan', 'expert', 'statuts', 'prestations'));
     }
@@ -52,8 +56,11 @@ class PropositionController extends Controller
                 ->with('error', 'Vous n\'êtes pas autorisé à modifier cette proposition.');
         }
 
-        // Récupérer les prestations disponibles
-        $prestations = Prestation::where('etat', true)->get();
+        // Récupérer les prestations de l'expert connecté
+        $entreprisesIds = $membre->entreprisemembres()->pluck('entreprise_id');
+        $prestations = Prestation::where('etat', true)
+            ->whereIn('entreprise_id', $entreprisesIds)
+            ->get();
 
         return view('proposition.edit', compact('proposition', 'expert', 'prestations'));
     }

@@ -1,18 +1,14 @@
-<!-- resources/views/sidebar.blade.php -->
+<!-- resources/views/layouts/sidebar.blade.php -->
 @php
     use App\Models\Evenement;
     use App\Models\Espace;
-    use App\Models\Prestation;
-    use App\Models\Formation;
     use App\Models\Proposition;
 
     $userId = auth()->id();
     $membre = \App\Models\Membre::where('user_id', $userId)->first();
     
-    $evenements  = Evenement::where('etat', 1)->orderBy('dateevenement', 'asc')->take(5)->limit(1)->get();
-    $espaces     = Espace::where('etat', 1)->limit(1)->get();
-    $prestations = Prestation::where('etat', 1)->limit(2)->get();
-    $formations  = Formation::where('etat', 1)->limit(2)->get();
+    $evenements  = Evenement::where('etat', 1)->orderBy('dateevenement', 'asc')->take(3)->get();
+    $espaces     = Espace::where('etat', 1)->where('pays_id', $membre->pays_id)->take(2)->get();
     
     // Récupérer le nombre de propositions reçues
     $propositionsRecuesCount = 0;
@@ -29,152 +25,154 @@
     }
 @endphp
 
-<div>
-{{-- Espaces physiques --}}
-@if($espaces)
-<div class="card">
-    @foreach($espaces as $espace)
-    @if($espace && $espace->vignette)
-    <div class="h-24 rounded-t-lg bg-primary dark:bg-accent">
-        <img class="h-full w-full rounded-t-lg object-cover object-center"
-            src="{{ env('SUPABASE_BUCKET_URL') . '/' . $espace->vignette }}" alt="{{ $espace->titre }}" />
+<div class="space-y-6">
+    <!-- Événements à venir -->
+    @if($evenements->isNotEmpty())
+    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-xl border border-indigo-200 dark:border-indigo-700 overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-3">
+            <h3 class="text-white font-semibold flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Événements à venir
+            </h3>
+        </div>
+        <div class="p-4 space-y-3">
+            @foreach($evenements as $evenement)
+            <div class="bg-white dark:bg-navy-800 rounded-lg p-3 border border-indigo-100 dark:border-indigo-800 hover:shadow-md transition-shadow">
+                <div class="flex items-start space-x-3">
+                    @if($evenement && $evenement->vignette)
+                    <div class="flex-shrink-0">
+                        <img class="w-12 h-12 rounded-lg object-cover" 
+                             src="{{ env('SUPABASE_BUCKET_URL') . '/' . $evenement->vignette }}" 
+                             alt="{{ $evenement->titre }}" />
+                    </div>
+                    @else
+                    <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    @endif
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-semibold text-slate-800 dark:text-navy-100 truncate">
+                            <a href="{{ route('evenement.show', $evenement->id) }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                {{ $evenement->titre }}
+                            </a>
+                        </h4>
+                        <p class="text-xs text-slate-500 dark:text-navy-400 mt-1">
+                            {{ \Carbon\Carbon::parse($evenement->dateevenement)->format('d M Y') }}
+                        </p>
+                        <p class="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-1">
+                            {{ $evenement->evenementtype->titre ?? '-' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
     </div>
     @endif
-    <div class="px-4 pt-2 pb-5 sm:px-5">
-        <!--<div class="avatar -mt-12 size-20">
-            <img class="rounded-full border-2 border-white dark:border-navy-700"
-                src="{{ asset('images/200x200.png') }}" alt="avatar" />
-        </div>-->
-        <h3 class="pt-2 text-lg font-medium text-slate-700 dark:text-navy-100">
-            <a href="{{ route('espace.show', $espace->id) }}">{{ $espace->titre }}</a>
-        </h3>
-        <p class="text-xs-plus text-slate-400 dark:text-navy-300">
-            {{ $espace->espacetype->titre ?? '-' }}
-        </p>
-        <p class="mt-3">
-            {{ $espace->resume }}
-        </p>
-    </div>
-    @endforeach
-</div>
-@endif
 
-
-
-@if($formations)
-{{-- Formations --}}
-<div class="mt-5">
-    <p
-        class="border-b border-slate-200 pb-2 text-base text-slate-800 dark:border-navy-600 dark:text-navy-100">
-            💼 Formations
-    </p>
-    <div class="mt-3 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-1">
-                @foreach($formations as $formation)
-        <div class="flex justify-between space-x-2">
-            <div class="flex flex-1 flex-col justify-between">
-                <div>
-                    <div class="mt-1 text-slate-800 line-clamp-3 dark:text-navy-100">
-                        <a href="#"
-                            class="font-medium text-slate-700 hover:text-primary focus:text-primary dark:text-navy-100 dark:hover:text-accent-light dark:focus:text-accent-light">{{ $formation->titre }}</a>
+    <!-- Espaces disponibles -->
+    @if($espaces->isNotEmpty())
+    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-xl border border-emerald-200 dark:border-emerald-700 overflow-hidden">
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3">
+            <h3 class="text-white font-semibold flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                Espaces disponibles
+            </h3>
+        </div>
+        <div class="p-4 space-y-3">
+            @foreach($espaces as $espace)
+            <div class="bg-white dark:bg-navy-800 rounded-lg p-3 border border-emerald-100 dark:border-emerald-800 hover:shadow-md transition-shadow">
+                <div class="flex items-start space-x-3">
+                    @if($espace && $espace->vignette)
+                    <div class="flex-shrink-0">
+                        <img class="w-12 h-12 rounded-lg object-cover" 
+                             src="{{ env('SUPABASE_BUCKET_URL') . '/' . $espace->vignette }}" 
+                             alt="{{ $espace->titre }}" />
                     </div>
-                    <p class="text-xs font-medium line-clamp-1">Du {{ $formation->datedebut }} au {{ $formation->datefin }}</p>
-                </div>
-                <div class="flex items-center justify-between">
-                    <p class="text-xs font-medium line-clamp-1">{{ $formation->formationniveau->titre ?? '' }}</p>
-
+                    @else
+                    <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                    @endif
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-semibold text-slate-800 dark:text-navy-100 truncate">
+                            <a href="{{ route('espace.show', $espace->id) }}" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                                {{ $espace->titre }}
+                            </a>
+                        </h4>
+                        <p class="text-xs text-slate-500 dark:text-navy-400 mt-1 line-clamp-2">
+                            {{ Str::limit($espace->resume ?? '', 80) }}
+                        </p>
+                        <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">
+                            {{ $espace->espacetype->titre ?? '-' }}
+                        </p>
                     </div>
                 </div>
             </div>
+            @endforeach
         </div>
-                @endforeach
-</div>
-<br />
-@endif
-
-
-
-{{-- Evenements --}}
-@if($evenements)
-<div class="card">
-    @foreach($evenements as $evenement)
-    @if($evenement && $evenement->vignette)
-    <div class="h-24 rounded-t-lg bg-primary dark:bg-accent">
-        <img class="h-full w-full rounded-t-lg object-cover object-center"
-            src="{{ env('SUPABASE_BUCKET_URL') . '/' . $evenement->vignette }}" alt="{{ $evenement->titre }}" />
     </div>
     @endif
-    <div class="px-4 pt-2 pb-5 sm:px-5">
-        <!--<div class="avatar -mt-12 size-20">
-            <img class="rounded-full border-2 border-white dark:border-navy-700"
-                src="{{ asset('images/200x200.png') }}" alt="avatar" />
-        </div>-->
-        <h3 class="pt-2 text-lg font-medium text-slate-700 dark:text-navy-100">
-            <a href="{{ route('evenement.show', $evenement->id) }}">{{ $evenement->titre }}</a>
-        </h3>
-        <p class="text-xs-plus text-slate-400 dark:text-navy-300">
-            {{ $evenement->evenementtype->titre ?? '-' }}
-        </p>
-        <p class="mt-3">
-            {{ \Carbon\Carbon::parse($evenement->dateevenement)->format('d F Y') }}
-        </p>
-    </div>
-    @endforeach
-</div>
-@endif
 
-
-
-@if($prestations)
-{{-- Prestations --}}
-<div class="mt-5">
-    <p
-        class="border-b border-slate-200 pb-2 text-base text-slate-800 dark:border-navy-600 dark:text-navy-100">
-            💼 Prestations
-    </p>
-    <div class="mt-3 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-1">
-                @foreach($prestations as $prestation)
-        <div class="flex justify-between space-x-2">
-            <div class="flex flex-1 flex-col justify-between">
-                <div>
-                    <p class="text-xs font-medium line-clamp-1">{{ $prestation->prix }} - {{ $prestation->duree }}</p>
-                    <div class="mt-1 text-slate-800 line-clamp-3 dark:text-navy-100">
-                        <a href="#"
-                            class="font-medium text-slate-700 hover:text-primary focus:text-primary dark:text-navy-100 dark:hover:text-accent-light dark:focus:text-accent-light">{{ $prestation->titre }}</a>
-                    </div>
-                </div>
+    <!-- Propositions reçues -->
+    @if($membre && $propositionsRecuesCount > 0)
+    <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-xl border border-amber-200 dark:border-amber-700 overflow-hidden">
+        <div class="bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3">
+            <h3 class="text-white font-semibold flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Propositions reçues
+            </h3>
+        </div>
+        <div class="p-4">
+            <div class="bg-white dark:bg-navy-800 rounded-lg p-4 border border-amber-100 dark:border-amber-800">
                 <div class="flex items-center justify-between">
-                    <p class="text-xs font-medium line-clamp-1">{{ $prestation->prestationtype->titre ?? '' }}</p>
-
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                                En attente de réponse
+                            </p>
+                            <p class="text-xs text-amber-600 dark:text-amber-400">
+                                {{ $propositionsRecuesCount }} proposition{{ $propositionsRecuesCount > 1 ? 's' : '' }} à traiter
+                            </p>
+                        </div>
                     </div>
+                    <a href="{{ route('proposition.membre.index') }}" 
+                       class="inline-flex items-center px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors">
+                        Voir
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
-                @endforeach
     </div>
-@endif
-</div>
+    @endif
 
-{{-- Propositions reçues --}}
-@if($membre && $propositionsRecuesCount > 0)
-<div class="mt-5">
-    <p class="border-b border-slate-200 pb-2 text-base text-slate-800 dark:border-navy-600 dark:text-navy-100">
-        📋 Propositions reçues
-    </p>
-    <div class="mt-3">
-        <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 border border-yellow-200 dark:border-yellow-800">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200">En attente de réponse</p>
-                    <p class="text-xs text-yellow-600 dark:text-yellow-400">{{ $propositionsRecuesCount }} proposition{{ $propositionsRecuesCount > 1 ? 's' : '' }}</p>
-                </div>
-                <a href="{{ route('proposition.membre.index') }}" class="btn btn-sm btn-warning">
-                    Voir
-                </a>
-            </div>
-        </div>
+    <!-- Section vide si aucun contenu -->
+    @if($evenements->isEmpty() && $espaces->isEmpty() && (!$membre || $propositionsRecuesCount == 0))
+    <div class="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-navy-900/20 dark:to-navy-800/20 rounded-xl border border-slate-200 dark:border-navy-700 p-6 text-center">
+        <svg class="w-12 h-12 text-slate-400 dark:text-navy-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+        </svg>
+        <p class="text-sm text-slate-600 dark:text-navy-400">
+            Aucun contenu disponible pour le moment
+        </p>
     </div>
+    @endif
 </div>
-@endif
-
-</div>
-

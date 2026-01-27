@@ -1,59 +1,52 @@
 <x-app-layout title="{{ isset($entreprise) ? 'Modifier' : 'Créer' }} une entreprise" is-sidebar-open="true" is-header-blur="true">
     <main class="main-content w-full px-[var(--margin-x)] pb-8">
-        <div class="flex items-center space-x-4 py-5 lg:py-6">
-          <h2
-            class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
-          >
-            {{ isset($entreprise) ? 'Modifier' : 'Créer' }} une entreprise
-          </h2>
-          <div class="hidden h-full py-1 sm:flex">
-            <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
-          </div>
-          <!-- <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
-            <li class="flex items-center space-x-2">
-              <a
-                class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
-                href="#"
-                >Forms</a
-              >
-              <svg
-                x-ignore
-                xmlns="http://www.w3.org/2000/svg"
-                class="size-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </li>
-            <li>{{ isset($entreprise) ? 'Modifier' : 'Créer' }} une entreprise</li>
-          </ul> -->
+        <!-- Header moderne -->
+        <div class="mb-2">
+            <div class="flex items-center gap-4 mb-2">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-lg">
+                    @if($entreprise && $entreprise->vignette)
+                        <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $entreprise->vignette }}" alt="Logo" class="h-12 w-12 rounded-lg object-cover">
+                    @else
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
+                        </svg>
+                    @endif
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 dark:text-navy-50">
+                        {{ isset($entreprise) ? 'Modifier' : 'Créer' }} une entreprise
+                    </h1>
+                    <p class="mt-2 text-slate-600 dark:text-navy-200 text-lg">
+                        @if($entreprise)
+                            Mettez à jour les informations de votre entreprise
+                        @else
+                            Enregistrez votre entreprise pour accéder à toutes les fonctionnalités
+                        @endif
+                    </p>
+                </div>
+            </div>
         </div>
+
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
+                <!-- Messages -->
+                @if(session('error'))
+                    <div class="alert flex rounded-lg bg-red-500 px-6 py-4 text-white mb-6 shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ session('error') }}
+                    </div>
+                @endif
 
-
-<form action="{{ $entreprise ? route('entreprise.update', $entreprise->id) : route('entreprise.store') }}"
-      method="{{ $entreprise ? 'POST' : 'POST' }}"
-      enctype="multipart/form-data">
-    @csrf
-    @if($entreprise)
-        @method('PUT')
-    @endif
-
-    @if (session('success'))
-        <div class="alert flex rounded-lg bg-success px-4 py-4 text-white sm:px-5">{{ session('success') }}</div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert flex rounded-lg bg-danger px-4 py-4 text-white sm:px-5">{{ session('error') }}</div>
-    @endif
+                @if(session('success'))
+                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ session('success') }}
+                    </div>
+                @endif
 
     @if (session('info'))
         <div class="alert flex rounded-lg bg-info px-4 py-4 text-white sm:px-5">{{ session('info') }}</div>
@@ -69,35 +62,76 @@
         </div>
     @endif
 
+                <form action="{{ $entreprise ? route('entreprise.update', $entreprise->id) : route('entreprise.store') }}"
+                      method="{{ $entreprise ? 'POST' : 'POST' }}"
+                      enctype="multipart/form-data">
+                    @csrf
+                    @if($entreprise)
+                        @method('PUT')
+                    @endif
 
-          <!-- Input Validation -->
-          <div class="card px-4 pb-4 sm:px-5">
-            <div class="max-w-xxl">
-              <div
-                x-data="pages.formValidation.initFormValidationExample"
-                class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:gap-6"
-              >
-                <div>
-                  <label class="block">
-                    <span>Nom de l’entreprise </span>
-                  <input
-                    class="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                    placeholder="Nom de l’entreprise"
-                    type="text" name="nom" value="{{ old('nom', $entreprise->nom ?? '') }}" required
-                  />
-                </label>
-                </div>
+                    <!-- Informations de l'entreprise -->
+                    <div class="card shadow-xl mb-6">
+                        <div class="card-header border-b border-slate-200 dark:border-navy-500 px-6 py-4">
+                            <h3 class="text-xl font-semibold text-slate-800 dark:text-navy-50 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
+                                </svg>
+                                Informations de l'entreprise
+                            </h3>
+                        </div>
+                        <div class="card-body p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Nom de l'entreprise -->
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-2">
+                                        Nom de l'entreprise <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="text" 
+                                            name="nom" 
+                                            value="{{ old('nom', $entreprise->nom ?? '') }}" 
+                                            required
+                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                                            placeholder="Nom de l'entreprise"
+                                        />
+                                    </div>
+                                    @error('nom')
+                                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                <div>
-                  <label class="block">
-                    <span>Email </span>
-                  <input
-                    class="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
-                    placeholder="Email"
-                    type="email" name="email" value="{{ old('email', $entreprise->email ?? '') }}" required
-                  />
-                  </label>
-                </div>
+                                <!-- Email de l'entreprise -->
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-2">
+                                        Email de l'entreprise <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="email" 
+                                            name="email" 
+                                            value="{{ old('email', $entreprise->email ?? '') }}" 
+                                            required
+                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                                            placeholder="entreprise@exemple.com"
+                                        />
+                                    </div>
+                                    @error('email')
+                                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
 
                 <div>
                   <label class="block">
@@ -270,9 +304,6 @@
 
 
             
-                <div>
-                    
-                </div>   
                 <div>
             @if($entreprise && $entreprise->vignette)
                 <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $entreprise->vignette }}" alt="Vignette" width="100">

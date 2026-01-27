@@ -83,45 +83,6 @@ class RessourcecompteController extends Controller
             ->with('entreprise')
             ->get();
 
-/*
-    $login  = 'api_cashpay.cjet';
-    $apikey = 'CHWOgYBuSwHfKBPhQ8CXs5ToOvL5oAKbUND5';
-    $salt   = rand(100000, 999999); // identifiant unique
-    $apiref = '132';
-
-    // 1️⃣ Vérification d’authentification (Ping)
-    $apisecure = hash('sha256', $login . $apikey . $salt);
-
-
-    // 2️⃣ Création de l’ordre
-    $response = Http::withHeaders([
-    'login'        => $login,
-    'apisecure'    => $apisecure,
-    'apireference' => $apiref,
-    'salt'         => $salt,
-    'Content-Type' => 'application/json',
-    //'Authorization' => 'Bearer ' . $apisecure, // ✅ utilisation du vrai token
-//])->post('https://api.semoa-payments.ovh/prod/orders', [
-])->post('https://api.semoa-payments.ovh/sandbox/orders', [
-    'amount'       => 100, // <- ici le montant réel
-    'description'  => 'Recharge de ressource de',
-    'client'       => [
-        'lastname'  => $membre->nom ?? 'Inconnu',
-        'firstname' => $membre->prenom ?? '',
-        'phone'     => '+228' . ($membre->telephone ?? '90000000'),
-    ],
-    'callback_url' => route('ressourcecompte.callback', 52),
-    //'callback_url' => 'https://zooplastic-frogged-dorcas.ngrok-free.dev/bons/ressourcecompte/111/callback',
-    'redirect_url' => route('ressourcecompte.index'),
-]);
-
-dd($response->json());
-
-//return redirect()->away($response->json('bill_url'));
-
-*/
-
-
         return view('ressourcecompte.create', compact('type', 'entreprises'));
     }
 
@@ -186,16 +147,16 @@ public function store(Request $request)
     // ----------------------------
     // 🔹 5. Préparer l'appel API SEMOA
     // ----------------------------
-    $login  = 'api_cashpay.cjet';
-    $apikey = 'CHWOgYBuSwHfKBPhQ8CXs5ToOvL5oAKbUND5';
+    $login  = env('SEMOA_API_LOGIN', 'api_cashpay.cjet');
+    $apikey = env('SEMOA_API_KEY', 'CHWOgYBuSwHfKBPhQ8CXs5ToOvL5oAKbUND5');
     $salt   = rand(100000, 999999); // identifiant unique
-    $apiref = '132';
+    $apiref = env('SEMOA_API_REFERENCE', '132');
 
-    // 1️⃣ Vérification d’authentification (Ping)
+    // 1️⃣ Vérification d'authentification (Ping)
     $apisecure = hash('sha256', $login . $apikey . $salt);
 
 
-    // 2️⃣ Création de l’ordre
+    // 2️⃣ Création de l'ordre
     $response = Http::withHeaders([
     'login'        => $login,
     'apisecure'    => $apisecure,
@@ -203,8 +164,7 @@ public function store(Request $request)
     'salt'         => $salt,
     'Content-Type' => 'application/json',
     //'Authorization' => 'Bearer ' . $apisecure, // ✅ utilisation du vrai token
-//])->post('https://api.semoa-payments.ovh/prod/orders', [
-])->post('https://api.semoa-payments.ovh/sandbox/orders', [
+])->post(env('SEMOA_API_URL', 'https://api.semoa-payments.ovh/sandbox/orders'), [
     'amount'       => (int) $request->solde, // <- ici le montant réel
     'description'  => "Recharge ressource : {$transaction->reference}",
     'client'       => [

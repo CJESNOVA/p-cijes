@@ -372,6 +372,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/evenements/mes-reservations', [ReservationController::class, 'index'])->name('reservation.index');
     Route::get('/evenements/espaces/{id}/reserver', [EspaceController::class, 'reserverForm'])->name('espace.reserver.form');
     Route::post('/evenements/espaces/{id}/reserver', [EspaceController::class, 'reserverStore'])->name('espace.reserver.store');
+    Route::post('/evenements/espaces/{id}/calculer', [EspaceController::class, 'calculerMontant'])->name('espace.calculer.montant');
 
     Route::get('/experts/expert/devenir', [ExpertController::class, 'create'])->name('expert.form');
     Route::post('/experts/expert/enregistrer', [ExpertController::class, 'store'])->name('expert.store');
@@ -418,6 +419,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/prestations/les-prestations', [PrestationController::class, 'liste'])->name('prestation.liste');
     Route::get('/prestations/{id}/inscription', [PrestationController::class, 'inscrireForm'])->name('prestation.inscrire.form');
     Route::post('/prestations/{id}/inscription', [PrestationController::class, 'inscrireStore'])->name('prestation.inscrire.store');
+    Route::post('/prestations/{id}/calculer', [PrestationController::class, 'calculerMontant'])->name('prestation.calculer.montant');
 
     // Routes pour la gestion des cotisations (réservé aux entreprises membres CJES)
     Route::get('/entreprises/cotisations', [CotisationController::class, 'index'])->name('cotisation.index');
@@ -479,8 +481,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/evenements/evenements', [EvenementController::class, 'index'])->name('evenement.index');
     Route::get('/evenements/evenements/{evenement}', [EvenementController::class, 'show'])->name('evenement.show');
-    Route::get('/evenements/{evenement}/inscrire', [EvenementController::class, 'inscrireForm'])->name('evenement.inscrire.form');
-    Route::post('/evenements/{evenement}/inscrire', [EvenementController::class, 'inscrireStore'])->name('evenement.inscrire.store');
+    Route::get('/evenements/{id}/inscrire', [EvenementController::class, 'inscrireForm'])->name('evenement.inscrire.form');
+    Route::post('/evenements/{id}/inscrire', [EvenementController::class, 'inscrireStore'])->name('evenement.inscrire.store');
+    Route::post('/evenements/{id}/calculer', [EvenementController::class, 'calculerMontant'])->name('evenement.calculer.montant');
 
     // Prestations réalisées
     Route::resource('/prestations/prestationrealisee', PrestationrealiseeController::class)->only([
