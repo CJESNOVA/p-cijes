@@ -171,7 +171,6 @@ public function store(Request $request)
         'phone'     => '+228' . ($membre->telephone ?? '90000000'),
     ],
     'callback_url' => route('api.callback.ressourcecompte', ['transaction' => $transaction->id], true),
-SEMOA_API_URL,
     //'callback_url' => route('ressourcecompte.callback', [$transaction->id]),
     'redirect_url' => route('ressourcecompte.index'),
 ]);
