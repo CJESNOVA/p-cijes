@@ -62,7 +62,19 @@ class CotisationController extends Controller
             ->with('entrepriseprofil')
             ->get();
 
-        return view('cotisation.create', compact('entreprise', 'cotisationtypes'));
+        // Récupérer les comptes ressources disponibles pour l'entreprise et ses membres
+        $membreIds = $entreprise->entreprisesmembres()->pluck('membre_id')->toArray();
+        
+        $ressourcecomptes = Ressourcecompte::where(function($query) use ($entrepriseId, $membreIds) {
+                $query->where('entreprise_id', $entrepriseId)
+                      ->orWhereIn('membre_id', $membreIds);
+            })
+            ->where('etat', 1)
+            ->where('solde', '>', 0) // Uniquement les comptes avec solde positif
+            ->orderBy('solde', 'desc')
+            ->get();
+
+        return view('cotisation.create', compact('entreprise', 'cotisationtypes', 'ressourcecomptes'));
     }
 
     public function store(Request $request)
@@ -70,6 +82,7 @@ class CotisationController extends Controller
         $request->validate([
             'entreprise_id' => 'required|exists:entreprises,id',
             'cotisationtype_id' => 'required|exists:cotisationtypes,id',
+            'ressourcecompte_id' => 'required|exists:ressourcecomptes,id',
             'commentaires' => 'nullable|string|max:1000',
         ]);
 
@@ -87,6 +100,23 @@ class CotisationController extends Controller
         // Récupérer le type de cotisation
         $cotisationtype = Cotisationtype::findOrFail($request->cotisationtype_id);
         
+        // Récupérer le compte ressource sélectionné
+        $ressourcecompte = Ressourcecompte::findOrFail($request->ressourcecompte_id);
+        
+        // Vérifier que le compte ressource appartient bien à l'entreprise ou à un membre de l'entreprise
+        $membreIds = $entreprise->entreprisesmembres()->pluck('membre_id')->toArray();
+        $isValidAccount = ($ressourcecompte->entreprise_id == $entreprise->id) || 
+                         in_array($ressourcecompte->membre_id, $membreIds);
+        
+        if (!$isValidAccount) {
+            return redirect()->back()->with('error', 'Le compte ressource sélectionné n\'est pas valide pour cette entreprise.');
+        }
+        
+        // Vérifier le solde
+        if ($ressourcecompte->solde < $cotisationtype->montant) {
+            return redirect()->back()->with('error', 'Solde insuffisant. Montant requis : ' . number_format($cotisationtype->montant, 2) . ' FCFA. Solde disponible : ' . number_format($ressourcecompte->solde, 2) . ' FCFA.');
+        }
+        
         // Calculer les dates automatiquement en utilisant nombre_jours
         $dateDuJour = now();
         $dateDebut = $dateDuJour->copy();
@@ -98,33 +128,21 @@ class CotisationController extends Controller
         $dateFin->addDays($jours);
         $dateEcheance->addDays($jours);
 
-        // Vérifier si l'utilisateur a une ressource de type 1 (KOBO) suffisante
-        $membre = Membre::where('user_id', $userId)->first();
-        $ressourceKOBO = Ressourcecompte::where('membre_id', $membre->id)
-                                    ->where('ressourcetype_id', 1) // KOBO
-                                    ->where('etat', true)
-                                    ->first();
-
-        if (!$ressourceKOBO) {
-            return redirect()->back()->with('error', 'Vous n\'avez pas de compte KOBO pour effectuer cette opération.');
-        }
-
-        if ($ressourceKOBO->solde < $cotisationtype->montant) {
-            return redirect()->back()->with('error', 'Solde KOBO insuffisant. Montant requis : ' . number_format($cotisationtype->montant, 2) . ' KOBO. Votre solde actuel : ' . number_format($ressourceKOBO->solde, 2) . ' KOBO.');
-        }
-
         $reference = 'COT-' . strtoupper(Str::random(8));
 
-        // Créer la transaction de débit dans la ressource KOBO
+        // Créer la transaction de débit dans le compte ressource sélectionné
         $transaction = Ressourcetransaction::create([
-            'montant' => $cotisationtype->montant,
+            'montant' => -$cotisationtype->montant,
             'reference' => $reference,
-            'ressourcecompte_id' => $ressourceKOBO->id,
+            'ressourcecompte_id' => $ressourcecompte->id,
             'datetransaction' => now(),
             'operationtype_id' => 2, // Débit
             'spotlight' => true,
             'etat' => 1,
         ]);
+
+        // Mettre à jour le solde du compte ressource
+        $ressourcecompte->decrement('solde', $cotisationtype->montant);
 
         // Créer la cotisation
         $cotisation = Cotisation::create([
@@ -150,20 +168,17 @@ class CotisationController extends Controller
         Cotisationressource::create([
             'montant' => $cotisationtype->montant,
             'reference' => $reference,
-            'ressourcecompte_id' => $ressourceKOBO->id,
+            'ressourcecompte_id' => $ressourcecompte->id,
             'cotisation_id' => $cotisation->id,
-            'membre_id' => $membre->id,
+            'membre_id' => $ressourcecompte->membre_id,
             'entreprise_id' => $entreprise->id,
             'paiementstatut_id' => 1, // Payé
             'spotlight' => true,
             'etat' => true,
         ]);
 
-        // Mettre à jour le solde du compte KOBO
-        $ressourceKOBO->decrement('solde', $cotisationtype->montant);
-
         return redirect()->route('cotisation.index')
-                    ->with('success', 'Cotisation ' . $cotisationtype->titre . ' payée avec succès ! ' . number_format($cotisationtype->montant, 2) . ' KOBO débités de votre compte.');
+                    ->with('success', 'Cotisation ' . $cotisationtype->titre . ' payée avec succès ! ' . number_format($cotisationtype->montant, 2) . ' XOF débités du compte ressource.');
     }
 
     public function edit($id)
@@ -278,7 +293,7 @@ class CotisationController extends Controller
 
         $montantAPayer = $cotisation->montant_restant;
         if ($ressourceKOBO->solde < $montantAPayer) {
-            return redirect()->back()->with('error', 'Solde KOBO insuffisant. Montant à payer : ' . number_format($montantAPayer, 2) . ' KOBO. Votre solde actuel : ' . number_format($ressourceKOBO->solde, 2) . ' KOBO.');
+            return redirect()->back()->with('error', 'Solde insuffisant. Montant à payer : ' . number_format($montantAPayer, 2) . ' FCFA. Votre solde actuel : ' . number_format($ressourceKOBO->solde, 2) . ' FCFA.');
         }
 
         // Mettre à jour la cotisation

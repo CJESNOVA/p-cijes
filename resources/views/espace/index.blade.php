@@ -3,7 +3,7 @@
         <!-- Header moderne -->
         <div class="mb-2">
             <div class="flex items-center gap-4 mb-2">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
                     </svg>
@@ -49,7 +49,7 @@
                             class="text-lg font-medium text-slate-700 hover:text-primary focus:text-primary dark:text-navy-100 dark:hover:text-accent-light dark:focus:text-accent-light">{{ $espace->titre }}</a>
                     </div>
                     <div class="mt-1">
-                        Prix : {{ $espace->prix }}
+                        Prix : {{ $espace->prix }} FCFA
                     </div>
                     <div class="my-2 flex items-center space-x-3 text-xs">
                         <div class="h-px flex-1 bg-slate-200 dark:bg-navy-500"></div>

@@ -89,6 +89,51 @@ class DiagnosticController extends Controller
 
     $answers = $request->input('diagnosticreponses', []);
 
+    // 🔍 Vérifier si au moins une réponse a été fournie
+    if (empty($answers) || !is_array($answers)) {
+        return redirect()->back()
+            ->with('error', '⚠️ Veuillez répondre à au moins une question avant de valider le diagnostic.')
+            ->withInput();
+    }
+
+    // 🔍 Vérifier si les réponses contiennent des valeurs vides
+    $hasValidAnswers = false;
+    foreach ($answers as $question_id => $values) {
+        if (is_array($values)) {
+            if (!empty(array_filter($values))) {
+                $hasValidAnswers = true;
+                break;
+            }
+        } elseif (!empty($values)) {
+            $hasValidAnswers = true;
+            break;
+        }
+    }
+
+    if (!$hasValidAnswers) {
+        return redirect()->back()
+            ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de valider le diagnostic.')
+            ->withInput();
+    }
+
+    // 🔍 Vérification : s'assurer qu'il y a des réponses (nouvelles ou existantes)
+    // Mais empêcher la soumission si aucune réponse n'est fournie du tout
+    $totalAnswersCount = 0;
+    foreach ($answers as $question_id => $values) {
+        if (is_array($values)) {
+            $totalAnswersCount += count(array_filter($values));
+        } elseif (!empty($values)) {
+            $totalAnswersCount++;
+        }
+    }
+
+    // Si aucune réponse n'est fournie dans le formulaire
+    if ($totalAnswersCount === 0) {
+        return redirect()->back()
+            ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de valider le diagnostic.')
+            ->withInput();
+    }
+
     // 🔍 Cherche un diagnostic EN COURS ou crée-en un nouveau si aucun n'existe
     $diagnostic = Diagnostic::where('membre_id', $membre->id)
         ->where('diagnosticstatut_id', 1) // 1 = en cours
@@ -198,14 +243,57 @@ class DiagnosticController extends Controller
 
             }
 
-        return redirect()->route('diagnostic.success')
+        return redirect()->route('diagnostic.success', $diagnostic->id)
             ->with('success', 'Diagnostic terminé avec succès. Score : ' . $totalScore)
             ->with('diagnostic_id', $diagnostic->id);
     }
 
+    // ⚠️ Questions obligatoires non remplies
+    $questionsObligatoiresManquantes = count($obligatoires) - count($repondues);
     return redirect()->back()
-        ->with('success', 'Réponses enregistrées. Vous pouvez continuer plus tard.');
+        ->with('warning', "⚠️ Il reste {$questionsObligatoiresManquantes} question(s) obligatoire(s) non remplie(s). Votre diagnostic est sauvegardé mais vous devez compléter ces questions pour le terminer.")
+        ->with('diagnostic_id', $diagnostic->id);
 }
+
+    /**
+     * Affiche la page de succès avec les détails du diagnostic
+     */
+    public function success($diagnosticId)
+    {
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->first();
+
+        // Récupérer le diagnostic avec toutes ses relations
+        $diagnostic = Diagnostic::where('id', $diagnosticId)
+            ->where('diagnostictype_id', 1) // diagnostic PME
+            ->with([
+                'entreprise',
+                'accompagnement',
+                'diagnosticresultats.diagnosticquestion.diagnosticmodule',
+                'diagnosticresultats.diagnosticreponse',
+                'diagnosticmodulescores.diagnosticmodule'
+            ])
+            ->firstOrFail();
+
+        // Vérifier que le diagnostic appartient au membre
+        if ($diagnostic->membre_id != $membre->id) {
+            return redirect()->route('diagnostic.form')
+                ->with('error', 'Accès non autorisé à ce diagnostic.');
+        }
+
+        // Récupérer tous les modules pour l'affichage (type 1 pour PME)
+        $modules = Diagnosticmodule::where('diagnosticmoduletype_id', 1)
+            ->where('etat', 1)
+            ->orderBy('position')
+            ->with(['diagnosticquestions' => function ($q) {
+                $q->where('etat', 1)
+                  ->orderBy('position')
+                  ->with(['diagnosticreponses' => fn($query) => $query->where('etat', 1)]);
+            }])
+            ->get();
+
+        return view('diagnostic.success', compact('diagnostic', 'modules'));
+    }
 
     /**
      * Affiche la liste des plans d'accompagnement pour un diagnostic

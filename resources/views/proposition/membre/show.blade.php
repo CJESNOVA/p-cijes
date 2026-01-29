@@ -1,11 +1,17 @@
 <x-app-layout title="Détail de la proposition" is-sidebar-open="true" is-header-blur="true">
     <main class="main-content w-full px-[var(--margin-x)] pb-8">
-        <div class="flex items-center space-x-4 py-5 lg:py-6">
-            <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
-                Détail de la proposition
-            </h2>
-            <div class="hidden h-full py-1 sm:flex">
-                <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+        <!-- Header moderne -->
+        <div class="mb-10">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 dark:text-navy-50">Détail de la proposition</h1>
+                    <p class="mt-2 text-slate-600 dark:text-navy-200 text-lg">Consultez les détails de la proposition reçue et prenez votre décision</p>
+                </div>
             </div>
         </div>
 
@@ -50,10 +56,10 @@
                     </div>
 
                     {{-- Informations de l'expert --}}
-                    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                        <h4 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-3">Expert proposant</h4>
+                    <div class="bg-[#152737]/10 dark:bg-[#152737]/20 rounded-lg p-4">
+                        <h4 class="text-lg font-semibold text-[#152737] dark:text-[#152737]/80 mb-3">Expert proposant</h4>
                         <div class="flex items-center space-x-4">
-                            <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">
+                            <div class="w-16 h-16 rounded-full bg-[#152737]/20 flex items-center justify-center text-[#152737] font-bold text-xl">
                                 {{ substr($proposition->expert->membre->nom ?? 'E', 0, 1) }}{{ substr($proposition->expert->membre->prenom ?? 'X', 0, 1) }}
                             </div>
                             <div>
@@ -70,8 +76,8 @@
 
                     {{-- Prestation proposée --}}
                     @if($proposition->prestation)
-                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                            <h4 class="text-lg font-semibold text-green-800 dark:text-green-200 mb-3">Prestation proposée</h4>
+                        <div class="bg-[#4FBE96]/10 dark:bg-[#4FBE96]/20 rounded-lg p-4">
+                            <h4 class="text-lg font-semibold text-[#4FBE96] dark:text-[#4FBE96]/80 mb-3">Prestation proposée</h4>
                             <div class="space-y-2">
                                 <p class="font-medium text-slate-800 dark:text-white text-lg">{{ $proposition->prestation->titre }}</p>
                                 @if($proposition->prestation->description)
@@ -181,11 +187,26 @@
                             </form>
                         </div>
                     @elseif($proposition->statut && $proposition->statut->titre === 'Acceptée')
-                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-                            <svg class="w-12 h-12 mx-auto text-green-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="bg-[#4FBE96]/10 dark:bg-[#4FBE96]/20 rounded-lg p-4 text-center">
+                            <svg class="w-12 h-12 mx-auto text-[#4FBE96] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <p class="text-green-800 dark:text-green-200 font-medium">Cette proposition a été acceptée</p>
+                            <p class="text-[#4FBE96] dark:text-[#4FBE96]/80 font-medium mb-4">Cette proposition a été acceptée</p>
+                            
+                            @if($proposition->prestation)
+                                <div class="space-y-3">
+                                    <p class="text-sm text-[#4FBE96] dark:text-[#4FBE96]/80">
+                                        Prix à payer: <span class="font-bold text-lg">{{ number_format($proposition->prix_propose ?: $proposition->prestation->prix, 2, ',', ' ') }} €</span>
+                                    </p>
+                                    <a href="{{ route('proposition.membre.payer', $proposition) }}" 
+                                       class="inline-flex items-center px-6 py-3 bg-1DA8BB text-white rounded-lg hover:bg-1DA8BB transition-colors shadow-lg">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        Payer la prestation
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     @elseif($proposition->statut && $proposition->statut->titre === 'Refusée')
                         <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">

@@ -16,7 +16,7 @@
             $inscrit = $event->inscriptions->contains(fn($insc) => $insc->membre_id === $membre->id);
         @endphp
         <li class="flex items-center space-x-3 rounded-lg p-3 transition-shadow duration-200 hover:shadow-md
-                   {{ $inscrit ? 'bg-green-50 dark:bg-green-700/20' : 'bg-slate-100 dark:bg-navy-600' }}">
+                   {{ $inscrit ? 'bg-[#12CEB7]/10 dark:bg-[#12CEB7]/20' : 'bg-slate-100 dark:bg-navy-600' }}">
             {{-- Vignette de l’événement --}}
             <div class="flex-shrink-0">
                 @if(!empty($event->vignette))
@@ -40,7 +40,7 @@
                 </p>
 
                 @if($inscrit)
-                    <span class="inline-flex items-center mt-1 text-xs text-green-700 bg-green-100 dark:bg-green-600/40 dark:text-green-200 px-2 py-0.5 rounded-full">
+                    <span class="inline-flex items-center mt-1 text-xs text-[#12CEB7] bg-[#12CEB7]/10 dark:bg-[#12CEB7]/40 dark:text-[#12CEB7] px-2 py-0.5 rounded-full">
                         <i class="fas fa-check-circle mr-1"></i> Vous êtes inscrit
                     </span>
                 @else
@@ -103,7 +103,7 @@
                 {{-- Bouton Réserver / Détails --}}
                 <div>
                     <a href="{{ route('espace.show', $espace->id) }}"
-                       class="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition">
+                       class="px-3 py-1.5 text-xs font-medium rounded-lg bg-[#1DA8BB]/10 text-[#1DA8BB] hover:bg-[#1DA8BB] hover:text-white transition">
                         Détails
                     </a>
                 </div>
@@ -138,8 +138,8 @@
                             {
                                 title: "{{ Str::limit($event->titre, 20) }}",
                                 start: "{{ $event->dateevenement }}",
-                                backgroundColor: "{{ $event->inscriptions->contains(fn($insc) => $insc->membre_id === $membre->id) ? '#22c55e' : '#3b82f6' }}",
-                                borderColor: "{{ $event->inscriptions->contains(fn($insc) => $insc->membre_id === $membre->id) ? '#16a34a' : '#2563eb' }}",
+                                backgroundColor: "{{ $event->inscriptions->contains(fn($insc) => $insc->membre_id === $membre->id) ? '#12CEB7' : '#1DA8BB' }}",
+                                borderColor: "{{ $event->inscriptions->contains(fn($insc) => $insc->membre_id === $membre->id) ? '#12CEB7' : '#1DA8BB' }}",
                                 textColor: 'white',
                                 url: "{{ route('evenement.show', $event->id) }}"
                             },

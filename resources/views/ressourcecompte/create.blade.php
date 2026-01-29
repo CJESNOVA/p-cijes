@@ -3,7 +3,7 @@
         <!-- Header moderne -->
         <div class="mb-2">
             <div class="flex items-center gap-4 mb-2">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -84,7 +84,7 @@
                 {{-- ✅ Boutons --}}
                 <div class="sm:col-span-2 mt-3">
                     <button type="submit"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                        class="px-4 py-2 bg-[#4FBE96] hover:bg-[#4FBE96]/90 text-white rounded-lg transition">
                         Enregistrer
                     </button>
                     <a href="{{ route('ressourcecompte.index') }}"

@@ -98,21 +98,72 @@ class DiagnosticentrepriseController extends Controller
     ]);
 
     $answers = $request->input('diagnosticreponses', []);
+
+    // 🔍 Vérifier si au moins une réponse a été fournie
+    if (empty($answers) || !is_array($answers)) {
+        return redirect()->back()
+            ->with('error', '⚠️ Veuillez répondre à au moins une question avant de valider le diagnostic.')
+            ->withInput();
+    }
+
+    // 🔍 Vérifier si les réponses contiennent des valeurs vides
+    $hasValidAnswers = false;
+    foreach ($answers as $question_id => $values) {
+        if (is_array($values)) {
+            if (!empty(array_filter($values))) {
+                $hasValidAnswers = true;
+                break;
+            }
+        } elseif (!empty($values)) {
+            $hasValidAnswers = true;
+            break;
+        }
+    }
+
+    if (!$hasValidAnswers) {
+        return redirect()->back()
+            ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de valider le diagnostic.')
+            ->withInput();
+    }
+
     $totalScore = 0;
 
-    // Diagnostic unique par membre + entreprise
-    $diagnostic = Diagnostic::firstOrCreate(
-        [
+    // Vérifier s'il existe un diagnostic en cours pour cette entreprise
+    $diagnostic = Diagnostic::where('entreprise_id', $request->entreprise_id)
+        ->where('membre_id', $membre->id)
+        ->where('diagnosticstatut_id', 1) // uniquement les diagnostics en cours
+        ->where('diagnostictype_id', 2)
+        ->first();
+
+    // Si aucun diagnostic en cours, en créer un nouveau
+    if (!$diagnostic) {
+        $diagnostic = Diagnostic::create([
             'entreprise_id' => $request->entreprise_id,
             'membre_id'     => $membre->id,
-        ],
-        [
             'diagnosticstatut_id' => 1,
             'diagnostictype_id'   => 2,
             'scoreglobal'         => 0,
             'etat'                => 1,
-        ]
-    );
+        ]);
+    }
+
+    // 🔍 Vérification : s'assurer qu'il y a des réponses (nouvelles ou existantes)
+    // Mais empêcher la soumission si aucune réponse n'est fournie du tout
+    $totalAnswersCount = 0;
+    foreach ($answers as $question_id => $values) {
+        if (is_array($values)) {
+            $totalAnswersCount += count(array_filter($values));
+        } elseif (!empty($values)) {
+            $totalAnswersCount++;
+        }
+    }
+
+    // Si aucune réponse n'est fournie dans le formulaire
+    if ($totalAnswersCount === 0) {
+        return redirect()->back()
+            ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de valider le diagnostic.')
+            ->withInput();
+    }
 
     \DB::transaction(function () use ($answers, $diagnostic, &$totalScore) {
         foreach ($answers as $question_id => $values) {
@@ -138,7 +189,7 @@ class DiagnosticentrepriseController extends Controller
         }
     });
 
-    // Modules d’évaluation
+    // Modules d'évaluation
     $diagnosticmodules = Diagnosticmodule::where('diagnosticmoduletype_id', 2)
         ->where('etat', 1)
         ->orderBy('position')
@@ -166,7 +217,7 @@ class DiagnosticentrepriseController extends Controller
     $allAnswered = empty(array_diff($obligatoires, $repondues));
 
     if ($allAnswered) {
-        \DB::transaction(function () use ($diagnostic, $request, $membre, $totalScore) {
+        \DB::transaction(function () use ($diagnostic, $request, $membre, &$totalScore) {
 
             // ✅ Met à jour le diagnostic
             $diagnostic->update([
@@ -174,18 +225,14 @@ class DiagnosticentrepriseController extends Controller
                 'diagnosticstatut_id' => 2,
             ]);
 
-            // ✅ Vérifie / crée un accompagnement
-            $accompagnement = Accompagnement::firstOrCreate(
-                [
-                    'entreprise_id' => $request->entreprise_id,
-                    'membre_id'     => $membre->id,
-                ],
-                [
-                    'accompagnementniveau_id' => 1,
-                    'dateaccompagnement'      => now(),
-                    'accompagnementstatut_id' => 1,
-                ]
-            );
+            // 🏁 Création systématique d'un nouvel accompagnement pour chaque diagnostic
+            $accompagnement = Accompagnement::create([
+                'entreprise_id' => $request->entreprise_id,
+                'membre_id'     => $membre->id,
+                'accompagnementniveau_id' => 1,
+                'dateaccompagnement'      => now(),
+                'accompagnementstatut_id' => 1,
+            ]);
 
             $diagnostic->update([
                 'accompagnement_id' => $accompagnement->id,
@@ -195,28 +242,71 @@ class DiagnosticentrepriseController extends Controller
             $this->genererPlansAutomatiques($diagnostic);
         });
 
-            // 🏆 Vérifie si c’est le premier diagnostic PME du membre
-            $nbDiagnostics = Diagnostic::where('membre_id', $membre->id)->where('entreprise_id', $request->entreprise_id)
-                ->where('diagnosticstatut_id', 2)
-                ->count();
+        // 🏆 Vérifie si c'est le premier diagnostic PME du membre
+        $nbDiagnostics = Diagnostic::where('membre_id', $membre->id)->where('entreprise_id', $request->entreprise_id)
+            ->where('diagnosticstatut_id', 2)
+            ->count();
 
-            if ($nbDiagnostics === 1) {
-                
+        if ($nbDiagnostics === 1) {
+            
         $entreprise = Entreprise::findOrFail($request->entreprise_id);
 
-                // 🪙 Déclenche la récompense "DIAG_ENTREPRISE_COMPLET"
-                $recompense = $recompenseService->attribuerRecompense('DIAG_ENTREPRISE_COMPLET', $membre, $entreprise ?? null, $diagnostic->id);
+            // 🪙 Déclenche la récompense "DIAG_ENTREPRISE_COMPLET"
+            $recompense = $recompenseService->attribuerRecompense('DIAG_ENTREPRISE_COMPLET', $membre, $entreprise ?? null, $diagnostic->id);
 
-            }
+        }
 
-        return redirect()->route('diagnosticentreprise.success')
-            ->with('success', "✅ Diagnostic terminé. Score : {$totalScore}")
-            ->with('diagnostic_id', $diagnostic->id);
+        return redirect()->route('diagnosticentreprise.success', $diagnostic->id)
+            ->with('success', "✅ Diagnostic terminé. Score : {$totalScore}");
     }
 
-    return redirect()->route('diagnosticentreprise.success')
-        ->with('info', "🕓 Diagnostic partiellement rempli. Score actuel : {$totalScore}");
+    // ⚠️ Questions obligatoires non remplies
+    $questionsObligatoiresManquantes = count($obligatoires) - count($repondues);
+    return redirect()->back()
+        ->with('warning', "⚠️ Il reste {$questionsObligatoiresManquantes} question(s) obligatoire(s) non remplie(s). Votre diagnostic est sauvegardé mais vous devez compléter ces questions pour le terminer.")
+        ->with('diagnostic_id', $diagnostic->id);
 }
+
+    /**
+     * Affiche la page de succès avec les détails du diagnostic
+     */
+    public function success($diagnosticId)
+    {
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->first();
+
+        // Récupérer le diagnostic avec toutes ses relations
+        $diagnostic = Diagnostic::where('id', $diagnosticId)
+            ->where('diagnostictype_id', 2) // diagnostic entreprise
+            ->with([
+                'entreprise',
+                'accompagnement',
+                'diagnosticresultats.diagnosticquestion.diagnosticmodule',
+                'diagnosticresultats.diagnosticreponse',
+                'diagnosticmodulescores.diagnosticmodule'
+            ])
+            ->firstOrFail();
+
+        // Vérifier que le diagnostic appartient au membre
+        $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)->pluck('entreprise_id');
+        if ($diagnostic->membre_id != $membre->id && !in_array($diagnostic->entreprise_id, $entrepriseIds->toArray())) {
+            return redirect()->route('diagnosticentreprise.indexForm')
+                ->with('error', 'Accès non autorisé à ce diagnostic.');
+        }
+
+        // Récupérer tous les modules pour l'affichage
+        $modules = Diagnosticmodule::where('diagnosticmoduletype_id', 2)
+            ->where('etat', 1)
+            ->orderBy('position')
+            ->with(['diagnosticquestions' => function ($q) {
+                $q->where('etat', 1)
+                  ->orderBy('position')
+                  ->with(['diagnosticreponses' => fn($query) => $query->where('etat', 1)]);
+            }])
+            ->get();
+
+        return view('diagnosticentreprise.success', compact('diagnostic', 'modules'));
+    }
 
     /**
      * Affiche la liste des plans d'accompagnement pour un diagnostic entreprise

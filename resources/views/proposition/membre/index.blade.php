@@ -3,7 +3,7 @@
         <!-- Header moderne -->
         <div class="mb-2">
             <div class="flex items-center gap-4 mb-2">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2 2v5a2 2 0 012 2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707L19.586 16.414A1 1 0 0118 17V11a2 2 0 00-2-2H7a2 2 0 00-2 2v5a2 2 0 002 2z"></path>
                     </svg>
@@ -46,7 +46,7 @@
                         <div class="card bg-white dark:bg-navy-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
                             {{-- En-tête avec statut --}}
                             <div class="relative">
-                                <div class="h-32 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                <div class="h-32 bg-gradient-to-r from-[#4FBE96] to-[#4FBE96] flex items-center justify-center">
                                     <div class="text-white text-center">
                                         <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2 2v5a2 2 0 012 2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707L19.586 16.414A1 1 0 0118 17V11a2 2 0 00-2-2H7a2 2 0 00-2 2v5a2 2 0 002 2z"></path>

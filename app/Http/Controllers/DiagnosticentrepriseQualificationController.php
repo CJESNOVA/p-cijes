@@ -132,6 +132,34 @@ class DiagnosticentrepriseQualificationController extends Controller
             'entreprise_id' => 'nullable|exists:entreprises,id',
         ]);
 
+        // 🔍 Vérifier si au moins une réponse a été fournie
+        $answers = $request->reponses ?? [];
+        if (empty($answers) || !is_array($answers)) {
+            return redirect()->back()
+                ->with('error', '⚠️ Veuillez répondre à au moins une question avant de continuer.')
+                ->withInput();
+        }
+
+        // 🔍 Vérifier si les réponses contiennent des valeurs valides
+        $hasValidAnswers = false;
+        foreach ($answers as $questionId => $reponseData) {
+            if (is_array($reponseData)) {
+                if (!empty(array_filter($reponseData))) {
+                    $hasValidAnswers = true;
+                    break;
+                }
+            } elseif (!empty($reponseData)) {
+                $hasValidAnswers = true;
+                break;
+            }
+        }
+
+        if (!$hasValidAnswers) {
+            return redirect()->back()
+                ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de continuer.')
+                ->withInput();
+        }
+
         // Récupérer le dernier diagnostic en cours pour cette entreprise (non terminé)
         $diagnostic = Diagnostic::where('entreprise_id', $entrepriseId)
             ->where('membre_id', $membre->id) 
@@ -154,92 +182,38 @@ class DiagnosticentrepriseQualificationController extends Controller
                 'etat' => 1,
             ]);
         }
-            
-        // Supprimer les anciens résultats pour ce module uniquement
-        $moduleQuestionIds = Diagnosticmodule::find($moduleId)
-            ->diagnosticquestions()
-            ->pluck('id')
-            ->toArray();
-            
-        Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
-            ->whereIn('diagnosticquestion_id', $moduleQuestionIds)
-            ->delete();
 
-        // Enregistrer les nouvelles réponses pour ce module
-        foreach ($request->reponses as $questionId => $reponseData) {
-            // Si c'est un tableau (checkbox), traiter chaque élément
+        // 🔍 Récupérer les questions obligatoires pour ce module
+        $moduleQuestions = Diagnosticmodule::find($moduleId)
+            ->diagnosticquestions()
+            ->where('etat', 1)
+            ->get();
+            
+        $obligatoires = $moduleQuestions->where('obligatoire', 1)->pluck('id')->toArray();
+        
+        // 🔍 Vérifier si les questions obligatoires sont répondues
+        $repondues = [];
+        foreach ($answers as $questionId => $reponseData) {
             if (is_array($reponseData)) {
-                foreach ($reponseData as $reponseId) {
-                    Diagnosticresultat::create([
-                        'diagnostic_id' => $diagnostic->id,
-                        'diagnosticquestion_id' => $questionId,
-                        'diagnosticreponse_id' => $reponseId,
-                        'etat' => 1,
-                    ]);
+                if (!empty(array_filter($reponseData))) {
+                    $repondues[] = $questionId;
                 }
-            } 
-            // Si c'est une valeur simple (radio), traiter directement
-            elseif ($reponseData) {
-                Diagnosticresultat::create([
-                    'diagnostic_id' => $diagnostic->id,
-                    'diagnosticquestion_id' => $questionId,
-                    'diagnosticreponse_id' => $reponseData,
-                    'etat' => 1,
-                ]);
+            } elseif (!empty($reponseData)) {
+                $repondues[] = $questionId;
             }
         }
-
-        // Récupérer tous les modules pour trouver le suivant
-        $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 3)
-            ->where('etat', 1)
-            ->orderBy('position')
-            ->get();
         
-        $currentModuleIndex = $allModules->search(function($module) use ($moduleId) {
-            return $module->id == $moduleId;
-        });
-        
-        $nextModule = $allModules->get($currentModuleIndex + 1);
-
-        // Rediriger vers le module suivant ou rester sur le dernier
-        if ($nextModule) {
-            return redirect()->route('diagnosticentreprisequalification.showModule', [$entrepriseId, $nextModule->id])
-                ->with('success', 'Module enregistré avec succès !');
-        } else {
-            return redirect()->back()->with('success', 'Dernier module enregistré avec succès !');
-        }
-    }
-
-    public function store(Request $request, $entrepriseId, $moduleId)
-    {
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->first();
-
-        if (!$membre) {
-            return redirect()
-                ->route('membre.createOrEdit')
-                ->with('error', '⚠️ Vous devez créer votre profil membre avant de remplir un diagnostic.');
+        $obligatoiresManquantes = array_diff($obligatoires, $repondues);
+        if (!empty($obligatoiresManquantes)) {
+            $nbManquantes = count($obligatoiresManquantes);
+            return redirect()->back()
+                ->with('warning', "⚠️ Il reste {$nbManquantes} question(s) obligatoire(s) non remplie(s). Veuillez compléter avant de continuer.")
+                ->withInput();
         }
 
-        $request->validate([
-            'entreprise_id' => 'required|exists:entreprises,id',
-        ]);
-
-        // Récupérer le dernier diagnostic en cours pour cette entreprise
-        $diagnostic = Diagnostic::where('entreprise_id', $entrepriseId)
-            ->where('membre_id', $membre->id) 
-            ->where('diagnostictype_id', 3) 
-            ->where('diagnosticstatut_id', 1) // Non terminé
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        if (!$diagnostic) {
-            return redirect()->back()->with('error', 'Aucun diagnostic en cours trouvé.');
-        }
-
-        // Sauvegarder les réponses du dernier module
-        if ($moduleId) {
-            // Supprimer les anciens résultats pour ce module
+        // 🔄 Utiliser une transaction pour la cohérence des données
+        \DB::transaction(function () use ($diagnostic, $moduleId, $answers) {
+            // Supprimer les anciens résultats pour ce module uniquement
             $moduleQuestionIds = Diagnosticmodule::find($moduleId)
                 ->diagnosticquestions()
                 ->pluck('id')
@@ -250,7 +224,7 @@ class DiagnosticentrepriseQualificationController extends Controller
                 ->delete();
 
             // Enregistrer les nouvelles réponses pour ce module
-            foreach ($request->reponses as $questionId => $reponseData) {
+            foreach ($answers as $questionId => $reponseData) {
                 // Si c'est un tableau (checkbox), traiter chaque élément
                 if (is_array($reponseData)) {
                     foreach ($reponseData as $reponseId) {
@@ -272,12 +246,161 @@ class DiagnosticentrepriseQualificationController extends Controller
                     ]);
                 }
             }
+        });
+
+        // Récupérer tous les modules pour trouver le suivant
+        $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 3)
+            ->where('etat', 1)
+            ->orderBy('position')
+            ->get();
+        
+        $currentModuleIndex = $allModules->search(function($module) use ($moduleId) {
+            return $module->id == $moduleId;
+        });
+        
+        $nextModule = $allModules->get($currentModuleIndex + 1);
+
+        // Rediriger vers le module suivant ou rester sur le dernier
+        if ($nextModule) {
+            $moduleActuel = $currentModuleIndex + 1;
+            $totalModules = $allModules->count();
+            return redirect()->route('diagnosticentreprisequalification.showModule', [$entrepriseId, $nextModule->id])
+                ->with('success', "✅ Module {$moduleActuel}/{$totalModules} enregistré avec succès ! Continuez sur le module suivant.");
+        } else {
+            return redirect()->back()
+                ->with('success', '✅ Dernier module enregistré ! Vous pouvez maintenant finaliser le test de qualification.')
+                ->with('showFinalization', true);
+        }
+    }
+
+    public function store(Request $request, $entrepriseId, $moduleId)
+    {
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->first();
+
+        if (!$membre) {
+            return redirect()
+                ->route('membre.createOrEdit')
+                ->with('error', '⚠️ Vous devez créer votre profil membre avant de remplir un diagnostic.');
         }
 
-        // Mettre à jour le diagnostic comme terminé
-        $diagnostic->update([
-            'diagnosticstatut_id' => 2, // Terminé
+        $request->validate([
+            'entreprise_id' => 'required|exists:entreprises,id',
         ]);
+
+        // 🔍 Vérifier si au moins une réponse a été fournie
+        $answers = $request->reponses ?? [];
+        if (empty($answers) || !is_array($answers)) {
+            return redirect()->back()
+                ->with('error', '⚠️ Veuillez répondre à au moins une question avant de finaliser.')
+                ->withInput();
+        }
+
+        // 🔍 Vérifier si les réponses contiennent des valeurs valides
+        $hasValidAnswers = false;
+        foreach ($answers as $questionId => $reponseData) {
+            if (is_array($reponseData)) {
+                if (!empty(array_filter($reponseData))) {
+                    $hasValidAnswers = true;
+                    break;
+                }
+            } elseif (!empty($reponseData)) {
+                $hasValidAnswers = true;
+                break;
+            }
+        }
+
+        if (!$hasValidAnswers) {
+            return redirect()->back()
+                ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de finaliser.')
+                ->withInput();
+        }
+
+        // Récupérer le dernier diagnostic en cours pour cette entreprise
+        $diagnostic = Diagnostic::where('entreprise_id', $entrepriseId)
+            ->where('membre_id', $membre->id) 
+            ->where('diagnostictype_id', 3) 
+            ->where('diagnosticstatut_id', 1) // Non terminé
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$diagnostic) {
+            return redirect()->back()->with('error', '⚠️ Aucun test de qualification en cours trouvé.');
+        }
+
+        // 🔍 Récupérer toutes les questions obligatoires de tous les modules
+        $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 3)
+            ->where('etat', 1)
+            ->with(['diagnosticquestions' => function ($q) {
+                $q->where('etat', 1)
+                  ->where('obligatoire', 1);
+            }])
+            ->get();
+            
+        $obligatoires = $allModules
+            ->flatMap(fn($module) => $module->diagnosticquestions)
+            ->pluck('id')
+            ->toArray();
+
+        // 🔍 Vérifier si toutes les questions obligatoires sont répondues
+        $repondues = Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
+            ->whereIn('diagnosticquestion_id', $obligatoires)
+            ->distinct()
+            ->pluck('diagnosticquestion_id')
+            ->toArray();
+
+        $obligatoiresManquantes = array_diff($obligatoires, $repondues);
+        if (!empty($obligatoiresManquantes)) {
+            $nbManquantes = count($obligatoiresManquantes);
+            return redirect()->back()
+                ->with('warning', "⚠️ Il reste {$nbManquantes} question(s) obligatoire(s) non remplie(s) dans l'ensemble du test. Veuillez compléter avant de finaliser.")
+                ->withInput();
+        }
+
+        // 🔄 Utiliser une transaction pour la cohérence des données
+        \DB::transaction(function () use ($diagnostic, $moduleId, $answers) {
+            // Sauvegarder les réponses du dernier module
+            if ($moduleId) {
+                // Supprimer les anciens résultats pour ce module
+                $moduleQuestionIds = Diagnosticmodule::find($moduleId)
+                    ->diagnosticquestions()
+                    ->pluck('id')
+                    ->toArray();
+                    
+                Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
+                    ->whereIn('diagnosticquestion_id', $moduleQuestionIds)
+                    ->delete();
+
+                // Enregistrer les nouvelles réponses pour ce module
+                foreach ($answers as $questionId => $reponseData) {
+                    // Si c'est un tableau (checkbox), traiter chaque élément
+                    if (is_array($reponseData)) {
+                        foreach ($reponseData as $reponseId) {
+                            Diagnosticresultat::create([
+                                'diagnostic_id' => $diagnostic->id,
+                                'diagnosticquestion_id' => $questionId,
+                                'diagnosticreponse_id' => $reponseId,
+                                'etat' => 1,
+                            ]);
+                        }
+                    } 
+                    // Si c'est une valeur simple (radio), traiter directement
+                    elseif ($reponseData) {
+                        Diagnosticresultat::create([
+                            'diagnostic_id' => $diagnostic->id,
+                            'diagnosticquestion_id' => $questionId,
+                            'diagnosticreponse_id' => $reponseData,
+                            'etat' => 1,
+                        ]);
+                    }
+                }
+            }
+
+            // Mettre à jour le diagnostic comme terminé
+            $diagnostic->update([
+                'diagnosticstatut_id' => 2, // Terminé
+            ]);
+        });
 
         return redirect()->route('diagnosticentreprisequalification.success')
             ->with('success', 'Test de qualification enregistré avec succès !')

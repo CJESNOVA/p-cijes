@@ -4,7 +4,7 @@
         <!-- Header moderne -->
         <div class="mb-2">
             <div class="flex items-center gap-4 mb-2">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-primary-focus flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <i class="fas fa-wallet text-white text-xl"></i>
                 </div>
                 <div>
@@ -115,6 +115,55 @@
                                               placeholder="Informations complémentaires..."></textarea>
                                 </div>
 
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Compte Ressource KOBO -->
+                    <div class="card shadow-xl mb-6">
+                        <div class="card-header border-b border-slate-200 dark:border-navy-500 px-6 py-4">
+                            <h3 class="text-xl font-semibold text-slate-800 dark:text-navy-50 flex items-center">
+                                <i class="fas fa-coins mr-2 text-amber-500"></i>
+                                Compte Ressource KOBO
+                            </h3>
+                        </div>
+
+                        <div class="card-body p-6">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium mb-2">
+                                    Sélectionnez le compte ressource à débiter <span class="text-red-500">*</span>
+                                </label>
+                                <select name="ressourcecompte_id" required
+                                        class="form-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-primary">
+                                    <option value="">-- Sélectionner un compte KOBO --</option>
+                                    @if(isset($ressourcecomptes) && $ressourcecomptes->count() > 0)
+                                        @foreach($ressourcecomptes as $ressource)
+                                            <option value="{{ $ressource->id }}">
+                                                {{ $ressource->nom_complet ?? 'Compte #' . $ressource->id }} 
+                                                (Solde: {{ number_format($ressource->solde, 2) }} FCFA)
+                                            </option>
+                                        @endforeach
+                                    @else
+                                        <option value="" disabled>Aucun compte ressource disponible</option>
+                                    @endif
+                                </select>
+                                @if(!isset($ressourcecomptes) || $ressourcecomptes->count() == 0)
+                                    <p class="text-sm text-amber-600 mt-2">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Vous devez d'abord créer des comptes ressources KOBO pour pouvoir payer les cotisations.
+                                    </p>
+                                @endif
+                            </div>
+
+                            <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                                <h4 class="font-semibold mb-2 text-blue-800">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Informations de paiement
+                                </h4>
+                                <p class="text-sm text-blue-700">
+                                    Le montant de la cotisation sera automatiquement débité du compte ressource sélectionné.
+                                    Assurez-vous d'avoir un solde suffisant avant de valider.
+                                </p>
                             </div>
                         </div>
                     </div>

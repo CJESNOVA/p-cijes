@@ -90,17 +90,17 @@
 
             
 
-            <!-- Evenements -->
-            <a href="{{ env('APP_URL') }}evenements/evenements"
-                class="flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 {{ $routePrefix === 'evenements' ? 'text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-navy-600 bg-primary/10 dark:text-accent-light dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90' : 'hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25' }}"
-                x-tooltip.placement.right="'Evènements & espaces physiques'">
+            <!-- Bons -->
+            <a href="{{ env('APP_URL') }}bons/ressourcecomptes"
+                class="flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 {{ $routePrefix === 'bons' ? 'text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-navy-600 bg-primary/10 dark:text-accent-light dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90' : 'hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25' }}"
+                x-tooltip.placement.right="'Ressources'">
                 <svg class="size-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-    <path stroke-linecap="round" d="M7 2v3m10-3v3M3 7h18M5 7h14v13H5V7Z"/>
+    <path d="M3 7h18v10H3V7Zm0 3h18M16 14h2" stroke-linecap="round"/>
+    <path d="M3 10V8a3 3 0 0 1 3-3h13" stroke-linecap="round"/>
 </svg>
 
             </a>
 
-            
 
             <!-- Experts -->
             <a href="{{ env('APP_URL') }}experts/experts-disponibles"
@@ -118,7 +118,7 @@
             <!-- Prestations -->
             <a href="{{ env('APP_URL') }}prestations/les-prestations"
                 class="flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 {{ $routePrefix === 'prestations' ? 'text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-navy-600 bg-primary/10 dark:text-accent-light dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90' : 'hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25' }}"
-                x-tooltip.placement.right="'Prestations & formations'">
+                x-tooltip.placement.right="'Prestations'"> <!-- & formations -->
                 <svg class="size-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
     <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/>
 </svg>
@@ -127,17 +127,17 @@
 
             
 
-            <!-- Bons -->
-            <a href="{{ env('APP_URL') }}bons/ressourcecomptes"
-                class="flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 {{ $routePrefix === 'bons' ? 'text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-navy-600 bg-primary/10 dark:text-accent-light dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90' : 'hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25' }}"
-                x-tooltip.placement.right="'Ressources'">
+            <!-- Evenements -->
+            <a href="{{ env('APP_URL') }}evenements/evenements"
+                class="flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 {{ $routePrefix === 'evenements' ? 'text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-navy-600 bg-primary/10 dark:text-accent-light dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90' : 'hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25' }}"
+                x-tooltip.placement.right="'Evènements & espaces physiques'">
                 <svg class="size-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-    <path d="M3 7h18v10H3V7Zm0 3h18M16 14h2" stroke-linecap="round"/>
-    <path d="M3 10V8a3 3 0 0 1 3-3h13" stroke-linecap="round"/>
+    <path stroke-linecap="round" d="M7 2v3m10-3v3M3 7h18M5 7h14v13H5V7Z"/>
 </svg>
 
             </a>
 
+            
             
 
             <!-- Forums -->

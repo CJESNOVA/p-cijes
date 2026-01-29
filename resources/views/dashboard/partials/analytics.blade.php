@@ -32,6 +32,13 @@
                         </p>
                     </div>
 
+                    <a href="https://academy.cjes.africa/login" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center px-6 py-3 bg-[#1DA8BB] text-white rounded-lg hover:bg-[#1DA8BB]/90 transition-colors shadow-lg">
+                        Accéder à CJES Academy
+                    </a>
+
                     <!-- <div class="flex items-center justify-between mt-4">
                         <button id="btnSyncSupabase" 
                             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
@@ -44,13 +51,13 @@
         </div>
 
         <!-- Ligne 2 : Petites cartes de stats -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @php
                 $smallStats = [
-                    ['title' => 'Inscriptions', 'value' => $stats['inscriptions'] ?? 0, 'bg' => 'bg-blue-100', 'iconColor' => 'text-blue-600', 'icon' => 'M3 3v18h18'],
-                    ['title' => 'Entreprises', 'value' => $stats['entreprises'] ?? 0, 'bg' => 'bg-green-100', 'iconColor' => 'text-green-600', 'icon' => 'M3 3v18h18'],
-                    ['title' => 'Experts', 'value' => $stats['experts'] ?? 0, 'bg' => 'bg-yellow-100', 'iconColor' => 'text-yellow-600', 'icon' => 'M3 3v18h18'],
-                    ['title' => 'Diagnostics', 'value' => $stats['diagnostics'] ?? 0, 'bg' => 'bg-red-100', 'iconColor' => 'text-red-600', 'icon' => 'M3 3v18h18'],
+                    ['title' => 'Inscriptions', 'value' => $stats['inscriptions'] ?? 0, 'bg' => 'bg-[#1DA8BB]/10', 'iconColor' => 'text-[#1DA8BB]', 'icon' => 'M3 3v18h18'],
+                    ['title' => 'Entreprises', 'value' => $stats['entreprises'] ?? 0, 'bg' => 'bg-[#12CEB7]/10', 'iconColor' => 'text-[#12CEB7]', 'icon' => 'M3 3v18h18'],
+                    ['title' => 'Experts', 'value' => $stats['experts'] ?? 0, 'bg' => 'bg-[#F09116]/10', 'iconColor' => 'text-[#F09116]', 'icon' => 'M3 3v18h18'],
+                    ['title' => 'Diagnostics', 'value' => $stats['diagnostics'] ?? 0, 'bg' => 'bg-[#9333EA]/10', 'iconColor' => 'text-[#9333EA]', 'icon' => 'M3 3v18h18'],
                 ];
             @endphp
 
@@ -67,16 +74,16 @@
                 </div>
             </div>
             @endforeach
-        </div>
+        </div> -->
     </div>
 
     <!-- Ligne 3 : Autres widgets -->
-    <div class="col-span-12 lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+    <!-- <div class="col-span-12 lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         @php
             $widgets = [
-                ['title' => 'Entreprises Pépites', 'value' => $stats['pepite'] ?? 0, 'colors' => 'from-yellow-400 to-yellow-500', 'icon' => '⭐'],
-                ['title' => 'Membres associés', 'value' => $stats['membres_associes'] ?? 0, 'colors' => 'from-purple-400 to-purple-500', 'icon' => '👥'],
-                ['title' => 'PME', 'value' => $stats['pme'] ?? 0, 'colors' => 'from-green-400 to-green-500', 'icon' => '🏢'],
+                ['title' => 'Entreprises Pépites', 'value' => $stats['pepite'] ?? 0, 'colors' => 'from-[#F09116] to-[#F09116]/80', 'icon' => '⭐'],
+                ['title' => 'Membres associés', 'value' => $stats['membres_associes'] ?? 0, 'colors' => 'from-[#9333EA] to-[#9333EA]/80', 'icon' => '👥'],
+                ['title' => 'PME', 'value' => $stats['pme'] ?? 0, 'colors' => 'from-[#12CEB7] to-[#12CEB7]/80', 'icon' => '🏢'],
             ];
         @endphp
 
@@ -89,7 +96,7 @@
             <div class="text-3xl">{{ $widget['icon'] }}</div>
         </div>
         @endforeach
-    </div>
+    </div> -->
 </div>
 
 

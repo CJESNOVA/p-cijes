@@ -4,7 +4,7 @@
         <div class="mb-2">
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-4">
-                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
                         </svg>
@@ -19,7 +19,7 @@
                     </div>
                 </div>
                 <a href="{{ route('conversion.create') }}"
-                   class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
+                   class="px-6 py-3 bg-[#4FBE96] text-white rounded-lg hover:bg-[#4FBE96]/90 transition-colors flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -61,7 +61,7 @@
                     {{ $conv->ressourcetransactionsource->ressourcecompte->nom_complet ?? 'N/A' }}
                     <br>
                     <span class="text-slate-500">Montant :</span>
-                    <span class="font-bold">{{ number_format($conv->ressourcetransactionsource->montant, 2) }}</span>
+                    <span class="font-bold">{{ number_format($conv->ressourcetransactionsource->montant, 2) }} FCFA</span>
                 </p>
 
                 <p>
@@ -69,7 +69,7 @@
                     {{ $conv->ressourcetransactioncible->ressourcecompte->nom_complet ?? 'N/A' }}
                     <br>
                     <span class="text-slate-500">Montant après conversion :</span>
-                    <span class="font-bold">{{ number_format($conv->ressourcetransactioncible->montant, 2) }}</span>
+                    <span class="font-bold">{{ number_format($conv->ressourcetransactioncible->montant, 2) }} FCFA</span>
                 </p>
             </div>
 

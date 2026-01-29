@@ -70,7 +70,17 @@ class MembreController extends Controller
             $membre->save();
         }
 
+        // Vérifier si c'est une création ou une modification
+        $wasCreated = $membre->wasRecentlyCreated;
 
-        return redirect()->back()->with('success', 'Membre enregistré avec succès.');
+        if ($wasCreated) {
+            // Rediriger vers le tableau de bord après la création du profil
+            return redirect()->route('dashboard')
+                ->with('success', 'Votre profil a été créé avec succès ! Bienvenue sur la plateforme e-CIJES.');
+        } else {
+            // Rediriger vers le tableau de bord après la modification du profil
+            return redirect()->route('dashboard')
+                ->with('success', 'Votre profil a été mis à jour avec succès !');
+        }
     }
 }

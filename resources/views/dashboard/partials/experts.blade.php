@@ -86,10 +86,10 @@
                                             Prestation : {{ $p->prestation->titre }} 
                                             ({{ $p->prestation->prix }} FCFA, {{ $p->prestation->duree }})
                                         @endif
-                                        @if($p->formation)
+                                        {{-- @if($p->formation)
                                             Formation : {{ $p->formation->titre }} 
                                             ({{ $p->formation->formationniveau->titre ?? 'Niveau N/A' }})
-                                        @endif
+                                        @endif --}}
                                         <span class="text-xs text-slate-400">[{{ $p->created_at->format('d/m/Y') }}]</span>
                                     </li>
                                 @endforeach

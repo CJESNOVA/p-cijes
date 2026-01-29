@@ -24,7 +24,7 @@
         </div>
 
         <div class="form-group mb-3">
-            <label>Montant utilisé</label>
+            <label>Montant utilisé (FCFA)</label>
             <input type="number" name="montant" class="form-control" value="{{ $bonutilise->montant }}">
         </div>
 

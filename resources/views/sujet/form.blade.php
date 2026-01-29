@@ -3,7 +3,7 @@
         <!-- Header moderne -->
         <div class="mb-2">
             <div class="flex items-center gap-4 mb-2">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
@@ -77,7 +77,7 @@
                 <div>
                     <label for="vignette" class="block font-medium text-gray-700 dark:text-gray-200 mb-2">Logo ou image (facultatif)</label>
 
-                    <label class="inline-flex items-center justify-center cursor-pointer btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 transition">
+                    <label class="inline-flex items-center justify-center cursor-pointer btn bg-slate-100 font-medium text-slate-800 hover:bg-slate-200 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 transition">
                         <input type="file" name="vignette" id="vignette" class="hidden" accept="image/*">
                         <span>Choisir un fichier</span>
                     </label>
