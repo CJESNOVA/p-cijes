@@ -159,9 +159,11 @@ Route::middleware(['web', 'guest'])->group(function () {
 
 
 
-Route::get('/emails/verify', function () {
-    return view('auth.verify-success');
-})->name('emails.verify');
+Route::get('/emails/verify', [\App\Http\Controllers\AuthController::class, 'emailVerified'])->name('emails.verify');
+
+// Routes de test pour les emails (à retirer en production)
+Route::get('/test-mail', [\App\Http\Controllers\MailTestController::class, 'testMail'])->name('test.mail');
+Route::get('/test-notification', [\App\Http\Controllers\MailTestController::class, 'testNotification'])->name('test.notification');
 
 
 Route::get('/test-supabase-register', function () {

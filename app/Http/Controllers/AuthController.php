@@ -12,6 +12,10 @@ use App\Models\User;
 use App\Models\Membre;
 
 use App\Services\RecompenseService;
+use App\Notifications\WelcomeNotification;
+use App\Notifications\EmailVerifiedNotification;
+use App\Notifications\PasswordResetNotification;
+use App\Notifications\PasswordResetConfirmationNotification;
 
 class AuthController extends Controller
 {
@@ -215,9 +219,17 @@ public function register(Request $request)
 
         Auth::login($user);
 
-            // ✅ Pas besoin d’envoyer de mail toi-même — Supabase s’en charge
-            return redirect()->route('emails.verify')
-                ->with('status', 'Un e-mail de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.');
+        // 📧 Envoyer l'email de bienvenue
+        try {
+            $user->notify(new WelcomeNotification($user->name));
+        } catch (\Exception $e) {
+            // Continue même si l'email échoue
+            \Log::warning('Email de bienvenue non envoyé: ' . $e->getMessage());
+        }
+
+        // ✅ Pas besoin d’envoyer de mail toi-même — Supabase s’en charge
+        return redirect()->route('emails.verify')
+            ->with('status', 'Un e-mail de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.');
 
         //return redirect()->intended(route('dashboard'));
     }
@@ -290,11 +302,24 @@ public function register(Request $request)
     $response = $this->supabase->resetPasswordForEmail($request->email, [
         'redirect_to' => $redirectUrl,
     ]);
-//dd($redirectUrl);
+
     if (isset($response['error'])) {
         return back()->withErrors([
             'email' => $response['error_description'] ?? 'Erreur lors de la demande de réinitialisation.'
         ]);
+    }
+
+    // 📧 Envoyer notre notification personnalisée en plus
+    $user = User::where('email', $request->email)->first();
+    if ($user) {
+        try {
+            // Générer un token pour notre notification (au cas où)
+            $resetToken = bin2hex(random_bytes(32));
+            $user->notify(new PasswordResetNotification($resetToken, $user->name));
+        } catch (\Exception $e) {
+            // Continue même si l'email échoue
+            \Log::warning('Email de réinitialisation personnalisé non envoyé: ' . $e->getMessage());
+        }
     }
 
     return back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse e-mail.');
@@ -343,7 +368,38 @@ public function register(Request $request)
             return back()->withErrors(['password' => $response['error_description'] ?? 'Erreur lors de la réinitialisation.']);
         }
 
+        // 📧 Envoyer la confirmation de réinitialisation
+        try {
+            // Récupérer l'utilisateur depuis Supabase
+            $user = User::where('supabase_user_id', $response['user']['id'] ?? null)->first();
+            if ($user) {
+                $user->notify(new PasswordResetConfirmationNotification($user->name));
+            }
+        } catch (\Exception $e) {
+            // Continue même si l'email échoue
+            \Log::warning('Email de confirmation de réinitialisation non envoyé: ' . $e->getMessage());
+        }
+
         return redirect()->route('loginView')->with('status', 'Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.');
+    }
+
+    // --- Étape 5 : Confirmation d'email
+    public function emailVerified(Request $request)
+    {
+        // Vérifier si l'utilisateur est connecté
+        if (Auth::check()) {
+            $user = Auth::user();
+            
+            // 📧 Envoyer l'email de confirmation
+            try {
+                $user->notify(new EmailVerifiedNotification($user->name));
+            } catch (\Exception $e) {
+                // Continue même si l'email échoue
+                \Log::warning('Email de confirmation non envoyé: ' . $e->getMessage());
+            }
+        }
+        
+        return view('auth.verify-success');
     }
 
 }
