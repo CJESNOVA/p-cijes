@@ -341,18 +341,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/diagnostics/diagnostic', [DiagnosticController::class, 'showForm'])->name('diagnostic.form');
     Route::post('/diagnostics/diagnostic', [DiagnosticController::class, 'store'])->name('diagnostic.store');
-    Route::get('/diagnostics/diagnostic/success', function () {
-    return view('diagnostic.success');
-    })->name('diagnostic.success');
+    Route::get('/diagnostics/diagnostic/success/{diagnosticId}', [DiagnosticController::class, 'success'])->name('diagnostic.success');
     Route::get('/diagnostics/diagnostic/{diagnosticId}/plans', [DiagnosticController::class, 'listePlans'])->name('diagnostic.plans');
    
     Route::get('/diagnostics/diagnosticentreprise', [DiagnosticentrepriseController::class, 'indexForm'])->name('diagnosticentreprise.indexForm');
     Route::get('/diagnostics/diagnosticentreprise/choix-entreprise', [DiagnosticentrepriseController::class, 'choix_entreprise'])->name('diagnosticentreprise.choix_entreprise');
     Route::get('/diagnostics/diagnosticentreprise/{entrepriseId}/form', [DiagnosticentrepriseController::class, 'showForm'])->name('diagnosticentreprise.showForm');
     Route::post('/diagnostics/diagnosticentreprise/store', [DiagnosticentrepriseController::class, 'store'])->name('diagnosticentreprise.store');
-    Route::get('/diagnostics/diagnosticentreprise/success', function() {
-        return view('diagnosticentreprise.success');
-    })->name('diagnosticentreprise.success');
+    Route::get('/diagnostics/diagnosticentreprise/success/{diagnosticId}', [DiagnosticentrepriseController::class, 'success'])->name('diagnosticentreprise.success');
     Route::get('/diagnostics/diagnosticentreprise/{diagnosticId}/plans', [DiagnosticentrepriseController::class, 'listePlans'])->name('diagnosticentreprise.plans');
 
     // Routes pour le test de qualification (diagnosticmoduletype_id = 3)
@@ -401,6 +397,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/experts/propositions-recues/{proposition}', [PropositionMembreController::class, 'show'])->name('proposition.membre.show');
     Route::post('/experts/propositions-recues/{proposition}/accepter', [PropositionMembreController::class, 'accepter'])->name('proposition.membre.accepter');
     Route::post('/experts/propositions-recues/{proposition}/refuser', [PropositionMembreController::class, 'refuser'])->name('proposition.membre.refuser');
+    Route::get('/experts/propositions-recues/{proposition}/payer', [PropositionMembreController::class, 'payer'])->name('proposition.membre.payer');
 
     Route::get('/experts/disponibilite/ajouter', [DisponibiliteController::class, 'create'])->name('disponibilite.create');
     Route::post('/experts/disponibilite', [DisponibiliteController::class, 'store'])->name('disponibilite.store');

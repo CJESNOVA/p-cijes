@@ -4,7 +4,7 @@
         <div class="mb-8">
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center gap-4">
-                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                         </svg>
@@ -19,7 +19,7 @@
                     </div>
                 </div>
                 <a href="{{ route('ressourcecompte.create') }}"
-                   class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center shadow-lg">
+                   class="px-6 py-3 bg-[#4FBE96] text-white rounded-lg hover:bg-[#4FBE96]/90 transition-colors flex items-center shadow-lg">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -29,7 +29,7 @@
 
             <!-- Cartes statistiques -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="card bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
@@ -45,11 +45,11 @@
                     </div>
                 </div>
 
-                <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#152737] to-[#152737] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-blue-100 text-sm font-medium">Solde total</p>
+                                <p class="text-emerald-100 text-sm font-medium">Solde total</p>
                                 <p class="text-3xl font-bold mt-2">
                                     {{ number_format($types->sum(function($type) { 
                                         return $type->ressourcecomptes->sum('solde'); 
@@ -65,7 +65,7 @@
                     </div>
                 </div>
 
-                <div class="card bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
@@ -87,11 +87,11 @@
                     </div>
                 </div>
 
-                <div class="card bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#152737] to-[#152737] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-orange-100 text-sm font-medium">Entreprises</p>
+                                <p class="text-emerald-100 text-sm font-medium">Entreprises</p>
                                 <p class="text-3xl font-bold mt-2">
                                     {{ $types->sum(function($type) { 
                                         return $type->ressourcecomptes->whereNotNull('entreprise_id')->count(); 
@@ -114,7 +114,7 @@
 
                 <!-- Messages modernes -->
                 @if(session('success'))
-                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                    <div class="alert flex rounded-lg bg-[#4FBE96] px-6 py-4 text-white mb-6 shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -136,7 +136,7 @@
                         @foreach($types as $type)
                             <div class="card bg-white dark:bg-navy-800 rounded-xl shadow-lg overflow-hidden">
                                 <!-- Header du type -->
-                                <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-6">
+                                <div class="bg-gradient-to-r from-[#4FBE96] to-[#4FBE96] p-6">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-4">
                                             <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -176,7 +176,7 @@
                                                         </p>
                                                     </div>
                                                     <div class="text-right">
-                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#4FBE96]/20 text-[#4FBE96]">
                                                             Actif
                                                         </span>
                                                     </div>
@@ -189,14 +189,14 @@
                                                             @foreach($compte->ressourcetransactions->take(3) as $tx)
                                                                 <div class="flex items-center justify-between p-3 bg-white dark:bg-navy-700 rounded-lg border border-slate-200 dark:border-navy-600">
                                                                     <div class="flex items-center gap-3">
-                                                                        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                                                                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <div class="w-8 h-8 rounded-full bg-[#4FBE96]/20 flex items-center justify-center">
+                                                                            <svg class="w-4 h-4 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                                                                             </svg>
                                                                         </div>
                                                                         <div>
                                                                             <p class="font-medium text-slate-800 dark:text-navy-50">
-                                                                                {{ number_format($tx->montant, 2) }} crédits
+                                                                                {{ number_format($tx->montant, 2) }} XOF
                                                                             </p>
                                                                             <p class="text-sm text-slate-500 dark:text-navy-300">
                                                                                 {{ optional($tx->created_at)->format('d M Y H:i') }}
@@ -205,9 +205,9 @@
                                                                     </div>
                                                                     <div class="text-right">
                                                                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium
-                                                                            @if($tx->formationRessource) bg-blue-100 text-blue-800
-                                                                            @elseif($tx->prestationRessource) bg-green-100 text-green-800
-                                                                            @elseif($tx->evenementRessource) bg-orange-100 text-orange-800
+                                                                            @if($tx->formationRessource) bg-[#152737]/20 text-[#152737]
+                                                                            @elseif($tx->prestationRessource) bg-[#4FBE96]/20 text-[#4FBE96]
+                                                                            @elseif($tx->evenementRessource) bg-[#152737]/20 text-[#152737]
                                                                             @elseif($tx->espaceRessource) bg-purple-100 text-purple-800
                                                                             @elseif($tx->cotisationRessource) bg-red-100 text-red-800
                                                                             @else bg-gray-100 text-gray-800 @endif">
@@ -266,7 +266,7 @@
                             Commencez par ajouter votre première ressource
                         </p>
                         <a href="{{ route('ressourcecompte.create') }}" 
-                           class="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                           class="inline-flex items-center px-6 py-3 bg-[#4FBE96] text-white rounded-lg hover:bg-[#4FBE96]/90 transition-colors">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                             </svg>

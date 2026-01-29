@@ -3,7 +3,7 @@
         <!-- Header moderne avec identité unique -->
         <div class="mb-10">
             <div class="flex items-center gap-4 mb-8">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
@@ -16,7 +16,7 @@
 
             <!-- Cartes statistiques avec design unique -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="card bg-gradient-to-br from-teal-500 to-cyan-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
@@ -32,7 +32,7 @@
                     </div>
                 </div>
 
-                <div class="card bg-gradient-to-br from-emerald-500 to-green-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
@@ -48,7 +48,7 @@
                     </div>
                 </div>
 
-                <div class="card bg-gradient-to-br from-sky-500 to-blue-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#152737] to-[#152737] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
@@ -111,8 +111,8 @@
                                                         src="{{ env('SUPABASE_BUCKET_URL') . '/' . $r->espace->vignette }}" 
                                                         alt="{{ $r->espace->titre }}" />
                                                 @else
-                                                    <div class="h-12 w-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center mr-4">
-                                                        <svg class="w-6 h-6 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <div class="h-12 w-12 bg-[#152737]/20 dark:bg-[#152737]/30 rounded-lg flex items-center justify-center mr-4">
+                                                        <svg class="w-6 h-6 text-[#152737] dark:text-[#152737]/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                                         </svg>
                                                     </div>

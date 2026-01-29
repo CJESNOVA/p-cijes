@@ -168,7 +168,7 @@ class PrestationController extends Controller
         return view('prestation.liste', compact('prestations', 'membreId'));
     }
 
-    public function inscrireForm($id)
+    public function inscrireForm($id, Request $request)
 {
     $userId = Auth::id();
     $membre = Membre::where('user_id', $userId)->first();
@@ -180,6 +180,18 @@ class PrestationController extends Controller
     }
 
     $prestation = Prestation::where('etat', 1)->findOrFail($id);
+
+    // Récupérer le contexte de proposition depuis l'URL
+    $propositionContext = null;
+    if ($request->has('proposition')) {
+        $proposition = \App\Models\Proposition::find($request->input('proposition'));
+        if ($proposition && $proposition->statut && $proposition->statut->titre === 'Acceptée') {
+            $propositionContext = [
+                'id' => $proposition->id,
+                'prix_propose' => $proposition->prix_propose,
+            ];
+        }
+    }
 
     // Récupérer les options de paiement du membre
     $optionsPaiement = $this->getOptionsPaiementPourMembre($membre);
@@ -199,7 +211,7 @@ class PrestationController extends Controller
         ->where('etat', 1)
         ->get();
 
-    return view('prestation.inscrire', compact('prestation', 'ressources', 'optionsPaiement'));
+    return view('prestation.inscrire', compact('prestation', 'ressources', 'optionsPaiement', 'propositionContext'));
 }
 
 
@@ -262,9 +274,13 @@ public function inscrireStore(Request $request, $id)
     // Calculer les réductions selon le contexte
     $reductions = $this->getReductionsPourContexte($contextePaiement, $prestation);
 
-    $montantOriginal = $request->input('montant') !== null 
-        ? (float) $request->input('montant') 
-        : (float) ($prestation->prix ?? 0);
+    // Priorité au prix proposé dans la proposition
+    $montantOriginal = $prestation->prix ?? 0;
+    if ($request->input('prix_propose')) {
+        $montantOriginal = (float) $request->input('prix_propose');
+    } elseif ($request->input('montant') !== null) {
+        $montantOriginal = (float) $request->input('montant');
+    }
 
     // Calculer le montant avec la meilleure réduction
     $calculReduction = $this->calculerMontantAvecReduction($montantOriginal, $reductions);
@@ -367,7 +383,7 @@ public function inscrireStore(Request $request, $id)
         }
 
         // Enregistrer la trace du paiement (prestationressource)
-        Prestationressource::create([
+        $prestationressource = Prestationressource::create([
             'montant' => $montant,
             'reference' => $reference,
             'accompagnement_id' => $accompagnementId,
@@ -379,6 +395,17 @@ public function inscrireStore(Request $request, $id)
             'spotlight' => 0,
             'etat' => 1,
         ]);
+
+        // Lier avec la proposition si disponible
+        if ($request->input('proposition_id')) {
+            $proposition = \App\Models\Proposition::find($request->input('proposition_id'));
+            if ($proposition) {
+                $proposition->update([
+                    'prestationressource_id' => $prestationressource->id,
+                    'propositionstatut_id' => 4, // "Payée" ou "Terminée"
+                ]);
+            }
+        }
 
         // Créer la prestation réalisée
         $statutDefaut = Prestationrealiseestatut::where('etat', 1)->first();
@@ -396,10 +423,17 @@ public function inscrireStore(Request $request, $id)
         DB::commit();
 
         // Message de succès selon le type d'inscription
-        if ($montant > 0) {
-            $message = "✅ Inscription à la prestation '{$prestation->titre}' bien effectuée ! Paiement de " . number_format($montant, 2) . " FCFA effectué.";
+        if ($request->input('proposition_id')) {
+            $message = "🎯 Paiement de la prestation '{$prestation->titre}' bien effectué suite à votre proposition acceptée !";
+            if ($montant > 0) {
+                $message .= " Montant payé : " . number_format($montant, 2) . " €.";
+            }
         } else {
-            $message = "✅ Inscription à la prestation '{$prestation->titre}' bien effectuée ! Aucun paiement requis.";
+            if ($montant > 0) {
+                $message = "✅ Inscription à la prestation '{$prestation->titre}' bien effectuée ! Paiement de " . number_format($montant, 2) . " € effectué.";
+            } else {
+                $message = "✅ Inscription à la prestation '{$prestation->titre}' bien effectuée ! Aucun paiement requis.";
+            }
         }
 
         // Ajouter les informations sur les réductions si applicable

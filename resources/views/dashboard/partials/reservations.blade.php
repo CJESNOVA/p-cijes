@@ -9,9 +9,9 @@
             @forelse($reservations as $res)
                 @php
                     $statusColor = match($res->reservationstatut->titre ?? 'En attente') {
-                        'Confirmée' => 'bg-green-100 text-green-800',
-                        'Annulée' => 'bg-red-100 text-red-800',
-                        'En attente' => 'bg-yellow-100 text-yellow-800',
+                        'Confirmée' => 'bg-[#12CEB7]/10 text-[#12CEB7]',
+                        'Annulée' => 'bg-[#9333EA]/10 text-[#9333EA]',
+                        'En attente' => 'bg-[#F09116]/10 text-[#F09116]',
                         default => 'bg-gray-100 text-gray-800',
                     };
                 @endphp

@@ -56,4 +56,9 @@ class Diagnostic extends Model
         return $this->hasMany(Diagnosticmodulescore::class);
     }
 
+    public function diagnosticresultats()
+    {
+        return $this->hasMany(Diagnosticresultat::class);
+    }
+
 }

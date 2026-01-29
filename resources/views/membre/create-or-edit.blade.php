@@ -3,7 +3,7 @@
         <!-- Header -->
         <div class="mb-2">
             <div class="flex items-center gap-4 mb-2">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     @if($membre && $membre->vignette)
                         <img src="{{ env('SUPABASE_BUCKET_URL') . '/' . $membre->vignette }}" alt="Photo" class="h-12 w-12 rounded-full object-cover">
                     @else
@@ -40,7 +40,7 @@
                 @endif
 
                 @if(session('success'))
-                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                    <div class="alert flex rounded-lg bg-[#4FBE96] px-6 py-4 text-white mb-6 shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -55,7 +55,7 @@
                     <div class="card shadow-xl mb-6">
                         <div class="card-header border-b border-slate-200 dark:border-navy-500 px-6 py-4">
                             <h3 class="text-xl font-semibold text-slate-800 dark:text-navy-50 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-2 text-[#152737]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
                                 Informations personnelles
@@ -126,7 +126,7 @@
                                             name="nom" 
                                             value="{{ old('nom', $membre->nom ?? '') }}" 
                                             required
-                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-[#152737] focus:ring-2 focus:ring-[#152737]/20"
                                             placeholder="Votre nom"
                                         />
                                     </div>
@@ -148,7 +148,7 @@
                                             name="prenom" 
                                             value="{{ old('prenom', $membre->prenom ?? '') }}" 
                                             required
-                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-[#152737] focus:ring-2 focus:ring-[#152737]/20"
                                             placeholder="Votre prénom"
                                         />
                                     </div>
@@ -168,11 +168,19 @@
                                         <input
                                             type="email" 
                                             name="email" 
-                                            value="{{ old('email', $membre->email ?? '') }}" 
-                                            required
-                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                                            value="{{ old('email', $membre->email ?? Auth::user()->email) }}" 
+                                            @if($membre && Auth::user()->email === $membre->email)
+                                                readonly
+                                                class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-slate-600 cursor-not-allowed"
+                                            @else
+                                                required
+                                                class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-[#152737] focus:ring-2 focus:ring-[#152737]/20"
+                                            @endif
                                             placeholder="votre.email@exemple.com"
                                         />
+                                        @if($membre && Auth::user()->email === $membre->email)
+                                            <p class="mt-1 text-xs text-slate-500">Email associé au compte utilisateur</p>
+                                        @endif
                                     </div>
                                 </div>
 
@@ -216,7 +224,7 @@
                                             name="telephone" 
                                             value="{{ old('telephone', $membre->telephone ?? '') }}" 
                                             required
-                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                                            class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-[#152737] focus:ring-2 focus:ring-[#152737]/20"
                                             placeholder="+228 90 00 00 00"
                                         />
                                     </div>
@@ -229,7 +237,7 @@
                     <div class="card shadow-xl mb-6">
                         <div class="card-header border-b border-slate-200 dark:border-navy-500 px-6 py-4">
                             <h3 class="text-xl font-semibold text-slate-800 dark:text-navy-50 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-2 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                                 Photo de profil
@@ -258,7 +266,7 @@
                                         Changer la photo (facultatif)
                                     </label>
                                     <div class="flex items-center space-x-4">
-                                        <label class="cursor-pointer bg-white px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <label class="cursor-pointer bg-white px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#152737] focus:border-[#152737]">
                                             <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                             </svg>
@@ -293,7 +301,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-slate-600">Statut</p>
-                                        <p class="text-lg font-bold text-green-600">Actif</p>
+                                        <p class="text-lg font-bold text-[#4FBE96]">Actif</p>
                                     </div>
                                 </div>
                             </div>
@@ -318,7 +326,7 @@
                                     <a href="{{ route('dashboard') }}" class="px-6 py-3 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors">
                                         Annuler
                                     </a>
-                                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                                    <button type="submit" class="px-6 py-3 bg-[#152737] text-white rounded-lg hover:bg-[#152737]/90 transition-colors flex items-center">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>

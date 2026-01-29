@@ -28,8 +28,31 @@
                         </p> --}}
                     </div>
                     <div class="flex items-center space-x-4 mt-2 sm:mt-0">
-                        <span class="text-sm font-medium text-green-600">
-                            Score : {{ $diag->scoreglobal ?? '—' }}%
+                        @php
+                            // Calculer le vrai pourcentage comme dans l'API
+                            $scoreTotal = 0;
+                            $scoreMaximum = 0;
+                            
+                            // Récupérer les résultats de ce diagnostic
+                            $resultats = \App\Models\Diagnosticresultat::where('diagnostic_id', $diag->id)
+                                ->with('diagnosticreponse')
+                                ->get();
+                            
+                            foreach ($resultats as $resultat) {
+                                if ($resultat->diagnosticreponse) {
+                                    $scoreTotal += (int)($resultat->diagnosticreponse->score ?? 0);
+                                    
+                                    // Calculer le score maximum pour cette question
+                                    $maxQuestionScore = (int)\App\Models\Diagnosticreponse::where('diagnosticquestion_id', $resultat->diagnosticquestion_id)
+                                        ->max('score') ?? 0;
+                                    $scoreMaximum += $maxQuestionScore;
+                                }
+                            }
+                            
+                            $scorePourcentage = $scoreMaximum > 0 ? round(($scoreTotal * 100) / $scoreMaximum, 2) : 0;
+                        @endphp
+                        <span class="text-sm font-medium text-[#12CEB7]">
+                            Score : {{ $scorePourcentage }}%
                         </span>
                     </div>
                 </div>

@@ -32,7 +32,7 @@
                 @endif
 
                 @if(session('success'))
-                    <div class="alert flex rounded-lg bg-green-500 px-4 py-4 text-white sm:px-5 mb-4">
+                    <div class="alert flex rounded-lg bg-[#4FBE96] px-4 py-4 text-white sm:px-5 mb-4">
                         {{ session('success') }}
                     </div>
                 @endif
@@ -50,8 +50,8 @@
                                 <!-- Plusieurs options : afficher le choix -->
                                 <div class="space-y-4">
                                     @if(isset($optionsPaiement['accompagnements']) && count($optionsPaiement['accompagnements']) > 0)
-                                        <div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
-                                            <h4 class="font-semibold mb-3 text-blue-700 flex items-center">
+                                        <div class="border-2 border-[#4FBE96]/30 rounded-lg p-4 bg-[#4FBE96]/10">
+                                            <h4 class="font-semibold mb-3 text-[#4FBE96] flex items-center">
                                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                                 </svg>
@@ -80,20 +80,20 @@
                                                                 </div>
                                                                 <div class="flex items-center mt-2 space-x-2">
                                                                     @if($acc['est_cjes'])
-                                                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#4FBE96]/20 text-[#4FBE96]">
                                                                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                                                             </svg>
                                                                             Membre CJES
                                                                         </span>
                                                                         @if($acc['cotisation_a_jour'])
-                                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#152737]/20 text-[#152737]">
                                                                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                                                     <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                                                                 </svg>
                                                                                 Cotisations à jour
                                                                             </span>
-                                                                            <span class="text-xs text-green-600 font-medium">✓ Réductions applicables</span>
+                                                                            <span class="text-xs text-[#4FBE96] font-medium">✓ Réductions applicables</span>
                                                                         @else
                                                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                                                                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">

@@ -18,7 +18,7 @@
             @forelse ($bonutilises as $bon)
                 <tr>
                     <td>{{ $bon->id }}</td>
-                    <td>{{ $bon->montant }}</td>
+                    <td>{{ $bon->montant }} FCFA</td>
                     <td>{{ $bon->bon->code ?? '-' }}</td>
                     <td>{{ $bon->prestationrealisee->prestation->titre ?? '-' }}</td>
                     <td>

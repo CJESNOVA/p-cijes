@@ -109,4 +109,39 @@ class PropositionMembreController extends Controller
         return redirect()->route('proposition.membre.show', $proposition)
             ->with('success', '✅ Proposition refusée avec succès !');
     }
+    
+    /**
+     * Payer une prestation après acceptation de proposition
+     */
+    public function payer(Proposition $proposition)
+    {
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->firstOrFail();
+        
+        // Vérifier que la proposition est bien pour un plan du membre
+        $plan = $proposition->plan;
+        if (!$plan || $plan->accompagnement->membre_id !== $membre->id) {
+            return redirect()->route('proposition.membre.index')
+                ->with('error', 'Vous n\'êtes pas autorisé à payer cette proposition.');
+        }
+        
+        // Vérifier que la proposition est acceptée
+        if (!$proposition->statut || $proposition->statut->titre !== 'Acceptée') {
+            return redirect()->route('proposition.membre.show', $proposition)
+                ->with('error', 'Cette proposition n\'est pas encore acceptée.');
+        }
+        
+        // Vérifier qu'il y a une prestation associée
+        if (!$proposition->prestation) {
+            return redirect()->route('proposition.membre.show', $proposition)
+                ->with('error', 'Aucune prestation associée à cette proposition.');
+        }
+        
+        // Rediriger vers le formulaire d'inscription de la prestation
+        // avec l'ID de la proposition dans l'URL
+        return redirect()->route('prestation.inscrire.form', [
+            'id' => $proposition->prestation->id,
+            'proposition' => $proposition->id
+        ])->with('success', '🎯 Proposition acceptée ! Vous pouvez maintenant procéder au paiement de la prestation.');
+    }
 }

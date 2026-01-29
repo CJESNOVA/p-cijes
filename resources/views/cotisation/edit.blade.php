@@ -49,7 +49,7 @@
                                     <label class="block">
                                         <span>Devise <span class="text-danger">*</span></span>
                                         <select name="devise" required class="form-select mt-1.5 w-full rounded-lg">
-                                            @foreach(['XOF','EUR','USD'] as $devise)
+                                            @foreach(['FCFA','XOF','EUR','USD'] as $devise)
                                                 <option value="{{ $devise }}"
                                                     {{ old('devise', $cotisation->devise) === $devise ? 'selected' : '' }}>
                                                     {{ $devise }}

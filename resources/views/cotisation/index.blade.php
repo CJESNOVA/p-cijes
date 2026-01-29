@@ -25,7 +25,7 @@
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
                 <!-- Messages modernes -->
                 @if(session('success'))
-                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                    <div class="alert flex rounded-lg bg-[#4FBE96] px-6 py-4 text-white mb-6 shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -43,7 +43,7 @@
                 @endif
 
                 @if(session('info'))
-                    <div class="alert flex rounded-lg bg-blue-500 px-6 py-4 text-white mb-6 shadow-lg">
+                    <div class="alert flex rounded-lg bg-[#152737] px-6 py-4 text-white mb-6 shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -112,7 +112,7 @@
                             <div class="card-body p-6 text-white">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-blue-100 text-sm font-medium">Total cotisations</p>
+                                        <p class="text-[#152737]/80 text-sm font-medium">Total cotisations</p>
                                         <p class="text-3xl font-bold mt-1">
                                             {{ $entreprises->sum(function($e) { return $e->cotisations->count(); }) }}
                                         </p>
@@ -130,9 +130,9 @@
                             <div class="card-body p-6 text-white">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-green-100 text-sm font-medium">Montant total payé</p>
+                                        <p class="text-[#4FBE96]/80 text-sm font-medium">Montant total payé</p>
                                         <p class="text-3xl font-bold mt-1">
-                                            {{ number_format($entreprises->sum(function($e) { return $e->cotisations->sum('montant_paye'); }), 0) }} XOF
+                                            {{ number_format($entreprises->sum(function($e) { return $e->cotisations->sum('montant_paye'); }), 0) }} FCFA
                                         </p>
                                     </div>
                                     <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
@@ -181,7 +181,7 @@
                                 Vous n'avez aucune entreprise qui est membre CJES. Seules les entreprises membres peuvent gérer des cotisations.
                             </p>
                             <a href="{{ route('entreprise.create') }}" 
-                               class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg">
+                               class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#4FBE96] to-[#4FBE96] text-white font-medium rounded-lg hover:from-[#4FBE96]/90 hover:to-[#4FBE96]/90 transition-all shadow-lg">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -207,7 +207,7 @@
                                                     {{ $entreprise->nom }}
                                                 </h3>
                                                 @if($entreprise->est_membre_cijes)
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/30 dark:text-[#4FBE96]">
                                                         <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.005 1.603-.921 1.902 0l1.07-3.292a1 1 0 00-.95-.69H8.084a1 1 0 00-.95.69l-2.8 2.034c-.783.57-1.838.197-1.588 1.81l2.8 2.034a1 1 0 00.364 1.118L9.049 2.927z"></path>
                                                         </svg>
@@ -249,13 +249,13 @@
                                                                 </span>
                                                             </td>
                                                             <td class="py-3 px-4 font-medium text-slate-800 dark:text-navy-50">
-                                                                {{ number_format($cotisation->montant, 2) }} {{ $cotisation->devise }}
+                                                                {{ number_format($cotisation->montant, 2) }} FCFA
                                                             </td>
                                                             <td class="py-3 px-4">
-                                                                <span class="text-green-600 font-medium">{{ number_format($cotisation->montant_paye, 2) }} {{ $cotisation->devise }}</span>
+                                                                <span class="text-[#4FBE96] font-medium">{{ number_format($cotisation->montant_paye, 2) }} FCFA</span>
                                                             </td>
                                                             <td class="py-3 px-4">
-                                                                <span class="text-amber-600 font-medium">{{ number_format($cotisation->montant_restant, 2) }} {{ $cotisation->devise }}</span>
+                                                                <span class="text-amber-600 font-medium">{{ number_format($cotisation->montant_restant, 2) }} FCFA</span>
                                                             </td>
                                                             <td class="py-3 px-4 text-sm text-slate-600 dark:text-navy-200">
                                                                 {{ $cotisation->date_echeance->format('d/m/Y') }}
@@ -267,10 +267,10 @@
                                                                             bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
                                                                         @break
                                                                         @case('paye')
-                                                                            bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                                            bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/90 dark:text-[#4FBE96]
                                                                         @break
                                                                         @case('partiel')
-                                                                            bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                                                                            bg-[#152737]/20 text-[#152737] dark:bg-[#152737]/90 dark:text-[#152737]
                                                                         @break
                                                                         @case('retard')
                                                                             bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
@@ -284,7 +284,7 @@
                                                                 <div class="flex justify-center space-x-2">
                                                                     @if($cotisation->statut !== 'paye')
                                                                         <a href="{{ route('cotisation.edit', $cotisation->id) }}" 
-                                                                           class="inline-flex items-center px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600 transition-colors">
+                                                                           class="inline-flex items-center px-3 py-1 bg-[#152737] text-white text-xs font-medium rounded-lg hover:bg-[#152737]/90 transition-colors">
                                                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                                             </svg>
@@ -293,7 +293,7 @@
                                                                         <form action="{{ route('cotisation.markAsPaid', $cotisation->id) }}" method="POST" class="inline">
                                                                             @csrf
                                                                             <button type="submit" 
-                                                                                    class="inline-flex items-center px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-lg hover:bg-green-600 transition-colors"
+                                                                                    class="inline-flex items-center px-3 py-1 bg-[#4FBE96] text-white text-xs font-medium rounded-lg hover:bg-[#4FBE96]/90 transition-colors"
                                                                                     onclick="return confirm('Payer cette cotisation avec votre solde KOBO ?')">
                                                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>

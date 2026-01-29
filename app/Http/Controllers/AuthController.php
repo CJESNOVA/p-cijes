@@ -163,7 +163,21 @@ public function register(Request $request)
     $request->validate([
         'name' => 'required|string',
         'email' => 'required|email|unique:users',
-        'password' => 'required|string|confirmed|min:7',
+        'password' => [
+            'required',
+            'string',
+            'confirmed',
+            'min:8',
+            'regex:/[a-z]/',
+            'regex:/[A-Z]/',
+            'regex:/[0-9]/',
+            'regex:/[@$!%*?&]/',
+        ],
+    ], [
+        'password.required' => 'Le mot de passe est obligatoire.',
+        'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+        'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+        'password.regex' => 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial (@$!%*?&).',
     ]);
 
     // 🔗 Redirection après vérification email
@@ -208,59 +222,42 @@ public function register(Request $request)
         //return redirect()->intended(route('dashboard'));
     }
 
-    // ❌ En cas d’échec
+    // ❌ En cas d'échec, analyser l'erreur Supabase
+    if (isset($response['error'])) {
+        $errorMessage = $response['error_description'] ?? $response['error'] ?? 'Erreur inconnue';
+        
+        // Messages d'erreur personnalisés selon le type d'erreur
+        if (strpos(strtolower($errorMessage), 'user_already_exists') !== false || 
+            strpos(strtolower($errorMessage), 'already registered') !== false ||
+            strpos(strtolower($errorMessage), 'duplicate') !== false) {
+            return back()->withErrors([
+                'email' => 'Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse email.'
+            ]);
+        }
+        
+        if (strpos(strtolower($errorMessage), 'invalid_email') !== false) {
+            return back()->withErrors([
+                'email' => 'L\'adresse email n\'est pas valide.'
+            ]);
+        }
+        
+        if (strpos(strtolower($errorMessage), 'weak_password') !== false) {
+            return back()->withErrors([
+                'password' => 'Le mot de passe est trop faible. Veuillez choisir un mot de passe plus sécurisé.'
+            ]);
+        }
+        
+        // Message d'erreur générique mais plus informatif
+        return back()->withErrors([
+            'email' => 'Une erreur est survenue lors de la création du compte: ' . $errorMessage
+        ]);
+    }
+
+    // ❌ En cas d'échec sans message d'erreur spécifique
     return back()->withErrors([
-        'email' => 'Impossible de créer le compte sur Supabase.', //Détails: . json_encode($response)
+        'email' => 'Impossible de créer le compte. Veuillez vérifier vos informations et réessayer.'
     ]);
 }
-
-
-    /*public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|confirmed|min:7',
-        ]);
-
-        // 🔗 Redirection après vérification email
-        $redirectUrl = env('APP_URL') . '/emails/verify';
-
-        // ✅ Appel Supabase pour inscription + envoi automatique du mail
-        $response = $this->supabase->signUp(
-            $request->email,
-            $request->password,
-            ['full_name' => $request->name],
-            $redirectUrl
-        );
-        
-//dd($response);
-
-        // Vérifie si le compte a bien été créé côté Supabase
-        if (isset($response['user']['id']) || isset($response['id'])) {
-            $supabaseUser = $response['user'] ?? $response;
-
-            // 🔐 Crée aussi le user local si nécessaire
-            $user = User::firstOrCreate(
-                ['email' => $supabaseUser['email']],
-                [
-                    'name' => $supabaseUser['user_metadata']['full_name'] ?? $supabaseUser['email'],
-                    'password' => Hash::make(uniqid()),
-                    'supabase_user_id' => $supabaseUser['id'],
-                ]
-            );
-
-            // ✅ Pas besoin d’envoyer de mail toi-même — Supabase s’en charge
-            return redirect()->route('emails.verify')
-                ->with('status', 'Un e-mail de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.');
-        }
-
-        // ❌ En cas d’erreur
-        return back()->withErrors([
-            'email' => 'Impossible de créer le compte sur Supabase. Vérifiez la configuration.',
-        ]);
-    }*/
-
 
     public function logout(Request $request)
     {
@@ -322,7 +319,20 @@ public function register(Request $request)
     {
         $request->validate([
             'access_token' => 'required',
-            'password' => 'required|min:8|confirmed',
+            'password' => [
+                'required',
+                'min:8',
+                'confirmed',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*?&]/',
+            ],
+        ], [
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+            'password.regex' => 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial (@$!%*?&).',
         ]);
 
         $response = $this->supabase->updateUser($request->access_token, [

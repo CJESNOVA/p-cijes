@@ -19,8 +19,8 @@
                         <p class="text-sm text-slate-500 dark:text-slate-400">Total des plans</p>
                         <p class="text-2xl font-bold text-slate-800 dark:text-white">{{ $stats['total_plans'] }}</p>
                     </div>
-                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-12 h-12 bg-[#152737]/20 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-[#152737]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                         </svg>
                     </div>
@@ -31,10 +31,10 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-slate-500 dark:text-slate-400">Votre secteur</p>
-                        <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $stats['plans_meme_secteur'] }}</p>
+                        <p class="text-2xl font-bold text-[#4FBE96] dark:text-[#4FBE96]">{{ $stats['plans_meme_secteur'] }}</p>
                     </div>
-                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-12 h-12 bg-[#4FBE96]/20 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
@@ -45,10 +45,10 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-slate-500 dark:text-slate-400">Autres secteurs</p>
-                        <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['plans_autres_secteurs'] }}</p>
+                        <p class="text-2xl font-bold text-[#152737] dark:text-[#152737]">{{ $stats['plans_autres_secteurs'] }}</p>
                     </div>
-                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-12 h-12 bg-[#152737]/20 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-[#152737]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
                         </svg>
                     </div>
@@ -71,7 +71,7 @@
                     <div class="relative">
                         @if($plan->accompagnement->entreprise->secteur->id === $expert->secteur_id)
                             <div class="absolute top-2 right-2 z-10">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/90 dark:text-[#4FBE96]">
                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
@@ -121,7 +121,7 @@
                                     <span class="font-medium">Secteur:</span>
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
                                         {{ $plan->accompagnement->entreprise->secteur->id === $expert->secteur_id 
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                            ? 'bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/90 dark:text-[#4FBE96]' 
                                             : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' }}">
                                         {{ $plan->accompagnement->entreprise->secteur->titre ?? 'Non spécifié' }}
                                     </span>
@@ -141,9 +141,9 @@
 
                         {{-- Actions prioritaires --}}
                         @if($plan->actionprioritaire)
-                            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                                <p class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">Action prioritaire:</p>
-                                <p class="text-xs text-blue-700 dark:text-blue-300">{{ Str::limit($plan->actionprioritaire, 100) }}</p>
+                            <div class="bg-[#152737]/10 dark:bg-[#152737]/20 border border-[#152737]/30 dark:border-[#152737]/80 rounded-lg p-3">
+                                <p class="text-sm font-medium text-[#152737] dark:text-[#152737] mb-1">Action prioritaire:</p>
+                                <p class="text-xs text-[#152737] dark:text-[#152737]">{{ Str::limit($plan->actionprioritaire, 100) }}</p>
                             </div>
                         @endif
 

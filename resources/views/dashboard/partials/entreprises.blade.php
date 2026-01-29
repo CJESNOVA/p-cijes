@@ -14,7 +14,7 @@
                                  alt="{{ $entreprise->nom }}" 
                                  class="w-14 h-14 rounded-full object-cover">
                         @else
-                            <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
+                            <div class="w-14 h-14 rounded-full bg-[#1DA8BB]/10 flex items-center justify-center text-[#1DA8BB] font-bold text-lg">
                                 {{ strtoupper(substr($entreprise->nom, 0, 2)) }}
                             </div>
                         @endif

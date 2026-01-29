@@ -322,7 +322,7 @@ class SidebarPanel
         if ($type === 'incube') {
             
         return [
-            'title' => 'Prestations & formations',
+            'title' => 'Prestations', //& formations
             'items' => [
                 [
                     'prestationliste' => [
@@ -332,7 +332,7 @@ class SidebarPanel
                     'prestationressource' => [
                         'title' => 'Prestations payées',
                         'route_name' => 'prestationressource.index'
-                    ],
+                    ],/*
                     'participant' => [
                         'title' => 'Les formations ouvertes',
                         'route_name' => 'formation.liste'
@@ -340,7 +340,7 @@ class SidebarPanel
                     'formationressource' => [
                         'title' => 'Formations payées',
                         'route_name' => 'formationressource.index'
-                    ],
+                    ],*/
                 ],
             ]
         ];
@@ -348,7 +348,7 @@ class SidebarPanel
         } else if ($type === 'expert') {
             
         return [
-            'title' => 'Prestations & formations',
+            'title' => 'Prestations', //& formations
             'items' => [
                 [
                     'prestation' => [
@@ -362,7 +362,7 @@ class SidebarPanel
                     'prestationressource' => [
                         'title' => 'Prestations payées',
                         'route_name' => 'prestationressource.index'
-                    ],
+                    ],/*
                     'formation' => [
                         'title' => 'Formations',
                         'route_name' => 'formation.index'
@@ -378,7 +378,7 @@ class SidebarPanel
                     'formationressource' => [
                         'title' => 'Formations payées',
                         'route_name' => 'formationressource.index'
-                    ],
+                    ],*/
                 ],
             ]
         ];
@@ -386,7 +386,7 @@ class SidebarPanel
         } else if ($type === 'conseille') {
             
         return [
-            'title' => 'Prestations & formations',
+            'title' => 'Prestations', //& formations
             'items' => [
                 [
                     'prestation' => [
@@ -400,7 +400,7 @@ class SidebarPanel
                     'prestationressource' => [
                         'title' => 'Prestations payées',
                         'route_name' => 'prestationressource.index'
-                    ],
+                    ],/*
                     'formation' => [
                         'title' => 'Formations',
                         'route_name' => 'formation.index'
@@ -416,7 +416,7 @@ class SidebarPanel
                     'formationressource' => [
                         'title' => 'Formations payées',
                         'route_name' => 'formationressource.index'
-                    ],
+                    ],*/
                 ],
             ]
         ];

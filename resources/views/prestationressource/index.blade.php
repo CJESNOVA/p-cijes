@@ -3,7 +3,7 @@
         <!-- Header simplifié -->
         <div class="mb-10">
             <div class="flex items-center gap-4 mb-8">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                     </svg>
@@ -16,11 +16,11 @@
 
             <!-- Cartes statistiques -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="card bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-orange-100 text-sm font-medium">Total</p>
+                                <p class="text-[#152737]/80 text-sm font-medium">Total</p>
                                 <p class="text-3xl font-bold mt-2">{{ $ressources->count() }}</p>
                             </div>
                             <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -32,11 +32,11 @@
                     </div>
                 </div>
 
-                <div class="card bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-green-100 text-sm font-medium">Montant Total</p>
+                                <p class="text-[#4FBE96]/80 text-sm font-medium">Montant Total</p>
                                 <p class="text-3xl font-bold mt-2">{{ number_format($ressources->sum('montant'), 0, ',', ' ') }} FCFA</p>
                             </div>
                             <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -48,11 +48,11 @@
                     </div>
                 </div>
 
-                <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl">
+                <div class="card bg-gradient-to-br from-[#152737] to-[#152737] text-white border-0 shadow-xl">
                     <div class="card-body p-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-blue-100 text-sm font-medium">Payées</p>
+                                <p class="text-[#152737]/80 text-sm font-medium">Payées</p>
                                 <p class="text-3xl font-bold mt-2">{{ $ressources->where('montant', '>', 0)->count() }}</p>
                             </div>
                             <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -68,7 +68,7 @@
 
         <!-- Messages -->
         @if(session('success'))
-            <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+            <div class="alert flex rounded-lg bg-[#4FBE96] px-6 py-4 text-white mb-6 shadow-lg">
                 {{ session('success') }}
             </div>
         @endif
@@ -103,15 +103,15 @@
                             <tbody class="divide-y divide-slate-200 dark:divide-navy-500">
                                 @foreach($ressources as $res)
                                     <tr class="hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors">
-                                        <td class="px-8 py-5 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="h-10 w-10 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center mr-4">
-                                                    <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <td class="px-8 py-5">
+                                            <div class="flex items-start">
+                                                <div class="h-10 w-10 bg-1DA8BB/10 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                                                    <svg class="w-5 h-5 text-1DA8BB" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                                     </svg>
                                                 </div>
-                                                <div>
-                                                    <div class="text-sm font-semibold text-slate-900 dark:text-navy-50">{{ $res->prestation->titre ?? 'N/A' }}</div>
+                                                <div class="min-w-0 flex-1">
+                                                    <div class="text-sm font-semibold text-slate-900 dark:text-navy-50 break-words">{{ $res->prestation->titre ?? 'N/A' }}</div>
                                                     <div class="text-xs text-slate-500 dark:text-navy-200">{{ $res->prestation->prestationtype->titre ?? '' }}</div>
                                                 </div>
                                             </div>
@@ -154,7 +154,7 @@
                                                         </div>
                                                         <div>
                                                             @if($res->montant > 0)
-                                                                <div class="text-sm font-bold text-green-600 dark:text-green-400">
+                                                                <div class="text-sm font-bold text-[#4FBE96] dark:text-[#4FBE96]/80">
                                                                     {{ number_format($res->montant, 0, ',', ' ') }} FCFA
                                                                 </div>
                                                             @else
@@ -171,7 +171,7 @@
                                             </div>
                                         </td>
                                         <td class="px-8 py-5 whitespace-nowrap">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/30 dark:text-[#4FBE96]">
                                                 {{ $res->paiementstatut->titre ?? 'N/A' }}
                                             </span>
                                         </td>

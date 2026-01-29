@@ -3,7 +3,7 @@
         <!-- Header moderne inspiré de document/form.blade.php -->
         <div class="mb-2">
             <div class="flex items-center gap-4 mb-2">
-                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
@@ -19,7 +19,7 @@
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
                 <!-- Messages modernes -->
                 @if(session('success'))
-                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                    <div class="alert flex rounded-lg bg-[#4FBE96] px-6 py-4 text-white mb-6 shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -113,7 +113,7 @@
                                                         <h4 class="font-semibold text-slate-900 dark:text-navy-50">{{ $piecetype->titre }}</h4>
                                                         <p class="text-sm text-slate-500 dark:text-navy-200">
                                                             @if($existing)
-                                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/30 dark:text-[#4FBE96]">
                                                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                                                     </svg>
@@ -133,13 +133,13 @@
                                                 
                                                 <!-- Pièce existante -->
                                                 @if ($existing)
-                                                    <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-3">
+                                                    <div class="bg-[#4FBE96]/10 dark:bg-[#4FBE96]/20 rounded-lg p-3 mb-3">
                                                         <div class="flex items-center justify-between">
                                                             <div class="flex items-center">
-                                                                <svg class="w-4 h-4 text-green-600 dark:text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <svg class="w-4 h-4 text-[#4FBE96] dark:text-[#4FBE96]/80 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                                 </svg>
-                                                                <span class="text-sm font-medium text-green-800 dark:text-green-200">Pièce téléchargée</span>
+                                                                <span class="text-sm font-medium text-[#4FBE96] dark:text-[#4FBE96]/80">Pièce téléchargée</span>
                                                             </div>
                                                             <a href="{{ env('SUPABASE_BUCKET_URL') . '/' . $existing->fichier }}" 
                                                                target="_blank" 
@@ -151,7 +151,7 @@
                                                                 Voir
                                                             </a>
                                                         </div>
-                                                        <p class="text-xs text-green-600 dark:text-green-400 mt-1">
+                                                        <p class="text-xs text-[#4FBE96] dark:text-[#4FBE96]/80 mt-1">
                                                             Téléchargée le {{ $existing->datedocument->format('d/m/Y H:i') }}
                                                         </p>
                                                     </div>

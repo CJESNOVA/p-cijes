@@ -4,7 +4,7 @@
         <div class="mb-2">
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-4">
-                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center shadow-lg">
+                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
                         </svg>
@@ -19,7 +19,7 @@
                     </div>
                 </div>
                 <a href="{{ route('entreprise.create') }}"
-                   class="px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:from-teal-600 hover:to-blue-700 transition-all font-medium shadow-lg flex items-center gap-2">
+                   class="px-6 py-3 bg-[#4FBE96] text-white rounded-lg hover:bg-[#4FBE96]/90 transition-all font-medium shadow-lg flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
@@ -32,11 +32,11 @@
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
         <!-- Statistiques -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card shadow-xl border-0 bg-gradient-to-br from-teal-500 to-teal-600">
+            <div class="card shadow-xl border-0 bg-gradient-to-br from-[#4FBE96] to-[#4FBE96]">
                 <div class="card-body p-6 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-teal-100 text-sm font-medium">Total entreprises</p>
+                            <p class="text-white/80 text-sm font-medium">Total entreprises</p>
                             <p class="text-3xl font-bold mt-1">{{ $entreprises ? $entreprises->count() : 0 }}</p>
                         </div>
                         <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
@@ -48,11 +48,11 @@
                 </div>
             </div>
 
-            <div class="card shadow-xl border-0 bg-gradient-to-br from-blue-500 to-blue-600">
+            <div class="card shadow-xl border-0 bg-gradient-to-br from-[#152737] to-[#152737]">
                 <div class="card-body p-6 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-blue-100 text-sm font-medium">Membres CJES</p>
+                            <p class="text-white/80 text-sm font-medium">Membres CJES</p>
                             <p class="text-3xl font-bold mt-1">{{ $entreprises ? $entreprises->where('entreprise.est_membre_cijes', true)->count() : 0 }}</p>
                         </div>
                         <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
@@ -64,11 +64,11 @@
                 </div>
             </div>
 
-            <div class="card shadow-xl border-0 bg-gradient-to-br from-purple-500 to-purple-600">
+            <div class="card shadow-xl border-0 bg-gradient-to-br from-[#4FBE96] to-[#4FBE96]">
                 <div class="card-body p-6 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-purple-100 text-sm font-medium">Tests complétés</p>
+                            <p class="text-white/80 text-sm font-medium">Tests complétés</p>
                             <p class="text-3xl font-bold mt-1">
                                 {{ $entreprises ? $entreprises->sum(function($em) {
                                     return \App\Models\Diagnostic::where('entreprise_id', $em->entreprise->id)
@@ -90,7 +90,7 @@
         </div>
                 <!-- Messages modernes -->
                 @if(session('success'))
-                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                    <div class="alert flex rounded-lg bg-[#4FBE96] px-6 py-4 text-white mb-6 shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -108,7 +108,7 @@
                 @endif
 
                 @if(session('info'))
-                    <div class="alert flex rounded-lg bg-blue-500 px-6 py-4 text-white mb-6 shadow-lg">
+                    <div class="alert flex rounded-lg bg-[#152737] px-6 py-4 text-white mb-6 shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -125,17 +125,17 @@
                                     <div class="flex items-start justify-between mb-4">
                                         <div class="flex items-center gap-4">
                                             <div class="relative">
-                                                <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-teal-100 to-blue-100 flex items-center justify-center">
+                                                <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-[#4FBE96]/20 to-[#4FBE96]/20 flex items-center justify-center">
                                                     @if($em->entreprise && $em->entreprise->vignette)
                                                         <img class="h-14 w-14 rounded-lg object-cover" src="{{ env('SUPABASE_BUCKET_URL') . '/' . $em->entreprise->vignette }}" alt="logo" />
                                                     @else
-                                                        <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg class="w-8 h-8 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
                                                         </svg>
                                                     @endif
                                                 </div>
                                                 @if($em->entreprise && $em->entreprise->spotlight)
-                                                    <div class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-500 border-2 border-white animate-pulse"></div>
+                                                    <div class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#4FBE96] border-2 border-white animate-pulse"></div>
                                                 @endif
                                             </div>
                                             <div>
@@ -146,13 +146,13 @@
                                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1
                                                         @switch($em->entreprise->entrepriseprofil->id)
                                                             @case(1)
-                                                                bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                                                                bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/90 dark:text-[#4FBE96]
                                                             @break
                                                             @case(2)
-                                                                bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                                                                bg-[#152737]/20 text-[#152737] dark:bg-[#152737]/90 dark:text-[#152737]
                                                             @break
                                                             @case(3)
-                                                                bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                                bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/90 dark:text-[#4FBE96]
                                                             @break
                                                             @default
                                                                 bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200
@@ -199,7 +199,7 @@
                                         
                                         @if($testEnCours)
                                             <a href="{{ route('diagnosticentreprisequalification.showForm', $em->entreprise->id) }}" 
-                                               class="inline-flex items-center px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors">
+                                               class="inline-flex items-center px-4 py-2 bg-[#4FBE96] text-white text-sm font-medium rounded-lg hover:bg-[#4FBE96]/90 transition-colors">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                 </svg>
@@ -207,7 +207,7 @@
                                             </a>
                                         @elseif($testTermine)
                                             <a href="{{ route('diagnosticentreprisequalification.results', $em->entreprise->id) }}" 
-                                               class="inline-flex items-center px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors">
+                                               class="inline-flex items-center px-4 py-2 bg-[#152737] text-white text-sm font-medium rounded-lg hover:bg-[#152737]/90 transition-colors">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                                 </svg>
@@ -215,7 +215,7 @@
                                             </a>
                                         @else
                                             <a href="{{ route('diagnosticentreprisequalification.showForm', $em->entreprise->id) }}" 
-                                               class="inline-flex items-center px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-lg hover:bg-purple-600 transition-colors">
+                                               class="inline-flex items-center px-4 py-2 bg-[#152737] text-white text-sm font-medium rounded-lg hover:bg-[#152737]/90 transition-colors">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                 </svg>
@@ -232,8 +232,8 @@
                                     <!-- Informations détaillées -->
                                     <div class="space-y-3 mb-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="h-8 w-8 rounded-lg bg-teal-100 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div class="h-8 w-8 rounded-lg bg-[#4FBE96]/20 flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                                 </svg>
                                             </div>
@@ -245,8 +245,8 @@
 
                                         @if($em->entreprise->telephone)
                                         <div class="flex items-center gap-3">
-                                            <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div class="h-8 w-8 rounded-lg bg-[#152737]/20 flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-[#152737]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.495 1.495c.51.51.51 1.336 0 1.847l-1.495 1.495a1 1 0 01-.948.279H8a6 6 0 01-6-6v-.728a1 1 0 01.279-.948l1.495-1.495c.51-.51 1.336-.51 1.847 0l1.495 1.495A1 1 0 0110.72 5H21a2 2 0 012 2v14a2 2 0 01-2 2H8a2 2 0 01-2-2V7a2 2 0 012-2z"></path>
                                                 </svg>
                                             </div>
@@ -259,8 +259,8 @@
 
                                         @if($em->entreprise->email)
                                         <div class="flex items-center gap-3">
-                                            <div class="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div class="h-8 w-8 rounded-lg bg-[#152737]/20 flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-[#152737]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                                 </svg>
                                             </div>
@@ -273,14 +273,14 @@
 
                                         @if($em->entreprise->est_membre_cijes)
                                         <div class="flex items-center gap-3">
-                                            <div class="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div class="h-8 w-8 rounded-lg bg-[#4FBE96]/20 flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
                                             </div>
                                             <div>
                                                 <p class="text-xs text-slate-500">Statut</p>
-                                                <p class="text-sm font-medium text-green-600">Membre CJES</p>
+                                                <p class="text-sm font-medium text-[#4FBE96]">Membre CJES</p>
                                             </div>
                                         </div>
                                         @endif
@@ -303,7 +303,7 @@
                                     <!-- Actions -->
                                     <div class="flex gap-3 pt-4 border-t border-slate-200 dark:border-navy-500">
                                         <a href="{{ route('entreprise.edit', $em->entreprise->id) }}"
-                                           class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-lg hover:bg-teal-600 transition-colors">
+                                           class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-[#4FBE96] text-white text-sm font-medium rounded-lg hover:bg-[#4FBE96]/90 transition-colors">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                             </svg>
@@ -329,8 +329,8 @@
                     <!-- État vide -->
                     <div class="card shadow-xl">
                         <div class="card-body p-12 text-center">
-                            <div class="h-20 w-20 rounded-xl bg-gradient-to-br from-teal-100 to-blue-100 flex items-center justify-center mx-auto mb-6">
-                                <svg class="w-10 h-10 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="h-20 w-20 rounded-xl bg-gradient-to-br from-[#4FBE96]/20 to-[#4FBE96]/20 flex items-center justify-center mx-auto mb-6">
+                                <svg class="w-10 h-10 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
                                 </svg>
                             </div>
@@ -341,7 +341,7 @@
                                 Commencez par ajouter votre première entreprise pour accéder aux tests de qualification.
                             </p>
                             <a href="{{ route('entreprise.create') }}"
-                               class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-600 text-white font-medium rounded-lg hover:from-teal-600 hover:to-blue-700 transition-all shadow-lg">
+                               class="inline-flex items-center px-6 py-3 bg-[#4FBE96] text-white font-medium rounded-lg hover:bg-[#4FBE96]/90 transition-all shadow-lg">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>

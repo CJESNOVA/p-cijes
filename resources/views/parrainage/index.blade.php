@@ -4,7 +4,7 @@
         <div class="mb-2">
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-4">
-                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         </svg>
@@ -29,7 +29,7 @@
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
                 <!-- Messages -->
                 @if(session('success'))
-                    <div class="alert flex rounded-lg bg-green-500 px-6 py-4 text-white mb-6 shadow-lg">
+                    <div class="alert flex rounded-lg bg-[#4FBE96] px-6 py-4 text-white mb-6 shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -49,11 +49,11 @@
                 @if(!$parrainages->isEmpty() || !$parrainages2->isEmpty())
                     <!-- Statistiques -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl">
+                        <div class="card bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] text-white border-0 shadow-xl">
                             <div class="card-body p-6">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-blue-100 text-sm font-medium">Total Filleuls</p>
+                                        <p class="text-[#152737]/80 text-sm font-medium">Total Filleuls</p>
                                         <p class="text-3xl font-bold mt-2">{{ $parrainages->count() }}</p>
                                     </div>
                                     <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -65,11 +65,11 @@
                             </div>
                         </div>
 
-                        <div class="card bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-xl">
+                        <div class="card bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] text-white border-0 shadow-xl">
                             <div class="card-body p-6">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-green-100 text-sm font-medium">Total Parrains</p>
+                                        <p class="text-[#4FBE96]/80 text-sm font-medium">Total Parrains</p>
                                         <p class="text-3xl font-bold mt-2">{{ $parrainages2->count() }}</p>
                                     </div>
                                     <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -81,7 +81,7 @@
                             </div>
                         </div>
 
-                        <div class="card bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl">
+                        <div class="card bg-gradient-to-br from-[#152737] to-[#152737] text-white border-0 shadow-xl">
                             <div class="card-body p-6">
                                 <div class="flex items-center justify-between">
                                     <div>
@@ -105,7 +105,7 @@
                             <div class="card shadow-xl">
                                 <div class="card-header border-b border-slate-200 dark:border-navy-500 px-6 py-4">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-navy-50 flex items-center">
-                                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-5 h-5 mr-2 text-[#152737]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                                         </svg>
                                         Mes Filleuls
@@ -116,8 +116,8 @@
                                         <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
                                             <div class="flex items-start justify-between mb-3">
                                                 <div class="flex items-center">
-                                                    <div class="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
-                                                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <div class="h-10 w-10 bg-[#152737]/20 rounded-lg flex items-center justify-center mr-3">
+                                                        <svg class="w-5 h-5 text-[#152737]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                                         </svg>
                                                     </div>
@@ -131,7 +131,7 @@
                                                     </div>
                                                 </div>
                                                 @if($p->etat == 1)
-                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/30 dark:text-[#4FBE96]">
                                                         <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                                         </svg>
@@ -157,7 +157,7 @@
                                                 @if($p->etat == 0)
                                                     <form action="{{ route('parrainage.activer', $p->id) }}" method="POST" class="inline">
                                                         @csrf
-                                                        <button type="submit" class="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center">
+                                                        <button type="submit" class="px-3 py-1 bg-[#4FBE96] text-white text-sm rounded-lg hover:bg-[#4FBE96]/90 transition-colors flex items-center">
                                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                             </svg>
@@ -177,7 +177,7 @@
                             <div class="card shadow-xl">
                                 <div class="card-header border-b border-slate-200 dark:border-navy-500 px-6 py-4">
                                     <h3 class="text-xl font-semibold text-slate-800 dark:text-navy-50 flex items-center">
-                                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-5 h-5 mr-2 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
                                         Mes Parrains
@@ -188,8 +188,8 @@
                                         <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
                                             <div class="flex items-start justify-between mb-3">
                                                 <div class="flex items-center">
-                                                    <div class="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
-                                                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <div class="h-10 w-10 bg-[#4FBE96]/20 rounded-lg flex items-center justify-center mr-3">
+                                                        <svg class="w-5 h-5 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                                         </svg>
                                                     </div>
@@ -203,7 +203,7 @@
                                                     </div>
                                                 </div>
                                                 @if($p->etat == 1)
-                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#4FBE96]/20 text-[#4FBE96] dark:bg-[#4FBE96]/30 dark:text-[#4FBE96]">
                                                         <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                                         </svg>

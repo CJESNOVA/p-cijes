@@ -2,7 +2,7 @@
 <div class="card p-4" style="margin-left: 30px; margin-right: 30px;">
     <div class="flex items-center justify-between">
         <h3 class="text-lg font-semibold">Messages récents</h3>
-        <a href="{{ route('message.index') }}" class="text-xs text-primary hover:underline">
+        <a href="{{ route('message.index') }}" class="text-xs text-[#1DA8BB] hover:underline">
             Voir tous
         </a>
     </div>
@@ -42,7 +42,7 @@
 
                     {{-- Statut du message --}}
                     @if(!$msg->lu)
-                        <span class="inline-block mt-1 text-[10px] text-primary font-medium">Non lu</span>
+                        <span class="inline-block mt-1 text-[10px] text-[#1DA8BB] font-medium">Non lu</span>
                     @endif
                 </div>
             </a>
