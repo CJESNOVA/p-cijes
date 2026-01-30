@@ -219,7 +219,7 @@ public function register(Request $request)
 
         Auth::login($user);
 
-        // 📧 Envoyer l'email de bienvenue
+        // 📧 Envoyer l'email de bienvenue directement avec Laravel
         try {
             $user->notify(new WelcomeNotification($user->name));
         } catch (\Exception $e) {
@@ -227,7 +227,7 @@ public function register(Request $request)
             \Log::warning('Email de bienvenue non envoyé: ' . $e->getMessage());
         }
 
-        // ✅ Pas besoin d’envoyer de mail toi-même — Supabase s’en charge
+        // ✅ Rediriger vers la page de confirmation email
         return redirect()->route('emails.verify')
             ->with('status', 'Un e-mail de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.');
 
@@ -295,30 +295,29 @@ public function register(Request $request)
         'email' => 'required|email'
     ]);
 
-    // Utiliser l'URL de redirection de Supabase ou fallback sur /reset-password
-    $redirectUrl = env('SUPABASE_REDIRECT_URL', url('/reset-password'));
-
-    // Appel Supabase pour envoyer le mail de récupération
-    $response = $this->supabase->resetPasswordForEmail($request->email, [
-        'redirect_to' => $redirectUrl,
-    ]);
-
-    if (isset($response['error'])) {
-        return back()->withErrors([
-            'email' => $response['error_description'] ?? 'Erreur lors de la demande de réinitialisation.'
-        ]);
-    }
-
-    // 📧 Envoyer notre notification personnalisée en plus
+    // 📧 Envoyer l'email de réinitialisation directement avec Laravel
     $user = User::where('email', $request->email)->first();
+    
     if ($user) {
         try {
-            // Générer un token pour notre notification (au cas où)
+            // Supprimer les anciens tokens
+            \DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            
+            // Générer un token sécurisé
             $resetToken = bin2hex(random_bytes(32));
+            
+            // Stocker le token
+            \DB::table('password_reset_tokens')->insert([
+                'email' => $request->email,
+                'token' => $resetToken,
+                'created_at' => now(),
+            ]);
+            
+            // Envoyer la notification
             $user->notify(new PasswordResetNotification($resetToken, $user->name));
         } catch (\Exception $e) {
             // Continue même si l'email échoue
-            \Log::warning('Email de réinitialisation personnalisé non envoyé: ' . $e->getMessage());
+            \Log::warning('Email de réinitialisation non envoyé: ' . $e->getMessage());
         }
     }
 
@@ -329,21 +328,32 @@ public function register(Request $request)
     // --- Étape 3 : Vue "Nouveau mot de passe"
     public function resetPasswordView(Request $request)
     {
-        // ⚠️ Supabase renvoie un paramètre `token` (et non `access_token`)
-        $accessToken = $request->query('token');
-
-        if (!$accessToken) {
+        // Vérifier le token
+        $token = $request->query('token');
+        
+        if (!$token) {
+            return redirect()->route('loginView')->withErrors(['email' => 'Lien invalide ou expiré.']);
+        }
+        
+        // Vérifier si le token existe et n'est pas trop vieux (60 minutes)
+        $resetToken = \DB::table('password_reset_tokens')
+            ->where('token', $token)
+            ->where('created_at', '>', now()->subMinutes(60))
+            ->first();
+            
+        if (!$resetToken) {
             return redirect()->route('loginView')->withErrors(['email' => 'Lien invalide ou expiré.']);
         }
 
-        return view('auth.reset-password', ['accessToken' => $accessToken]);
+        return view('auth.reset-password', ['token' => $token, 'email' => $resetToken->email]);
     }
 
     // --- Étape 4 : Traitement du nouveau mot de passe
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'access_token' => 'required',
+            'token' => 'required',
+            'email' => 'required|email',
             'password' => [
                 'required',
                 'min:8',
@@ -360,19 +370,30 @@ public function register(Request $request)
             'password.regex' => 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial (@$!%*?&).',
         ]);
 
-        $response = $this->supabase->updateUser($request->access_token, [
-            'password' => $request->password,
-        ]);
-
-        if (isset($response['error'])) {
-            return back()->withErrors(['password' => $response['error_description'] ?? 'Erreur lors de la réinitialisation.']);
+        // Vérifier le token
+        $resetToken = \DB::table('password_reset_tokens')
+            ->where('token', $request->token)
+            ->where('email', $request->email)
+            ->where('created_at', '>', now()->subMinutes(60))
+            ->first();
+            
+        if (!$resetToken) {
+            return back()->withErrors(['email' => 'Lien invalide ou expiré.']);
         }
 
-        // 📧 Envoyer la confirmation de réinitialisation
+        // 📧 Envoyer la confirmation de réinitialisation directement avec Laravel
         try {
-            // Récupérer l'utilisateur depuis Supabase
-            $user = User::where('supabase_user_id', $response['user']['id'] ?? null)->first();
+            $user = User::where('email', $request->email)->first();
+            
             if ($user) {
+                // Mettre à jour le mot de passe localement
+                $user->password = Hash::make($request->password);
+                $user->save();
+                
+                // Supprimer le token utilisé
+                \DB::table('password_reset_tokens')->where('token', $request->token)->delete();
+                
+                // Envoyer la confirmation
                 $user->notify(new PasswordResetConfirmationNotification($user->name));
             }
         } catch (\Exception $e) {
@@ -390,7 +411,7 @@ public function register(Request $request)
         if (Auth::check()) {
             $user = Auth::user();
             
-            // 📧 Envoyer l'email de confirmation
+            // 📧 Envoyer l'email de confirmation directement avec Laravel
             try {
                 $user->notify(new EmailVerifiedNotification($user->name));
             } catch (\Exception $e) {

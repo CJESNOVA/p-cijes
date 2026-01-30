@@ -36,6 +36,7 @@ class PasswordResetNotification extends Notification implements ShouldQueue
             ->line('• Au moins 8 caractères')
             ->line('• Une lettre majuscule et une minuscule')
             ->line('• Un chiffre et un caractère spécial (@$!%*?&)')
+            ->line('📧 Contactez-nous à support@cjes.africa si vous avez des questions.')
             ->salutation('Sécurité avant tout !')
             ->salutation('L\'équipe CJES Africa');
     }
