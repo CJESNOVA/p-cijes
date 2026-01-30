@@ -32,15 +32,10 @@
                 @csrf
                 @method('POST') 
                 
-    @if (session('status'))
-        <div class="bg-red-100 text-red-700 p-2 rounded mb-3 text-sm">
-            {{ session('status') }}
-        </div>
-    @endif
-
-        <input type="hidden" name="access_token" value="{{ $accessToken }}">
-        
-        
+                <!-- Champs cachés pour le token et l'email -->
+                <input type="hidden" name="token" value="{{ $token ?? '' }}">
+                <input type="hidden" name="email" value="{{ $email ?? '' }}"> 
+                
                 <div class="mt-4">
                     <label class="relative flex">
                         <input
