@@ -8,7 +8,9 @@
     $membre = \App\Models\Membre::where('user_id', $userId)->first();
     
     $evenements  = Evenement::where('etat', 1)->orderBy('dateevenement', 'asc')->take(3)->get();
-    $espaces     = Espace::where('etat', 1)->where('pays_id', $membre->pays_id)->take(2)->get();
+    $espaces     = Espace::where('etat', 1)->when($membre && $membre->pays_id, function($query) use ($membre) {
+        return $query->where('pays_id', $membre->pays_id);
+    })->take(2)->get();
     
     // Récupérer le nombre de propositions reçues
     $propositionsRecuesCount = 0;
