@@ -42,8 +42,8 @@ class DiagnosticentrepriseQualificationController extends Controller
             ->orderBy('position')
             ->with(['diagnosticquestions' => function ($q) {
                 $q->where('etat', 1)
-                ->orderBy('position')
-                ->with(['diagnosticreponses' => function ($query) {
+                    ->orderByRaw('CAST(position AS UNSIGNED)') // Cast en nombre pour tri numérique
+                    ->with(['diagnosticreponses' => function ($query) {
                     $query->where('etat', 1)
                             ->inRandomOrder(); // mélange aléatoire des réponses
                 }]);
@@ -184,8 +184,8 @@ class DiagnosticentrepriseQualificationController extends Controller
         }
 
         // 🔍 Récupérer les questions obligatoires pour ce module
-        $moduleQuestions = Diagnosticmodule::find($moduleId)
-            ->diagnosticquestions()
+        $module = Diagnosticmodule::find($moduleId);
+        $moduleQuestions = $module->diagnosticquestions()
             ->where('etat', 1)
             ->get();
             
@@ -206,8 +206,18 @@ class DiagnosticentrepriseQualificationController extends Controller
         $obligatoiresManquantes = array_diff($obligatoires, $repondues);
         if (!empty($obligatoiresManquantes)) {
             $nbManquantes = count($obligatoiresManquantes);
+            // Récupérer la position du module pour l'afficher
+            $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 3)
+                ->where('etat', 1)
+                ->orderBy('position')
+                ->get();
+            $modulePosition = $allModules->search(function($mod) use ($moduleId) {
+                return $mod->id == $moduleId;
+            }) + 1;
+            $totalModules = $allModules->count();
+            
             return redirect()->back()
-                ->with('warning', "⚠️ Il reste {$nbManquantes} question(s) obligatoire(s) non remplie(s). Veuillez compléter avant de continuer.")
+                ->with('warning', "⚠️ Module {$modulePosition}/{$totalModules} : Il reste {$nbManquantes} question(s) obligatoire(s) non remplie(s). Veuillez compléter avant de continuer.")
                 ->withInput();
         }
 
@@ -328,38 +338,9 @@ class DiagnosticentrepriseQualificationController extends Controller
             return redirect()->back()->with('error', '⚠️ Aucun test de qualification en cours trouvé.');
         }
 
-        // 🔍 Récupérer toutes les questions obligatoires de tous les modules
-        $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 3)
-            ->where('etat', 1)
-            ->with(['diagnosticquestions' => function ($q) {
-                $q->where('etat', 1)
-                  ->where('obligatoire', 1);
-            }])
-            ->get();
-            
-        $obligatoires = $allModules
-            ->flatMap(fn($module) => $module->diagnosticquestions)
-            ->pluck('id')
-            ->toArray();
-
-        // 🔍 Vérifier si toutes les questions obligatoires sont répondues
-        $repondues = Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
-            ->whereIn('diagnosticquestion_id', $obligatoires)
-            ->distinct()
-            ->pluck('diagnosticquestion_id')
-            ->toArray();
-
-        $obligatoiresManquantes = array_diff($obligatoires, $repondues);
-        if (!empty($obligatoiresManquantes)) {
-            $nbManquantes = count($obligatoiresManquantes);
-            return redirect()->back()
-                ->with('warning', "⚠️ Il reste {$nbManquantes} question(s) obligatoire(s) non remplie(s) dans l'ensemble du test. Veuillez compléter avant de finaliser.")
-                ->withInput();
-        }
-
-        // 🔄 Utiliser une transaction pour la cohérence des données
+        // � Utiliser une transaction pour la cohérence des données
         \DB::transaction(function () use ($diagnostic, $moduleId, $answers) {
-            // Sauvegarder les réponses du dernier module
+            // Sauvegarder les réponses du dernier module D'ABORD
             if ($moduleId) {
                 // Supprimer les anciens résultats pour ce module
                 $moduleQuestionIds = Diagnosticmodule::find($moduleId)
@@ -395,12 +376,57 @@ class DiagnosticentrepriseQualificationController extends Controller
                     }
                 }
             }
-
-            // Mettre à jour le diagnostic comme terminé
-            $diagnostic->update([
-                'diagnosticstatut_id' => 2, // Terminé
-            ]);
         });
+
+        // 🔍 Maintenant vérifier toutes les questions obligatoires de tous les modules
+        $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 3)
+            ->where('etat', 1)
+            ->orderBy('position')
+            ->with(['diagnosticquestions' => function ($q) {
+                $q->where('etat', 1)
+                  ->where('obligatoire', 1);
+            }])
+            ->get();
+            
+        $obligatoires = $allModules
+            ->flatMap(fn($module) => $module->diagnosticquestions)
+            ->pluck('id')
+            ->toArray();
+
+        // 🔍 Vérifier si toutes les questions obligatoires sont répondues
+        $repondues = Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
+            ->whereIn('diagnosticquestion_id', $obligatoires)
+            ->distinct()
+            ->pluck('diagnosticquestion_id')
+            ->toArray();
+
+        $obligatoiresManquantes = array_diff($obligatoires, $repondues);
+        if (!empty($obligatoiresManquantes)) {
+            $nbManquantes = count($obligatoiresManquantes);
+            
+            // Récupérer les modules où se trouvent les questions obligatoires manquantes
+            $modulesAvecQuestionsManquantes = [];
+            foreach ($allModules as $index => $module) {
+                $questionsManquantesDansModule = $module->diagnosticquestions
+                    ->whereIn('id', $obligatoiresManquantes);
+                    
+                if ($questionsManquantesDansModule->isNotEmpty()) {
+                    $modulesAvecQuestionsManquantes[] = ($index + 1);
+                }
+            }
+            
+            $modulesList = implode(', ', $modulesAvecQuestionsManquantes);
+            $moduleText = count($modulesAvecQuestionsManquantes) > 1 ? 'modules' : 'module';
+            
+            return redirect()->back()
+                ->with('warning', "⚠️ Il reste {$nbManquantes} question(s) obligatoire(s) non remplie(s) dans le {$moduleText} {$modulesList}. Veuillez compléter avant de finaliser.")
+                ->withInput();
+        }
+
+        // Mettre à jour le diagnostic comme terminé
+        $diagnostic->update([
+            'diagnosticstatut_id' => 2, // Terminé
+        ]);
 
         return redirect()->route('diagnosticentreprisequalification.success')
             ->with('success', 'Test de qualification enregistré avec succès !')

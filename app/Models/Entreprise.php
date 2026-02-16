@@ -67,4 +67,9 @@ class Entreprise extends Model
         return $this->belongsTo(Pays::class);
     }
 
+    public function diagnostics()
+    {
+        return $this->hasMany(Diagnostic::class);
+    }
+
 }

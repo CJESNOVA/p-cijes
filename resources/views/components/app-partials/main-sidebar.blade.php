@@ -10,7 +10,7 @@
         class="flex h-full w-full flex-col items-center border-r border-slate-150 bg-white dark:border-navy-700 dark:bg-navy-800">
         <!-- Application Logo -->
         <div class="flex pt-4">
-            <a href="{{ env('APP_URL') }}membres/dashboard">
+            <a href="{{ env('APP_URL2') }}" target="_blank">
                 <img class="size-11 transition-transform duration-500 ease-in-out hover:rotate-[360deg]"
                     src="{{ asset('images/app-logo.png') }}" alt="logo" />
             </a>
@@ -107,8 +107,12 @@
                 class="flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 {{ $routePrefix === 'experts' ? 'text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-navy-600 bg-primary/10 dark:text-accent-light dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90' : 'hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25' }}"
                 x-tooltip.placement.right="'Experts & conseillés'">
                 <svg class="size-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-    <circle cx="12" cy="7" r="4"/>
-    <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>
+    <circle cx="12" cy="8" r="3"/>
+    <path d="M16 8h2a2 2 0 012 2v2a2 2 0 01-2 2h-2"/>
+    <path d="M8 8H6a2 2 0 00-2 2v2a2 2 0 002 2h2"/>
+    <path d="M12 14v4"/>
+    <path d="M8 18h8"/>
+    <circle cx="12" cy="18" r="1" fill="currentColor"/>
 </svg>
 
             </a>

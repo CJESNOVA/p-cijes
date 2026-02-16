@@ -53,7 +53,7 @@
                             <div class="card-body p-6">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-[#152737]/80 text-sm font-medium">Total Filleuls</p>
+                                        <p class="text-purple-100 text-sm font-medium">Total Filleuls</p>
                                         <p class="text-3xl font-bold mt-2">{{ $parrainages->count() }}</p>
                                     </div>
                                     <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -69,7 +69,7 @@
                             <div class="card-body p-6">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-[#4FBE96]/80 text-sm font-medium">Total Parrains</p>
+                                        <p class="text-purple-100 text-sm font-medium">Total Parrains</p>
                                         <p class="text-3xl font-bold mt-2">{{ $parrainages2->count() }}</p>
                                     </div>
                                     <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -99,7 +99,7 @@
                     </div>
 
                     <!-- Liste des parrainages -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
                         <!-- Filleuls -->
                         @if($parrainages->isNotEmpty())
                             <div class="card shadow-xl">

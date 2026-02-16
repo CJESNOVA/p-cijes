@@ -115,6 +115,10 @@ class SidebarPanel
                         'title' => 'Niveaux de structuration',
                         'route_name' => 'diagnosticentreprise.indexForm'
                     ],
+                    'mesdiagnostics' => [
+                        'title' => 'Mes diagnostics',
+                        'route_name' => 'diagnostic.mes'
+                    ],
                 ],
             ]
         ];

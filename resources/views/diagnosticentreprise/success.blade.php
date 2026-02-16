@@ -59,7 +59,7 @@
                                 <strong>Entreprise :</strong> {{ $diagnostic->entreprise->nom ?? 'N/A' }}
                             </div>
                             <div>
-                                <strong>Score global :</strong> {{ $diagnostic->scoreglobal ?? 0 }}%
+                                <strong>Score global :</strong> {{ $diagnostic->scoreglobal ?? 0 }}
                             </div>
                             <div>
                                 <strong>Date :</strong> {{ \Carbon\Carbon::parse($diagnostic->created_at)->format('d/m/Y H:i') }}
@@ -107,16 +107,29 @@
                                                 $reponse = $result->diagnosticreponse;
                                             @endphp
                                             <div class="bg-[#4FBE96]/10 rounded p-3 mb-2">
-                                                <div class="flex items-center justify-between">
-                                                    <div>
-                                                        <span class="font-medium">{{ $reponse->titre }}</span>
-                                                        <span class="ml-2 text-sm text-slate-600">
-                                                            (Score: {{ $reponse->score ?? 0 }})
-                                                        </span>
+                                                <div class="flex items-start justify-between">
+                                                    <div class="flex-1">
+                                                        <span class="font-medium text-slate-800">{{ $reponse->titre }}</span>
+                                                        @if($reponse->explication)
+                                                            <div class="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+                                                                <div class="flex items-start">
+                                                                    <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                                    </svg>
+                                                                    <div>
+                                                                        <p class="mt-1 text-sm text-blue-600 leading-relaxed">
+                                                                            {{ $reponse->explication }}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endif
                                                     </div>
-                                                    <div class="text-[#4FBE96] font-semibold">
-                                                        {{ $reponse->score ?? 0 }} pts
-                                                    </div>
+                                                    @if(!$reponse->explication)
+                                                        <div class="text-[#4FBE96] font-semibold ml-4">
+                                                            {{ $reponse->score ?? 0 }} pts
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         @endforeach
@@ -143,6 +156,17 @@
                     <a href="{{ route('diagnosticentreprise.plans', $diagnostic->id) }}" class="inline-block btn bg-[#152737] text-white hover:bg-[#152737]/90">
                         <i class="fas fa-tasks mr-2"></i>Voir les plans d'accompagnement
                     </a>
+                    
+                    <!-- Boutons pour l'entreprise -->
+                    <a href="{{ route('entreprise.dashboard', $diagnostic->entreprise_id) }}" class="inline-block btn bg-blue-500 text-white hover:bg-blue-600">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Tableau de bord
+                    </a>
+                    <a href="{{ route('entreprise.progression.show', $diagnostic->entreprise_id) }}" class="inline-block btn bg-purple-500 text-white hover:bg-purple-600">
+                        <i class="fas fa-chart-line mr-2"></i>Évolution
+                    </a>
+                    {{--                    <a href="{{ route('entreprise.profil.show', $diagnostic->entreprise_id) }}" class="inline-block btn bg-indigo-500 text-white hover:bg-indigo-600">
+                        <i class="fas fa-user-tie mr-2"></i>Profil de l'entreprise
+                    </a>--}}
                 @endif
             </div>
         </div>

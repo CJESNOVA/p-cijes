@@ -21,6 +21,11 @@ class SupabaseStorageService
 
     public function upload($filePath, $fileContent)
     {
+        // Vérifier d'abord si le fichier existe
+        if ($this->fileExists($filePath)) {
+            return "{$this->url}/storage/v1/object/public/{$this->bucket}/{$filePath}";
+        }
+
         $response = Http::withHeaders([
             'apikey' => $this->key,
             'Authorization' => 'Bearer ' . $this->key,
@@ -31,6 +36,28 @@ class SupabaseStorageService
             return "{$this->url}/storage/v1/object/public/{$this->bucket}/{$filePath}";
         }
 
+        // Gérer le cas où le fichier existe déjà (au cas où la vérification précédente a échoué)
+        if ($response->status() === 409) {
+            return "{$this->url}/storage/v1/object/public/{$this->bucket}/{$filePath}";
+        }
+
         throw new \Exception('Upload failed: ' . $response->body());
+    }
+
+    /**
+     * Vérifier si un fichier existe dans le bucket Supabase
+     */
+    public function fileExists($filePath)
+    {
+        try {
+            $response = Http::withHeaders([
+                'apikey' => $this->key,
+                'Authorization' => 'Bearer ' . $this->key,
+            ])->get("{$this->url}/storage/v1/object/{$this->bucket}/{$filePath}");
+
+            return $response->successful();
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

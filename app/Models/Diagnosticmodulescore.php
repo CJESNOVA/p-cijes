@@ -17,7 +17,7 @@ class Diagnosticmodulescore extends Model
         'score_total',
         'score_max',
         'score_pourcentage',
-        'niveau',
+        'diagnosticblocstatut_id',
     ];
 
     protected $casts = [
@@ -36,21 +36,14 @@ class Diagnosticmodulescore extends Model
         return $this->belongsTo(Diagnosticmodule::class);
     }
 
+    public function diagnosticblocstatut()
+    {
+        return $this->belongsTo(Diagnosticblocstatut::class);
+    }
+
     public function getScorePourcentageAttribute($value)
     {
         return $value ? round($value, 2) : null;
-    }
-
-    public function getNiveauLibelleAttribute()
-    {
-        $niveaux = [
-            'debutant' => 'Débutant',
-            'intermediaire' => 'Intermédiaire', 
-            'avance' => 'Avancé',
-            'expert' => 'Expert'
-        ];
-
-        return $niveaux[$this->niveau] ?? $this->niveau;
     }
 
     public function getPerformanceAttribute()
