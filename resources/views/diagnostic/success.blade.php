@@ -59,7 +59,7 @@
                                 <strong>Membre :</strong> {{ $diagnostic->membre->nom ?? '' }} {{ $diagnostic->membre->prenom ?? '' }}
                             </div>
                             <div>
-                                <strong>Score global :</strong> {{ $diagnostic->scoreglobal ?? 0 }}%
+                                <strong>Score global :</strong> {{ $diagnostic->scoreglobal ?? 0 }}
                             </div>
                             <div>
                                 <strong>Date :</strong> {{ \Carbon\Carbon::parse($diagnostic->created_at)->format('d/m/Y H:i') }}
@@ -107,16 +107,20 @@
                                                 $reponse = $result->diagnosticreponse;
                                             @endphp
                                             <div class="bg-[#4FBE96]/10 rounded p-3 mb-2">
-                                                <div class="flex items-center justify-between">
-                                                    <div>
+                                                <div class="flex items-start justify-between">
+                                                    <div class="flex-1">
                                                         <span class="font-medium">{{ $reponse->titre }}</span>
-                                                        <span class="ml-2 text-sm text-slate-600">
-                                                            (Score: {{ $reponse->score ?? 0 }})
-                                                        </span>
+                                                        @if($reponse->explication)
+                                                            <div class="mt-2 text-sm text-slate-600 italic">
+                                                                {{ $reponse->explication }}
+                                                            </div>
+                                                        @endif
                                                     </div>
-                                                    <div class="text-[#4FBE96] font-semibold">
-                                                        {{ $reponse->score ?? 0 }} pts
-                                                    </div>
+                                                    @if(!$reponse->explication)
+                                                        <div class="text-[#4FBE96] font-semibold ml-4">
+                                                            {{ $reponse->score ?? 0 }} pts
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         @endforeach

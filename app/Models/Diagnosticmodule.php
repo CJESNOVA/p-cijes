@@ -19,13 +19,21 @@ class Diagnosticmodule extends Model
         'position',
         'description',
         'diagnosticmoduletype_id',
+        'entrepriseprofil_id',
         'parent',
         'langue_id',
         'pays_id',
         'spotlight',
         'etat',
+        'est_bloquant',
     ];
     
+    protected $casts = [
+        'est_bloquant' => 'boolean',
+        'entrepriseprofil_id' => 'integer',
+        'spotlight' => 'boolean',
+        'etat' => 'boolean',
+    ];
 
     public function diagnosticmoduletype()
     {
@@ -45,6 +53,11 @@ class Diagnosticmodule extends Model
     public function pays()
     {
         return $this->belongsTo(Pays::class);
+    }
+
+    public function entrepriseprofil()
+    {
+        return $this->belongsTo(Entrepriseprofil::class);
     }
 
     public function diagnosticquestions()

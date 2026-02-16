@@ -14,13 +14,22 @@ use App\Models\Plantemplate;
 use App\Models\Plan;
 use App\Models\Membre;
 use App\Models\Accompagnement;
+use App\Models\Diagnosticevolution;
 
 use App\Services\RecompenseService;
+use App\Services\DiagnosticStatutService;
 
 class DiagnosticController extends Controller
 {
-    public function showForm()
-{
+    protected $diagnosticStatutService;
+
+    public function __construct(DiagnosticStatutService $diagnosticStatutService)
+    {
+        $this->diagnosticStatutService = $diagnosticStatutService;
+    }
+
+    public function showForm($moduleId = null)
+    {
         $userId = Auth::id();
         
     // Vérification du membre connecté
@@ -28,58 +37,358 @@ class DiagnosticController extends Controller
     if (!$membre) {
         return redirect()
             ->route('membre.createOrEdit')
-            ->with('error', '⚠️ Vous devez d’abord créer votre profil membre.');
+            ->with('error', '⚠️ Vous devez d\'abord créer votre profil membre.');
     }
 
-    // Récupération du dernier diagnostic (le plus récent)
-    $diagnostic = Diagnostic::where('membre_id', $membre->id)->where('entreprise_id', 0)
-        ->where('diagnosticstatut_id', 1)
-        ->where('diagnostictype_id', 1) 
-        ->latest()
-        ->first();
-
-    // Récupération des modules et de leurs questions/réponses actives
-    $diagnosticmodules = Diagnosticmodule::where([
-            ['diagnosticmoduletype_id', 1],
-            ['etat', 1],
-        ])
-        ->orderBy('position') // tri normal sur modules
-        ->with([
-            'diagnosticquestions' => function ($q) {
-                $q->where('etat', 1)
-                    ->orderBy('position') // tri normal sur questions
-                    ->with(['diagnosticreponses' => function ($query) {
-                        $query->inRandomOrder(); // tri aléatoire uniquement sur réponses
-                    }]);
-            },
-        ])
+    // Récupération de TOUS les modules type 1 (diagnostic PME), triés par position
+    $allDiagnosticmodules = Diagnosticmodule::where('diagnosticmoduletype_id', 1)
+        ->where('etat', 1)
+        ->orderBy('position')
+        ->with(['diagnosticquestions' => function ($q) {
+            $q->where('etat', 1)
+                ->orderByRaw('CAST(position AS UNSIGNED)') // Cast en nombre pour tri numérique
+                ->with(['diagnosticreponses' => function ($query) {
+                    $query->where('etat', 1)
+                            ->inRandomOrder(); // mélange aléatoire des réponses
+                }]);
+        }])
         ->get();
 
-    // Préparation des réponses déjà enregistrées (pour pré-cocher les réponses)
+    // Si aucun moduleId spécifié, prendre le premier
+    if ($moduleId === null) {
+        $currentModule = $allDiagnosticmodules->first();
+        $moduleId = $currentModule ? $currentModule->id : null;
+    } else {
+        $currentModule = $allDiagnosticmodules->where('id', $moduleId)->first();
+    }
+
+    // Récupérer tous les modules pour la navigation
+    $modules = $allDiagnosticmodules;
+    
+    // DEBUG: Vérifier le contenu de la collection
+    $debugModules = $allDiagnosticmodules->map(function($module) {
+        return ['id' => $module->id, 'titre' => $module->titre];
+    })->toArray();
+    
+    $currentModuleIndex = 0;
+    if ($currentModule) {
+        // DEBUG: Vérifier $currentModule
+        $debugCurrent = [
+            'currentModule_id' => $currentModule->id,
+            'currentModule_titre' => $currentModule->titre,
+            'currentModule_exists' => isset($currentModule),
+            'currentModule_class' => get_class($currentModule)
+        ];
+        
+        // Approche ultra-simple
+        $moduleIds = $allDiagnosticmodules->pluck('id')->toArray();
+        $targetId = (int)$currentModule->id;
+        
+        foreach ($moduleIds as $index => $moduleId) {
+            if ((int)$moduleId === $targetId) {
+                $currentModuleIndex = $index;
+                break;
+            }
+        }
+    }
+    
+    $nextModule = $currentModule ? $allDiagnosticmodules->get($currentModuleIndex + 1) : null;
+    $previousModule = $currentModuleIndex > 0 ? $allDiagnosticmodules->get($currentModuleIndex - 1) : null;
+    $isLastModule = $currentModule ? ($currentModuleIndex + 1) >= $allDiagnosticmodules->count() : false;
+    
+    // DEBUG: Vérifier la transmission des variables
+    $debugTransmission = [
+        'currentModuleIndex_before_view' => $currentModuleIndex,
+        'isLastModule_before_view' => $isLastModule,
+        'nextModule_before_view' => $nextModule ? $nextModule->id : null,
+        'previousModule_before_view' => $previousModule ? $previousModule->id : null
+    ];
+    
+    // Si c'est le dernier module, définir la session pour finalisation
+    if ($isLastModule) {
+        session(['showFinalization' => true]);
+    }
+
+    // Récupérer le dernier diagnostic en cours pour ce membre (non terminé)
+    $diagnostic = Diagnostic::where('membre_id', $membre->id)
+        ->where('entreprise_id', 0)
+        ->where('diagnostictype_id', 1) 
+        ->where('diagnosticstatut_id', 1) // Non terminé
+        ->orderBy('created_at', 'desc')
+        ->first();
+
+    // Préparer les réponses existantes (déjà cochées)
     $existing = [];
     if ($diagnostic) {
         $existing = Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
             ->get()
             ->groupBy('diagnosticquestion_id')
-            ->map(fn($group) => $group->pluck('diagnosticreponse_id')->toArray());
+            ->map(fn($items) => $items->pluck('diagnosticreponse_id')->toArray())
+            ->toArray(); // convertir en array pour Blade
     }
 
-    // Retour de la vue
-    return view('diagnostic.form', [
-        'diagnosticmodules' => $diagnosticmodules,
-        'existing' => $existing,
-        'diagnostic' => $diagnostic,
-        'membre' => $membre,
-    ]);
+    return view('diagnostic.form', compact(
+        'modules',
+        'currentModule',
+        'nextModule',
+        'previousModule',
+        'isLastModule',
+        'existing',
+        'diagnostic',
+        'membre'
+    ));
 }
 
 
 
 
-    public function store(Request $request, RecompenseService $recompenseService)
+    public function saveModule(Request $request, $moduleId)
+    {
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->first();
+
+        if (!$membre) {
+            return redirect()
+                ->route('membre.createOrEdit')
+                ->with('error', '⚠️ Vous devez créer votre profil membre avant de remplir un diagnostic.');
+        }
+
+        // 🔍 DEBUG: Vérifier les données reçues
+        $debugData = [
+            'moduleId' => $moduleId,
+            'answers_received' => $request->reponses,
+            'answers_count' => count($request->reponses ?? []),
+            'answers_is_array' => is_array($request->reponses ?? []),
+            'all_answers_keys' => array_keys($request->reponses ?? [])
+        ];
+
+        // 🔍 Vérifier si au moins une réponse a été fournie
+        $answers = $request->reponses ?? [];
+        if (empty($answers) || !is_array($answers)) {
+            return redirect()->back()
+                ->with('error', '⚠️ Veuillez répondre à au moins une question avant de continuer.')
+                ->withInput();
+        }
+
+        // 🔍 Vérifier si les réponses contiennent des valeurs valides
+        $hasValidAnswers = false;
+        foreach ($answers as $questionId => $reponseData) {
+            if (is_array($reponseData)) {
+                if (!empty(array_filter($reponseData))) {
+                    $hasValidAnswers = true;
+                    break;
+                }
+            } elseif (!empty($reponseData)) {
+                $hasValidAnswers = true;
+                break;
+            }
+        }
+
+        if (!$hasValidAnswers) {
+            return redirect()->back()
+                ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de continuer.')
+                ->withInput();
+        }
+
+        // Récupérer le dernier diagnostic en cours pour ce membre (non terminé)
+        $diagnostic = Diagnostic::where('membre_id', $membre->id)
+            ->where('entreprise_id', 0)
+            ->where('diagnostictype_id', 1) 
+            ->where('diagnosticstatut_id', 1) // Non terminé
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Si aucun diagnostic en cours, en créer un nouveau
+        if (!$diagnostic) {
+            $diagnostic = Diagnostic::create([
+                'membre_id' => $membre->id,
+                'entreprise_id' => 0,
+                'diagnosticstatut_id' => 1,
+                'diagnostictype_id' => 1,
+                'scoreglobal' => 0,
+                'etat' => 1,
+            ]);
+        }
+
+        // 🔍 Récupérer les questions obligatoires pour ce module
+        $module = Diagnosticmodule::find($moduleId);
+        $moduleQuestions = $module->diagnosticquestions()
+            ->where('etat', 1)
+            ->get();
+            
+        $obligatoires = $moduleQuestions->where('obligatoire', 1)->pluck('id')->toArray();
+        
+        // 🔍 Vérifier si les questions obligatoires sont répondues
+        $repondues = [];
+        foreach ($answers as $questionId => $reponseData) {
+            if (is_array($reponseData)) {
+                if (!empty(array_filter($reponseData))) {
+                    $repondues[] = $questionId;
+                }
+            } elseif (!empty($reponseData)) {
+                $repondues[] = $questionId;
+            }
+        }
+        
+        $obligatoiresManquantes = array_diff($obligatoires, $repondues);
+        if (!empty($obligatoiresManquantes)) {
+            $nbManquantes = count($obligatoiresManquantes);
+            // Récupérer la position du module pour l'afficher
+            $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 1)
+                ->where('etat', 1)
+                ->orderBy('position')
+                ->get();
+            $modulePosition = $allModules->search(function($mod) use ($moduleId) {
+                return $mod->id == $moduleId;
+            }) + 1;
+            $totalModules = $allModules->count();
+            
+            return redirect()->back()
+                ->with('warning', "⚠️ Module {$modulePosition}/{$totalModules} : Il reste {$nbManquantes} question(s) obligatoire(s) non remplie(s). Veuillez compléter avant de continuer.")
+                ->withInput();
+        }
+
+        // 🔄 Utiliser une transaction pour la cohérence des données
+        \DB::transaction(function () use ($diagnostic, $moduleId, $answers) {
+            // Supprimer les anciens résultats pour ce module uniquement
+            $moduleQuestionIds = Diagnosticmodule::find($moduleId)
+                ->diagnosticquestions()
+                ->pluck('id')
+                ->toArray();
+                
+            Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
+                ->whereIn('diagnosticquestion_id', $moduleQuestionIds)
+                ->delete();
+
+            // Enregistrer les nouvelles réponses pour ce module
+            foreach ($answers as $questionId => $reponseData) {
+                // Si c'est un tableau (checkbox), traiter chaque élément
+                if (is_array($reponseData)) {
+                    foreach ($reponseData as $reponseId) {
+                        Diagnosticresultat::create([
+                            'diagnostic_id' => $diagnostic->id,
+                            'diagnosticquestion_id' => $questionId,
+                            'diagnosticreponse_id' => $reponseId,
+                            'etat' => 1,
+                        ]);
+                    }
+                } 
+                // Si c'est une valeur simple (radio), traiter directement
+                elseif ($reponseData) {
+                    Diagnosticresultat::create([
+                        'diagnostic_id' => $diagnostic->id,
+                        'diagnosticquestion_id' => $questionId,
+                        'diagnosticreponse_id' => $reponseData,
+                        'etat' => 1,
+                    ]);
+                }
+            }
+        });
+
+        // Calculer et enregistrer le score total cumulé du module
+        $scoreCalcule = $this->calculerScoreTotalModule($diagnostic->id, $moduleId);
+        
+        // Créer ou mettre à jour le score du module avec le score cumulé
+        $moduleScore = Diagnosticmodulescore::updateOrCreate(
+            [
+                'diagnostic_id' => $diagnostic->id,
+                'diagnosticmodule_id' => $moduleId,
+            ],
+            [
+                'score_total' => $scoreCalcule['score_total'],
+                'score_max' => $scoreCalcule['score_max'],
+                'score_pourcentage' => $scoreCalcule['score_pourcentage'],
+                'diagnosticblocstatut_id' => $this->determinerStatutBloc($scoreCalcule['score_pourcentage']),
+            ],
+            ['diagnostic_id', 'diagnosticmodule_id'] // Forcer l'update même si existe
+        );
+        
+        \Log::info('Score module créé/mis à jour avec score cumulé', [
+            'diagnostic_id' => $diagnostic->id,
+            'module_id' => $moduleId,
+            'score_total' => $scoreCalcule['score_total'],
+            'score_max' => $scoreCalcule['score_max'],
+            'score_pourcentage' => $scoreCalcule['score_pourcentage'],
+            'module_score_id' => $moduleScore->id,
+            'was_created' => $moduleScore->wasRecentlyCreated
+        ]);
+
+        // Récupérer tous les modules pour trouver le suivant
+        $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 1)
+            ->where('etat', 1)
+            ->orderBy('position')
+            ->get();
+        
+        $currentModuleIndex = $allModules->search(function($module) use ($moduleId) {
+            return $module->id == $moduleId;
+        });
+        
+        $nextModule = $allModules->get($currentModuleIndex + 1);
+
+        // Rediriger vers le module suivant ou rester sur le dernier
+        if ($nextModule) {
+            $moduleActuel = $currentModuleIndex + 1;
+            $totalModules = $allModules->count();
+            return redirect()->route('diagnostic.showModule', $nextModule->id)
+                ->with('success', "✅ Module {$moduleActuel}/{$totalModules} enregistré avec succès ! Continuez sur le module suivant.");
+        } else {
+            return redirect()->back()
+                ->with('success', '✅ Dernier module enregistré ! Vous pouvez maintenant finaliser le diagnostic.')
+                ->with('showFinalization', true);
+        }
+    }
+
+    /**
+     * Calculer le score total cumulé d'un module à partir des réponses
+     */
+    private function calculerScoreTotalModule($diagnosticId, $moduleId)
+    {
+        // Récupérer toutes les réponses de l'utilisateur pour ce module
+        $reponses = Diagnosticresultat::where('diagnostic_id', $diagnosticId)
+            ->whereHas('diagnosticquestion', function($query) use ($moduleId) {
+                $query->where('diagnosticmodule_id', $moduleId);
+            })
+            ->with(['diagnosticreponse', 'diagnosticquestion'])
+            ->get();
+
+        $scoreTotal = 0;
+        $scoreMax = 0;
+
+        foreach ($reponses as $reponse) {
+            // Ajouter les points de la réponse choisie
+            if ($reponse->diagnosticreponse) {
+                $scoreTotal += $reponse->diagnosticreponse->score ?? 0;
+            }
+            
+            // Calculer le score maximum possible pour cette question
+            $pointsMax = $reponse->diagnosticquestion->diagnosticreponses()
+                ->max('score') ?? 0;
+            $scoreMax += $pointsMax;
+        }
+
+        // Calculer le pourcentage
+        $scorePourcentage = $scoreMax > 0 ? round(($scoreTotal / $scoreMax) * 100, 2) : 0;
+
+        \Log::info('Score calculé pour module', [
+            'diagnostic_id' => $diagnosticId,
+            'module_id' => $moduleId,
+            'score_total' => $scoreTotal,
+            'score_max' => $scoreMax,
+            'score_pourcentage' => $scorePourcentage,
+            'reponses_count' => $reponses->count()
+        ]);
+
+        return [
+            'score_total' => $scoreTotal,
+            'score_max' => $scoreMax,
+            'score_pourcentage' => $scorePourcentage
+        ];
+    }
+
+    public function store(Request $request, RecompenseService $recompenseService, $moduleId = null)
 {
     $userId = Auth::id();
-    $membre = Membre::where('user_id', $userId)->firstOrFail();
+    $membre = Membre::where('user_id', $userId)->first();
 
     if (!$membre) {
         return redirect()
@@ -87,16 +396,16 @@ class DiagnosticController extends Controller
             ->with('error', '⚠️ Vous devez créer votre profil membre avant de remplir un diagnostic.');
     }
 
-    $answers = $request->input('diagnosticreponses', []);
+    $answers = $request->reponses ?? [];
 
     // 🔍 Vérifier si au moins une réponse a été fournie
     if (empty($answers) || !is_array($answers)) {
         return redirect()->back()
-            ->with('error', '⚠️ Veuillez répondre à au moins une question avant de valider le diagnostic.')
+            ->with('error', '⚠️ Veuillez répondre à au moins une question avant de finaliser.')
             ->withInput();
     }
 
-    // 🔍 Vérifier si les réponses contiennent des valeurs vides
+    // 🔍 Vérifier si les réponses contiennent des valeurs valides
     $hasValidAnswers = false;
     foreach ($answers as $question_id => $values) {
         if (is_array($values)) {
@@ -112,154 +421,199 @@ class DiagnosticController extends Controller
 
     if (!$hasValidAnswers) {
         return redirect()->back()
-            ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de valider le diagnostic.')
+            ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de finaliser.')
             ->withInput();
     }
 
-    // 🔍 Vérification : s'assurer qu'il y a des réponses (nouvelles ou existantes)
-    // Mais empêcher la soumission si aucune réponse n'est fournie du tout
-    $totalAnswersCount = 0;
-    foreach ($answers as $question_id => $values) {
-        if (is_array($values)) {
-            $totalAnswersCount += count(array_filter($values));
-        } elseif (!empty($values)) {
-            $totalAnswersCount++;
-        }
-    }
-
-    // Si aucune réponse n'est fournie dans le formulaire
-    if ($totalAnswersCount === 0) {
-        return redirect()->back()
-            ->with('error', '⚠️ Veuillez cocher au moins une réponse avant de valider le diagnostic.')
-            ->withInput();
-    }
-
-    // 🔍 Cherche un diagnostic EN COURS ou crée-en un nouveau si aucun n'existe
+    // Récupérer le dernier diagnostic en cours pour ce membre
     $diagnostic = Diagnostic::where('membre_id', $membre->id)
-        ->where('diagnosticstatut_id', 1) // 1 = en cours
+        ->where('entreprise_id', 0)
+        ->where('diagnostictype_id', 1) 
+        ->where('diagnosticstatut_id', 1) // Non terminé
+        ->orderBy('created_at', 'desc')
         ->first();
 
     if (!$diagnostic) {
-        $diagnostic = Diagnostic::create([
-            'membre_id' => $membre->id,
-            'diagnosticstatut_id' => 1,
-            'diagnostictype_id' => 1,
-            'scoreglobal' => 0,
-            'etat' => 1,
-        ]);
+        return redirect()->back()->with('error', '⚠️ Aucun diagnostic en cours trouvé.');
     }
 
-    $totalScore = 0;
+    // 🔄 Utiliser une transaction pour la cohérence des données
+    \DB::transaction(function () use ($diagnostic, $moduleId, $answers) {
+        // Sauvegarder les réponses du dernier module D'ABORD
+        if ($moduleId) {
+            // Supprimer les anciens résultats pour ce module
+            $moduleQuestionIds = Diagnosticmodule::find($moduleId)
+                ->diagnosticquestions()
+                ->pluck('id')
+                ->toArray();
+                
+            Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
+                ->whereIn('diagnosticquestion_id', $moduleQuestionIds)
+                ->delete();
 
-    foreach ($answers as $question_id => $values) {
-        // 🧹 Supprimer les anciennes réponses de cette question
-        Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
-            ->where('diagnosticquestion_id', $question_id)
-            ->delete();
-
-        // 📝 Enregistrer les nouvelles réponses
-        if (is_array($values)) {
-            foreach ($values as $reponse_id) {
-                $reponse = Diagnosticreponse::find($reponse_id);
-                $totalScore += $reponse?->score ?? 0;
-
-                Diagnosticresultat::create([
-                    'diagnostic_id' => $diagnostic->id,
-                    'diagnosticquestion_id' => $question_id,
-                    'diagnosticreponse_id' => $reponse_id,
-                    'etat' => 1,
-                ]);
+            // Enregistrer les nouvelles réponses pour ce module
+            foreach ($answers as $questionId => $reponseData) {
+                // Si c'est un tableau (checkbox), traiter chaque élément
+                if (is_array($reponseData)) {
+                    foreach ($reponseData as $reponseId) {
+                        Diagnosticresultat::create([
+                            'diagnostic_id' => $diagnostic->id,
+                            'diagnosticquestion_id' => $questionId,
+                            'diagnosticreponse_id' => $reponseId,
+                            'etat' => 1,
+                        ]);
+                    }
+                } 
+                // Si c'est une valeur simple (radio), traiter directement
+                elseif ($reponseData) {
+                    Diagnosticresultat::create([
+                        'diagnostic_id' => $diagnostic->id,
+                        'diagnosticquestion_id' => $questionId,
+                        'diagnosticreponse_id' => $reponseData,
+                        'etat' => 1,
+                    ]);
+                }
             }
-        } else {
-            $reponse = Diagnosticreponse::find($values);
-            $totalScore += $reponse?->score ?? 0;
-
-            Diagnosticresultat::create([
-                'diagnostic_id' => $diagnostic->id,
-                'diagnosticquestion_id' => $question_id,
-                'diagnosticreponse_id' => $values,
-                'etat' => 1,
-            ]);
         }
-    }
+    });
 
-    // ✅ Vérifier si toutes les questions obligatoires sont remplies
-        // Récupérer tous les modules du diagnostic (type 1 pour PME)
-        $modules = Diagnosticmodule::where('diagnosticmoduletype_id', 1)
-            ->where('etat', 1)
-            ->with(['diagnosticquestions' => function ($q) {
-                $q->where('etat', 1)
-                  ->where('obligatoire', 1);
-            }])
-            ->get();
+    // 🔍 Maintenant vérifier toutes les questions obligatoires de tous les modules
+    $allModules = Diagnosticmodule::where('diagnosticmoduletype_id', 1)
+        ->where('etat', 1)
+        ->orderBy('position')
+        ->with(['diagnosticquestions' => function ($q) {
+            $q->where('etat', 1)
+              ->where('obligatoire', 1);
+        }])
+        ->get();
+        
+    $obligatoires = $allModules
+        ->flatMap(fn($module) => $module->diagnosticquestions)
+        ->pluck('id')
+        ->toArray();
 
-        // Récupérer tous les IDs des questions obligatoires
-        $obligatoires = $modules
-            ->flatMap(function ($module) {
-                return $module->diagnosticquestions->pluck('id');
-            })
-            ->unique()
-            ->toArray();
+    // 🔍 Vérifier si toutes les questions obligatoires sont répondues
+    $repondues = Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
+        ->whereIn('diagnosticquestion_id', $obligatoires)
+        ->distinct()
+        ->pluck('diagnosticquestion_id')
+        ->toArray();
 
-        // Récupérer les questions obligatoires déjà répondues
-        $repondues = Diagnosticresultat::where('diagnostic_id', $diagnostic->id)
-            ->whereIn('diagnosticquestion_id', $obligatoires)
-            ->distinct('diagnosticquestion_id')
-            ->pluck('diagnosticquestion_id')
-            ->toArray();
-
-        if (count($obligatoires) === count($repondues)) {
-        // 💯 Diagnostic terminé
-        $diagnostic->update([
-            'scoreglobal' => $totalScore,
-            'diagnosticstatut_id' => 2, // terminé
-        ]);
-
-        // 🏁 Création automatique d’un accompagnement
-        $accompagnement = Accompagnement::create([
-            'membre_id' => $membre->id,
-            //'entreprise_id' => 0,
-            'accompagnementniveau_id' => 1,
-            'dateaccompagnement' => now(),
-            'accompagnementstatut_id' => 1,
-        ]);
-
-        // 🔗 Lier le diagnostic à l’accompagnement
-        $diagnostic->update([
-            'accompagnement_id' => $accompagnement->id,
-        ]);
-
-        // 🎯 GÉNÉRATION AUTOMATIQUE DES PLANS D'ACCOMPAGNEMENT
-        $this->genererPlansAutomatiques($diagnostic);
-
-            // 🏆 Vérifie si c’est le premier diagnostic PME du membre
-            $nbDiagnostics = Diagnostic::where('membre_id', $membre->id)->where('entreprise_id', 0)
-                ->where('diagnosticstatut_id', 2)
-                ->count();
-
-            if ($nbDiagnostics === 1) {
-                // 🪙 Déclenche la récompense "DIAG_PME_PREMIER"
-                $recompense = $recompenseService->attribuerRecompense('DIAG_PME_PREMIER', $membre, null, $diagnostic->id);
-
+    $obligatoiresManquantes = array_diff($obligatoires, $repondues);
+    if (!empty($obligatoiresManquantes)) {
+        $nbManquantes = count($obligatoiresManquantes);
+        
+        // Récupérer les modules où se trouvent les questions obligatoires manquantes
+        $modulesAvecQuestionsManquantes = [];
+        foreach ($allModules as $index => $module) {
+            $questionsManquantesDansModule = $module->diagnosticquestions
+                ->whereIn('id', $obligatoiresManquantes);
+                
+            if ($questionsManquantesDansModule->isNotEmpty()) {
+                $modulesAvecQuestionsManquantes[] = ($index + 1); // +1 pour afficher le numéro réel
             }
-
-        return redirect()->route('diagnostic.success', $diagnostic->id)
-            ->with('success', 'Diagnostic terminé avec succès. Score : ' . $totalScore)
-            ->with('diagnostic_id', $diagnostic->id);
+        }
+        
+        $modulesList = implode(', ', $modulesAvecQuestionsManquantes);
+        $moduleText = count($modulesAvecQuestionsManquantes) > 1 ? 'modules' : 'module';
+        
+        return redirect()->back()
+            ->with('warning', "⚠️ Il reste {$nbManquantes} question(s) obligatoire(s) non remplie(s) dans le {$moduleText} {$modulesList}. Veuillez compléter avant de finaliser.")
+            ->withInput();
     }
 
-    // ⚠️ Questions obligatoires non remplies
-    $questionsObligatoiresManquantes = count($obligatoires) - count($repondues);
-    return redirect()->back()
-        ->with('warning', "⚠️ Il reste {$questionsObligatoiresManquantes} question(s) obligatoire(s) non remplie(s). Votre diagnostic est sauvegardé mais vous devez compléter ces questions pour le terminer.")
+    // Calculer le score total
+    $totalScore = 0;
+    $resultats = Diagnosticresultat::where('diagnostic_id', $diagnostic->id)->get();
+    foreach ($resultats as $resultat) {
+        $reponse = Diagnosticreponse::find($resultat->diagnosticreponse_id);
+        $totalScore += $reponse?->score ?? 0;
+    }
+
+    // 💯 Diagnostic terminé
+    $diagnostic->update([
+        'scoreglobal' => $totalScore,
+        'diagnosticstatut_id' => 2, // terminé
+    ]);
+
+    // � Créer une évolution pour le diagnostic PME (sans entreprise)
+    Diagnosticevolution::creerEvolution(
+        0, // Pas d'entreprise_id pour les diagnostics PME
+        $diagnostic->id,
+        null, // Pas de diagnostic précédent spécifique
+        "Diagnostic PME terminé - Score: {$totalScore}"
+    );
+
+    // �🏁 Création automatique d'un accompagnement
+    $accompagnement = Accompagnement::create([
+        'membre_id' => $membre->id,
+        'accompagnementniveau_id' => 1,
+        'dateaccompagnement' => now(),
+        'accompagnementstatut_id' => 1,
+    ]);
+
+    // 🔗 Lier le diagnostic à l'accompagnement
+    $diagnostic->update([
+        'accompagnement_id' => $accompagnement->id,
+    ]);
+
+    // 🎯 GÉNÉRATION AUTOMATIQUE DES PLANS D'ACCOMPAGNEMENT
+    $this->genererPlansAutomatiques($diagnostic);
+
+    // 🏆 Vérifie si c'est le premier diagnostic PME du membre
+    $nbDiagnostics = Diagnostic::where('membre_id', $membre->id)->where('entreprise_id', 0)
+        ->where('diagnosticstatut_id', 2)
+        ->count();
+
+    // 🏁 Déclenche la récompense "DIAG_PME_PREMIER"
+    if ($nbDiagnostics == 1) {
+        $recompense = $recompenseService->attribuerRecompense('DIAG_PME_PREMIER', $membre, null, $diagnostic->id);
+    }
+
+    // 🔧 Redirection directe pour éviter les problèmes
+    return redirect("/diagnostics/diagnostic/success/{$diagnostic->id}")
+        ->with('success', 'Diagnostic terminé avec succès. Score : ' . $totalScore)
         ->with('diagnostic_id', $diagnostic->id);
 }
+
+    /**
+     * Détermine le statut du bloc en fonction du pourcentage de score
+     * Basé sur la table diagnosticblocstatuts :
+     * 1 = critique (Bloc bloquant nécessitant un accompagnement prioritaire)
+     * 2 = fragile (Bloc insuffisamment structuré)
+     * 3 = intermediaire (Bloc partiellement structuré)
+     * 4 = conforme (Bloc conforme aux attentes du palier)
+     * 5 = reference (Bloc exemplaire – niveau référence)
+     */
+    private function determinerStatutBloc($scorePourcentage)
+    {
+        // Logique de détermination du statut basé sur le pourcentage
+        if ($scorePourcentage >= 90) {
+            return 5; // reference - Bloc exemplaire
+        } elseif ($scorePourcentage >= 75) {
+            return 4; // conforme - Bloc conforme aux attentes
+        } elseif ($scorePourcentage >= 50) {
+            return 3; // intermediaire - Bloc partiellement structuré
+        } elseif ($scorePourcentage >= 25) {
+            return 2; // fragile - Bloc insuffisamment structuré
+        } else {
+            return 1; // critique - Bloc bloquant
+        }
+    }
 
     /**
      * Affiche la page de succès avec les détails du diagnostic
      */
     public function success($diagnosticId)
     {
+        // DEBUG: Vérifier l'appel à la méthode success
+        $debugSuccess = [
+            'diagnosticId_received' => $diagnosticId,
+            'method_called' => 'success',
+            'timestamp' => now()->format('Y-m-d H:i:s')
+        ];
+        session(['debug_success_data' => $debugSuccess]);
+        
         $userId = Auth::id();
         $membre = Membre::where('user_id', $userId)->first();
 
@@ -316,7 +670,7 @@ class DiagnosticController extends Controller
  * Convertit un score de réponse (1-4) en niveau (A-D)
  * Note: D est la valeur maximale dans notre système
  */
-private function convertirScoreEnNiveau($score)
+public function convertirScoreEnNiveau($score)
 {
     $conversion = [
         1 => 'A', // Faible
@@ -399,46 +753,52 @@ private function genererPlansAutomatiques($diagnostic)
         $plansCrees = 0;
         
         foreach ($modules as $module) {
-            // Calculer le niveau pour ce module
-            $niveau = $this->calculerNiveauModule($diagnostic->id, $module->id);
+            // Calculer le score total cumulé du module
+            $scoreCalcule = $this->calculerScoreTotalModule($diagnostic->id, $module->id);
             
-            \Log::info('Niveau calculé pour module', [
+            \Log::info('Score calculé pour module', [
                 'module_id' => $module->id,
                 'module_titre' => $module->titre,
-                'niveau' => $niveau
+                'score_total' => $scoreCalcule['score_total'],
+                'score_max' => $scoreCalcule['score_max'],
+                'score_pourcentage' => $scoreCalcule['score_pourcentage'],
+                'niveau_calcule' => $this->convertirScoreEnNiveau($scoreCalcule['score_total'])
             ]);
             
-            // Créer ou mettre à jour le score du module
+            // Créer ou mettre à jour le score du module avec le score cumulé
             $moduleScore = Diagnosticmodulescore::updateOrCreate(
                 [
                     'diagnostic_id' => $diagnostic->id,
                     'diagnosticmodule_id' => $module->id,
                 ],
                 [
-                    'niveau' => $niveau,
-                    'score_pourcentage' => $this->convertirNiveauEnPourcentage($niveau),
-                    'score_max' => 100,
-                    'score_total' => $this->convertirNiveauEnScore($niveau),
-                ]
+                    'score_total' => $scoreCalcule['score_total'],
+                    'score_max' => $scoreCalcule['score_max'],
+                    'score_pourcentage' => $scoreCalcule['score_pourcentage'],
+                    'diagnosticblocstatut_id' => $this->determinerStatutBloc($scoreCalcule['score_pourcentage']),
+                ],
+                ['diagnostic_id', 'diagnosticmodule_id'] // Forcer l'update même si existe
             );
-
+            
             \Log::info('Score module créé/mis à jour', [
                 'diagnostic_id' => $diagnostic->id,
                 'module_id' => $module->id,
-                'niveau' => $niveau,
+                'score_total' => $scoreCalcule['score_total'],
+                'score_max' => $scoreCalcule['score_max'],
+                'score_pourcentage' => $scoreCalcule['score_pourcentage'],
                 'module_score_id' => $moduleScore->id,
                 'was_created' => $moduleScore->wasRecentlyCreated
             ]);
 
             // Chercher les templates correspondants
             $templates = Plantemplate::where('diagnosticmodule_id', $module->id)
-                ->where('niveau', $niveau)
+                ->where('niveau', $this->convertirScoreEnNiveau($scoreCalcule['score_total']))
                 ->actif()
                 ->get();
 
             \Log::info('Templates trouvés', [
                 'module_id' => $module->id,
-                'niveau' => $niveau,
+                'niveau_calcule' => $this->convertirScoreEnNiveau($scoreCalcule['score_total']),
                 'templates_count' => $templates->count()
             ]);
 
@@ -511,7 +871,7 @@ private function convertirNiveauEnPourcentage($niveau)
  * Convertit un niveau (A-D) en score numérique
  * Note: D est la valeur maximale (90)
  */
-private function convertirNiveauEnScore($niveau)
+public static function convertirNiveauEnScore($niveau)
 {
     $conversion = [
         'A' => 25, // Faible
@@ -521,6 +881,25 @@ private function convertirNiveauEnScore($niveau)
     ];
     
     return $conversion[$niveau] ?? 25;
+}
+
+/**
+ * Affiche tous les diagnostics du membre connecté
+ */
+public function mesDiagnostics()
+{
+    $userId = Auth::id();
+    $membre = Membre::where('user_id', $userId)->firstOrFail();
+    
+    // Récupérer tous les diagnostics du membre
+    $diagnostics = Diagnostic::where('membre_id', $membre->id)
+        ->with(['diagnosticstatut', 'diagnostictype', 'diagnosticmodulescores' => function($query) {
+            $query->with(['diagnosticmodule', 'diagnosticblocstatut']);
+        }])
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    return view('diagnostic.mes-diagnostics', compact('diagnostics', 'membre'));
 }
 
 }

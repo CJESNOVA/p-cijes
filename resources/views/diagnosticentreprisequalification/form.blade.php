@@ -49,33 +49,6 @@
                         {{ session('warning') }}
                     </div>
                 @endif
-            </div>
-
-            <form action="{{ route('diagnosticentreprisequalification.saveModule', [$entrepriseId, $currentModule->id]) }}" method="POST">
-                @csrf
-                <input type="hidden" name="entreprise_id" value="{{ $entrepriseId }}">
-    
-@php
-    $existing = $existing ?? collect();
-@endphp
-
-                @if(session('error'))
-                    <div class="alert flex rounded-lg bg-red-500 px-4 py-3 text-white mb-4 shadow-lg">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-                @if(session('warning'))
-                    <div class="alert flex rounded-lg bg-yellow-500 px-4 py-3 text-white mb-4 shadow-lg">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                        </svg>
-                        {{ session('warning') }}
-                    </div>
-                @endif
 
                 @if ($errors->any())
                     <div class="alert flex rounded-lg bg-red-500 px-4 py-3 text-white mb-4 shadow-lg">
@@ -92,6 +65,17 @@
                         </div>
                     </div>
                 @endif
+
+            </div>
+
+            <form action="{{ route('diagnosticentreprisequalification.saveModule', [$entrepriseId, $currentModule->id]) }}" method="POST">
+                @csrf
+                <input type="hidden" name="entreprise_id" value="{{ $entrepriseId }}">
+    
+@php
+    $existing = $existing ?? collect();
+@endphp
+
 
                 <!-- Indicateur de progression -->
                 <div class="mb-6">
@@ -196,8 +180,57 @@
                     </div>
                 </div>
 
+                <!-- Barre de navigation par numéros -->
+                <div class="mt-8 mb-6">
+                    <div class="flex items-center justify-center space-x-2 flex-wrap">
+                        @php
+                            $currentModuleIndex = $modules->search(function($module) use ($currentModule) { return $module->id == $currentModule->id; }) + 1;
+                        @endphp
+                        
+                        @foreach($modules as $index => $module)
+                            @php
+                                $moduleNumber = $index + 1;
+                                $isCurrentModule = $module->id == $currentModule->id;
+                                // Vérifier si le module est complété en cherchant dans les réponses existantes
+                                $isCompleted = isset($existing) && !empty($existing) && 
+                                             collect($existing)->filter(function($responses) use ($module) {
+                                                 return collect($responses)->keys()->first(function($questionId) use ($module) {
+                                                     $question = \App\Models\Diagnosticquestion::find($questionId);
+                                                     return $question && $question->diagnosticmodule_id == $module->id;
+                                                 });
+                                             })->isNotEmpty();
+                            @endphp
+                            
+                            @if($isCurrentModule)
+                                <a href="{{ route('diagnosticentreprisequalification.showModule', [$entrepriseId, $module->id]) }}" 
+                                   class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-[#4FBE96] to-[#4FBE96]/80 text-white font-semibold shadow-lg transform scale-110 transition-all duration-200"
+                                   title="Module actuel: {{ $module->titre }}">
+                                    {{ $moduleNumber }}
+                                </a>
+                            @elseif($isCompleted)
+                                <a href="{{ route('diagnosticentreprisequalification.showModule', [$entrepriseId, $module->id]) }}" 
+                                   class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-green-500/80 text-white font-medium shadow-md hover:from-green-600 hover:to-green-600/80 transition-all duration-200"
+                                   title="Module complété: {{ $module->titre }}">
+                                    <i class="fas fa-check text-xs"></i>
+                                </a>
+                            @else
+                                <a href="{{ route('diagnosticentreprisequalification.showModule', [$entrepriseId, $module->id]) }}" 
+                                   class="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-navy-700 border-2 border-slate-300 dark:border-navy-600 text-slate-600 dark:text-navy-300 font-medium hover:border-[#4FBE96] hover:text-[#4FBE96] hover:bg-[#4FBE96]/5 transition-all duration-200"
+                                   title="Module {{ $moduleNumber }}: {{ $module->titre }}">
+                                    {{ $moduleNumber }}
+                                </a>
+                            @endif
+                        @endforeach
+                    </div>
+                    <div class="text-center mt-3">
+                        <span class="text-sm text-slate-500 dark:text-navy-400">
+                            Module {{ $currentModuleIndex }} sur {{ $modules->count() }}
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Boutons de navigation -->
-                <div class="mt-8 flex justify-between items-center">
+                <div class="flex justify-between items-center">
                     <div class="flex space-x-3">
                         @if($isLastModule)
                             @if(session('showFinalization'))
@@ -232,13 +265,11 @@
                         @endif
                         
                         @if($nextModule)
-                            <button type="button" 
-                                   id="nextModuleBtn"
-                                   onclick="validerEtContinuer()"
-                                   class="btn bg-gradient-to-r from-slate-400 to-slate-400/80 text-white hover:from-slate-500 hover:to-slate-500/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                            <a href="{{ route('diagnosticentreprisequalification.showModule', [$entrepriseId, $nextModule->id]) }}" 
+                               class="btn bg-gradient-to-r from-slate-400 to-slate-400/80 text-white hover:from-slate-500 hover:to-slate-500/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
                                 <i class="fas fa-arrow-right mr-2"></i>
-                                <span id="nextModuleText">Module suivant</span>
-                            </button>
+                                Module suivant
+                            </a>
                         @endif
                     </div>
                 </div>
@@ -269,141 +300,7 @@
 
 @push('scripts')
 <script>
-function validerEtContinuer() {
-    // Récupérer tous les IDs de questions uniques
-    const questionIds = [...new Set(Array.from(document.querySelectorAll('input[data-question-id]'))
-        .map(input => input.getAttribute('data-question-id')))];
-    
-    let allQuestionsAnswered = true;
-    
-    questionIds.forEach(questionId => {
-        const answeredInputs = document.querySelectorAll(`input[data-question-id="${questionId}"]:checked`);
-        
-        // Si aucune réponse cochée pour cette question
-        if (answeredInputs.length === 0) {
-            allQuestionsAnswered = false;
-        }
-    });
-    
-    if (!allQuestionsAnswered) {
-        // Afficher une alerte moderne
-        afficherAlerte('⚠️ Veuillez répondre à toutes les questions avant de passer au module suivant.', 'warning');
-        
-        // Faire défiler vers le haut du formulaire
-        const form = document.querySelector('form');
-        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
-        return;
-    }
-    
-    // Si toutes les questions sont répondues, rediriger vers le module suivant
-    window.location.href = '{{ route("diagnosticentreprisequalification.showModule", [$entrepriseId, $nextModule->id]) }}';
-}
-
-function afficherAlerte(message, type = 'warning') {
-    // Supprimer les alertes existantes
-    const alertesExistantes = document.querySelectorAll('.alert-validation');
-    alertesExistantes.forEach(alerte => alerte.remove());
-    
-    // Créer la nouvelle alerte
-    const alerte = document.createElement('div');
-    alerte.className = `alert-validation alert flex rounded-lg px-4 py-3 text-white mb-4 shadow-lg ${
-        type === 'warning' ? 'bg-yellow-500' : 
-        type === 'error' ? 'bg-red-500' : 
-        'bg-[#4FBE96]'
-    }`;
-    
-    alerte.innerHTML = `
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            ${
-                type === 'warning' 
-                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>'
-                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
-            }
-        </svg>
-        ${message}
-    `;
-    
-    // Insérer l'alerte au début du formulaire
-    const form = document.querySelector('form');
-    form.insertBefore(alerte, form.firstChild);
-    
-    // Auto-suppression après 5 secondes
-    setTimeout(() => {
-        if (alerte.parentNode) {
-            alerte.remove();
-        }
-    }, 5000);
-}
-
-// Validation en temps réel lors des changements
-document.addEventListener('DOMContentLoaded', function() {
-    const inputs = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
-    const nextBtn = document.getElementById('nextModuleBtn');
-    const nextBtnText = document.getElementById('nextModuleText');
-    
-    // Fonction pour mettre à jour l'état du bouton
-    function updateNextButtonState() {
-        // Récupérer tous les IDs de questions uniques
-        const questionIds = [...new Set(Array.from(document.querySelectorAll('input[data-question-id]'))
-            .map(input => input.getAttribute('data-question-id')))];
-        
-        let allQuestionsAnswered = true;
-        
-        questionIds.forEach(questionId => {
-            const answeredInputs = document.querySelectorAll(`input[data-question-id="${questionId}"]:checked`);
-            
-            // Si aucune réponse cochée pour cette question
-            if (answeredInputs.length === 0) {
-                allQuestionsAnswered = false;
-            }
-        });
-        
-        if (nextBtn) {
-            if (allQuestionsAnswered) {
-                // Activer le bouton
-                nextBtn.disabled = false;
-                nextBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed', 'disabled:transform-none');
-                nextBtn.classList.add('hover:scale-105');
-                if (nextBtnText) {
-                    nextBtnText.textContent = 'Module suivant';
-                }
-            } else {
-                // Désactiver le bouton
-                nextBtn.disabled = true;
-                nextBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed', 'disabled:transform-none');
-                nextBtn.classList.remove('hover:scale-105');
-                if (nextBtnText) {
-                    nextBtnText.textContent = 'Répondez à tout';
-                }
-            }
-        }
-    }
-    
-    // Initialiser l'état du bouton au chargement
-    updateNextButtonState();
-    
-    // Écouter les changements sur tous les inputs
-    inputs.forEach(input => {
-        input.addEventListener('change', function() {
-            // Mettre à jour l'état du bouton
-            updateNextButtonState();
-            
-            // Supprimer les alertes de warning quand l'utilisateur répond
-            const alertesWarning = document.querySelectorAll('.alert-validation.bg-yellow-500');
-            alertesWarning.forEach(alerte => alerte.remove());
-        });
-    });
-    
-    // Empêcher la navigation par clavier sur le bouton désactivé
-    if (nextBtn) {
-        nextBtn.addEventListener('keydown', function(e) {
-            if (this.disabled && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault();
-                afficherAlerte('⚠️ Veuillez répondre à toutes les questions avant de passer au module suivant.', 'warning');
-            }
-        });
-    }
-});
+// Plus de validation JavaScript nécessaire pour le bouton "Module suivant"
+// La navigation se fait maintenant par lien direct
 </script>
 @endpush

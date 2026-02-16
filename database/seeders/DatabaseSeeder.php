@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
         // Créer les statuts de proposition
         $this->call(PropositionstatutSeeder::class);
 
+        // Créer les profils d'entreprise PÉPITE/ÉMERGENTE/ÉLITE
+        $this->call(EntrepriseProfilSeeder::class);
+
         // User::factory(10)->create();
 
         User::factory()->create([

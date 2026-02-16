@@ -22,6 +22,7 @@ class Diagnostic extends Model
         'diagnosticstatut_id',
         'membre_id',
         'entreprise_id',
+        'entrepriseprofil_id',
         'spotlight',
         'etat',
     ];
@@ -49,6 +50,11 @@ class Diagnostic extends Model
     public function entreprise()
     {
         return $this->belongsTo(Entreprise::class);
+    }
+
+    public function entrepriseprofil()
+    {
+        return $this->belongsTo(Entrepriseprofil::class);
     }
 
     public function diagnosticmodulescores()

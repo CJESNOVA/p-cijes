@@ -152,7 +152,7 @@
                                                             </a>
                                                         </div>
                                                         <p class="text-xs text-[#4FBE96] dark:text-[#4FBE96]/80 mt-1">
-                                                            Téléchargée le {{ $existing->datedocument->format('d/m/Y H:i') }}
+                                                            Téléchargée le {{ $existing->datepiece ? $existing->datepiece : 'Date non disponible' }}
                                                         </p>
                                                     </div>
                                                 @endif
@@ -262,9 +262,14 @@
                                                     </div>
                                                 </td>
                                                 <td class="py-3 px-4">
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
-                                                        {{ $piece->piecetype->titre ?? '—' }}
-                                                    </span>
+                                                    <div class="flex items-center">
+                                                        <div class="h-8 w-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-3">
+                                                            <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <span class="font-medium text-slate-800 dark:text-navy-50">{{ $piece->piecetype->titre ?? '—' }}</span>
+                                                    </div>
                                                 </td>
                                                 <td class="py-3 px-4">
                                                     <a href="{{ env('SUPABASE_BUCKET_URL') . '/' . $piece->fichier }}" target="_blank"
@@ -277,7 +282,7 @@
                                                     </a>
                                                 </td>
                                                 <td class="py-3 px-4 text-sm text-slate-600 dark:text-navy-200">
-                                                    {{ \Carbon\Carbon::parse($piece->datedocument)->format('d/m/Y') }}
+                                                    {{ $piece->datepiece ?? 'Date non disponible' }}
                                                 </td>
                                             </tr>
                                         @endforeach

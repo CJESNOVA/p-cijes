@@ -164,16 +164,23 @@
                                                             <p class="text-sm text-slate-600 dark:text-navy-400">
                                                                 <strong>Votre réponse :</strong> {{ $reponse->diagnosticreponse->titre }}
                                                             </p>
+                                                            @if($reponse->diagnosticreponse->explication)
+                                                                <div class="mt-2 text-sm text-slate-500 dark:text-navy-300 italic">
+                                                                    {{ $reponse->diagnosticreponse->explication }}
+                                                                </div>
+                                                            @endif
                                                         </div>
                                                         
-                                                        <div class="ml-4 text-right">
-                                                            <div class="text-sm text-slate-500 dark:text-navy-400 mb-1">
-                                                                Réponse
+                                                        @if(!$reponse->diagnosticreponse->explication)
+                                                            <div class="ml-4 text-right">
+                                                                <div class="text-sm text-slate-500 dark:text-navy-400 mb-1">
+                                                                    Réponse
+                                                                </div>
+                                                                <div class="text-lg font-bold {{ $reponse->diagnosticreponse->score === 'A' ? 'text-yellow-600 dark:text-yellow-400' : ($reponse->diagnosticreponse->score === 'B' ? 'text-[#152737] dark:text-[#152737]/80' : 'text-[#4FBE96] dark:text-[#4FBE96]/80') }}">
+                                                                    {{ $reponse->diagnosticreponse->score ?? '-' }}
+                                                                </div>
                                                             </div>
-                                                            <div class="text-lg font-bold {{ $reponse->diagnosticreponse->score === 'A' ? 'text-yellow-600 dark:text-yellow-400' : ($reponse->diagnosticreponse->score === 'B' ? 'text-[#152737] dark:text-[#152737]/80' : 'text-[#4FBE96] dark:text-[#4FBE96]/80') }}">
-                                                                {{ $reponse->diagnosticreponse->score ?? '-' }}
-                                                            </div>
-                                                        </div>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             @endforeach

@@ -342,6 +342,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/entreprises/entreprise/{id}/destroy', [EntrepriseController::class, 'destroy'])->name('entreprise.destroy');
 
     Route::get('/diagnostics/diagnostic', [DiagnosticController::class, 'showForm'])->name('diagnostic.form');
+    Route::get('/diagnostics/mes-diagnostics', [DiagnosticController::class, 'mesDiagnostics'])->name('diagnostic.mes');
+    // Routes pour la navigation module par module
+    Route::get('/diagnostics/diagnostic/module/{moduleId}', [DiagnosticController::class, 'showForm'])->name('diagnostic.showModule');
+    Route::post('/diagnostics/diagnostic/module/{moduleId}/save', [DiagnosticController::class, 'saveModule'])->name('diagnostic.saveModule');
+    Route::post('/diagnostics/diagnostic/module/{moduleId}/finalize', [DiagnosticController::class, 'store'])->name('diagnostic.finalize');
+    
     Route::post('/diagnostics/diagnostic', [DiagnosticController::class, 'store'])->name('diagnostic.store');
     Route::get('/diagnostics/diagnostic/success/{diagnosticId}', [DiagnosticController::class, 'success'])->name('diagnostic.success');
     Route::get('/diagnostics/diagnostic/{diagnosticId}/plans', [DiagnosticController::class, 'listePlans'])->name('diagnostic.plans');
@@ -349,9 +355,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/diagnostics/diagnosticentreprise', [DiagnosticentrepriseController::class, 'indexForm'])->name('diagnosticentreprise.indexForm');
     Route::get('/diagnostics/diagnosticentreprise/choix-entreprise', [DiagnosticentrepriseController::class, 'choix_entreprise'])->name('diagnosticentreprise.choix_entreprise');
     Route::get('/diagnostics/diagnosticentreprise/{entrepriseId}/form', [DiagnosticentrepriseController::class, 'showForm'])->name('diagnosticentreprise.showForm');
+    // Routes pour la navigation module par module
+    Route::get('/diagnostics/diagnosticentreprise/{entrepriseId}/form/{moduleId}', [DiagnosticentrepriseController::class, 'showForm'])->name('diagnosticentreprise.showModule');
+    Route::post('/diagnostics/diagnosticentreprise/{entrepriseId}/save/{moduleId}', [DiagnosticentrepriseController::class, 'saveModule'])->name('diagnosticentreprise.saveModule');
+    Route::post('/diagnostics/diagnosticentreprise/{entrepriseId}/finalize/{moduleId}', [DiagnosticentrepriseController::class, 'store'])->name('diagnosticentreprise.finalize');
+    
+    Route::post('/diagnostics/diagnosticentreprise/{entrepriseId}/store/{moduleId}', [DiagnosticentrepriseController::class, 'store'])->name('diagnosticentreprise.store');
+    
     Route::post('/diagnostics/diagnosticentreprise/store', [DiagnosticentrepriseController::class, 'store'])->name('diagnosticentreprise.store');
     Route::get('/diagnostics/diagnosticentreprise/success/{diagnosticId}', [DiagnosticentrepriseController::class, 'success'])->name('diagnosticentreprise.success');
     Route::get('/diagnostics/diagnosticentreprise/{diagnosticId}/plans', [DiagnosticentrepriseController::class, 'listePlans'])->name('diagnosticentreprise.plans');
+    
+    // Routes pour l'évaluation des profils d'entreprise
+    Route::post('/entreprises/{entrepriseId}/profil/evaluer', [DiagnosticentrepriseController::class, 'evaluerProfil'])->name('entreprise.profil.evaluer');
+    Route::get('/entreprises/{entrepriseId}/profil/historique', [DiagnosticentrepriseController::class, 'getHistoriqueProfils'])->name('entreprise.profil.historique');
+
+    // Routes pour les nouvelles vues d'entreprise
+    Route::get('/entreprises/{entrepriseId}/dashboard', [EntrepriseController::class, 'dashboard'])->name('entreprise.dashboard');
+    Route::get('/entreprises/{entrepriseId}/profil', [EntrepriseController::class, 'showProfil'])->name('entreprise.profil.show');
+    Route::get('/entreprises/{entrepriseId}/orientations', [EntrepriseController::class, 'orientations'])->name('entreprise.orientations.index');
+    Route::get('/entreprises/{entrepriseId}/progression', [EntrepriseController::class, 'progression'])->name('entreprise.progression.show');
 
     // Routes pour le test de qualification (diagnosticmoduletype_id = 3)
     Route::get('/diagnostics/diagnosticentreprise-qualification', [DiagnosticentrepriseQualificationController::class, 'indexForm'])->name('diagnosticentreprisequalification.indexForm');

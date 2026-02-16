@@ -26,7 +26,7 @@
             <div class="max-w-xxl">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-lg font-semibold text-slate-800">Diagnostic PME</h3>
+                  <h3 class="text-lg font-semibold text-slate-800">Diagnostic Dirigeant</h3>
                   <p class="text-sm text-slate-500 mt-1">
                     Score : <span class="font-bold text-primary">{{ $diagnostic->scoreglobal ?? 0 }}</span> | 
                     Créé le : {{ $diagnostic->created_at->format('d/m/Y') }}
@@ -110,18 +110,44 @@
                           {{ $score->diagnosticmodule->titre ?? 'Module ' . $score->diagnosticmodule_id }}
                         </h4>
                         <div class="flex justify-between items-center mb-2">
-                          <span class="text-xl font-bold 
-                            {{ $score->niveau === 'D' ? 'text-success' : 
-                               ($score->niveau === 'C' ? 'text-info' : 
-                               ($score->niveau === 'B' ? 'text-warning' : 'text-danger')) }}">
-                            Niveau {{ $score->niveau }}
+                          @php
+                              // Calculer le niveau à partir du pourcentage
+                              $pourcentage = $score->score_pourcentage;
+                              if ($pourcentage >= 90) {
+                                  $niveau = 'D';
+                                  $textClass = 'text-xl font-bold text-success';
+                              } elseif ($pourcentage >= 75) {
+                                  $niveau = 'C';
+                                  $textClass = 'text-xl font-bold text-info';
+                              } elseif ($pourcentage >= 50) {
+                                  $niveau = 'B';
+                                  $textClass = 'text-xl font-bold text-warning';
+                              } else {
+                                  $niveau = 'A';
+                                  $textClass = 'text-xl font-bold text-danger';
+                              }
+                          @endphp
+                          <span class="{{ $textClass }}">
+                            Niveau {{ $niveau }}
                           </span>
                           <span class="text-sm text-slate-600">
                             {{ $score->score_pourcentage }}%
                           </span>
                         </div>
                         <div class="w-full bg-slate-200 rounded-full h-2">
-                          <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" 
+                          @php
+                              // Calculer la couleur de la barre en fonction du niveau
+                              if ($niveau === 'D') {
+                                  $gradientClass = 'bg-gradient-to-r from-green-500 to-emerald-500';
+                              } elseif ($niveau === 'C') {
+                                  $gradientClass = 'bg-gradient-to-r from-blue-500 to-cyan-500';
+                              } elseif ($niveau === 'B') {
+                                  $gradientClass = 'bg-gradient-to-r from-yellow-500 to-amber-500';
+                              } else {
+                                  $gradientClass = 'bg-gradient-to-r from-red-500 to-orange-500';
+                              }
+                          @endphp
+                          <div class="{{ $gradientClass }} h-2 rounded-full" 
                                style="width: {{ $score->score_pourcentage }}%"></div>
                         </div>
                       </div>
@@ -151,7 +177,18 @@
                       <ul class="text-sm text-slate-600 space-y-2">
                         @php
                           $domainesAmelioration = $diagnostic->diagnosticmodulescores->filter(function($score) {
-                            return in_array($score->niveau, ['A', 'B']);
+                              // Calculer le niveau à partir du pourcentage
+                              $pourcentage = $score->score_pourcentage;
+                              if ($pourcentage >= 90) {
+                                  $niveau = 'D';
+                              } elseif ($pourcentage >= 75) {
+                                  $niveau = 'C';
+                              } elseif ($pourcentage >= 50) {
+                                  $niveau = 'B';
+                              } else {
+                                  $niveau = 'A';
+                              }
+                              return in_array($niveau, ['A', 'B']); // A et B = domaines à améliorer
                           });
                         @endphp
                         @foreach($domainesAmelioration as $score)
@@ -176,7 +213,18 @@
                       <ul class="text-sm text-slate-600 space-y-2">
                         @php
                           $pointsForts = $diagnostic->diagnosticmodulescores->filter(function($score) {
-                            return in_array($score->niveau, ['C', 'D']);
+                              // Calculer le niveau à partir du pourcentage
+                              $pourcentage = $score->score_pourcentage;
+                              if ($pourcentage >= 90) {
+                                  $niveau = 'D';
+                              } elseif ($pourcentage >= 75) {
+                                  $niveau = 'C';
+                              } elseif ($pourcentage >= 50) {
+                                  $niveau = 'B';
+                              } else {
+                                  $niveau = 'A';
+                              }
+                              return in_array($niveau, ['C', 'D']); // C et D = points forts
                           });
                         @endphp
                         @foreach($pointsForts as $score)

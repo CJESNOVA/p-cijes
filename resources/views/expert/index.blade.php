@@ -48,7 +48,6 @@
                         {{ session('success') }}
                     </div>
                 @endif
-    @endif
           
 
 @if($experts)
@@ -115,13 +114,11 @@
     </div>
 @endif
             
+    </div> 
 
-          </div> 
-
-            <div class="col-span-12 py-6 lg:sticky lg:bottom-0 lg:col-span-4 lg:self-end">
-                @include('layouts.sidebar')
-            </div>    
-
-        </div>
+    <div class="col-span-12 py-6 lg:sticky lg:bottom-0 lg:col-span-4 lg:self-end">
+        @include('layouts.sidebar')
+    </div>    
+</div>
       </main>
 </x-app-layout>
