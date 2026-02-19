@@ -30,6 +30,13 @@
                         <p class="mt-1 text-sm opacity-70">
                             +{{ $stats['revenue_variation'] ?? 0 }}% par rapport au mois précédent 
                         </p>
+                        
+                        @if(isset($stats['solde_type1']) && $stats['solde_type1'] > 0)
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <p class="text-sm font-medium opacity-80">Solde disponible</p>
+                                <p class="text-xl font-semibold text-green-600">{{ number_format($stats['solde_type1'], 2) }} FCFA</p>
+                            </div>
+                        @endif
                     </div>
 
                     <a href="https://academy.cjes.africa/login" 

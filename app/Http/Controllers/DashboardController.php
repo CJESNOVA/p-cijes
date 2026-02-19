@@ -226,9 +226,20 @@ class DashboardController extends Controller
         ->where('entreprisetype_id', 3)
         ->count();
 
+    // Solde des comptes de ressources de type 1
+    $soldeType1 = Ressourcecompte::whereHas('ressourcetype', function($q) {
+            $q->where('id', 1); // Type = 1
+        })
+        ->where(function($q) use ($membre, $entrepriseIds) {
+            $q->where('membre_id', $membre->id)
+              ->orWhereIn('entreprise_id', $entrepriseIds);
+        })
+        ->sum('solde');
+
     return [
         'revenue_month'     => $revenue_current_month,
         'revenue_variation' => round($variation, 2),
+        'solde_type1'      => $soldeType1,
         'inscriptions'      => $inscriptions,
         'entreprises'       => count($entrepriseIds),
         'experts'           => $experts,

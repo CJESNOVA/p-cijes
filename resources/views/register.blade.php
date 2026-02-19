@@ -24,7 +24,8 @@
                         Bienvenue sur {{ config('app.name') }}
                     </h2>
                     <p class="text-slate-400 dark:text-navy-300">
-                        Veuillez vous inscrire pour continuer
+                    <strong>Rejoignez la communauté des entrepreneurs togolais.</strong>
+                        Veuillez vous inscrire pour continuer. 
                     </p>
                 </div>
             </div>
@@ -195,7 +196,7 @@
                         <input
                             class="form-checkbox is-outline size-5 rounded-sm border-slate-400/70 bg-slate-100 before:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-500 dark:bg-navy-900 dark:before:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
                             type="checkbox" name="condition_general" id="condition_general" />
-                        <span class="">Je comprends et j'accepte la <a style="color: #4FBE96 !important;" href="{{ env('APP_URL2') }}page/6-Politique-de-Confidentialité.html" target="_blank">Politique de Confidentialité</a> et les <a style="color: #4FBE96 !important;" href="{{ env('APP_URL2') }}page/7-Conditions-Générales-d-Utilisation.html" target="_blank">Conditions Générales d'Utilisation</a> </span>
+                        <span class="">J'accepte les <a style="color: #4FBE96 !important;" href="{{ env('APP_URL2') }}page/7-Conditions-Générales-d-Utilisation.html" target="_blank">Conditions d'Utilisation</a> et la <a style="color: #4FBE96 !important;" href="{{ env('APP_URL2') }}page/6-Politique-de-Confidentialité.html" target="_blank">Politique de Confidentialité</a></span>
                     </label>
                     
                 </div>
