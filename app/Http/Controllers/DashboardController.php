@@ -14,6 +14,7 @@ use App\Models\Message;
 use App\Models\Evenement;
 use App\Models\Pays;
 use App\Models\Ressourcetransaction;
+use App\Models\Ressourcecompte;
 use App\Models\Accompagnement;
 use App\Models\Accompagnementconseiller;
 use App\Models\Diagnostic;
