@@ -51,7 +51,7 @@
                 @include('dashboard.partials.diagnostics', ['diagnosticsModules' => $diagnosticsModules ?? collect(), 'entreprises' => $entreprises ?? collect()])
 
                 {{-- Experts module --}}
-                {{-- @include('dashboard.partials.experts', ['experts' => $experts ?? collect(), 'myExperts' => $myExperts ?? collect()]) --}}
+                <!-- @include('dashboard.partials.experts', ['experts' => $experts ?? collect(), 'myExperts' => $myExperts ?? collect()])  -->
 
                 {{-- Réservations / Disponibilités --}}
                 @include('dashboard.partials.reservations', ['reservations' => $reservations ?? collect()])
