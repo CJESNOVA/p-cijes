@@ -91,11 +91,6 @@ class DiagnosticentrepriseController extends Controller
         $previousModule = $currentModuleIndex > 0 ? $allDiagnosticmodules->get($currentModuleIndex - 1) : null;
         $isLastModule = ($currentModuleIndex + 1) >= $allDiagnosticmodules->count();
 
-        // 🔧 Ajouter la session showFinalization quand on est au dernier module
-        if ($isLastModule) {
-            session(['showFinalization' => true]);
-        }
-
         // Diagnostic existant pour cette entreprise (non terminé)
         $diagnostic = Diagnostic::where('entreprise_id', $entrepriseId)
             ->where('diagnosticstatut_id', 1)
@@ -870,7 +865,7 @@ class DiagnosticentrepriseController extends Controller
                     'score_total' => $scoreCalcule['score_total'],
                     'score_max' => $scoreCalcule['score_max'],
                     'score_pourcentage' => $scoreCalcule['score_pourcentage'],
-                    'niveau_calcule' => $this->convertirScoreEnNiveau($scoreCalcule['score_total'])
+                    'niveau_calcule' => $this->calculerNiveauModule($diagnostic->id, $module->id)
                 ]);
                 
                 // Créer ou mettre à jour le score du module avec le score cumulé
@@ -899,15 +894,15 @@ class DiagnosticentrepriseController extends Controller
                 ]);
 
                 // Chercher les templates correspondants
-                $niveauCalcule = $this->convertirScoreEnNiveau($scoreCalcule['score_total']);
+                $niveauModule = $this->calculerNiveauModule($diagnostic->id, $module->id);
                 $templates = Plantemplate::where('diagnosticmodule_id', $module->id)
-                    ->where('niveau', $niveauCalcule)
+                    ->where('niveau', $niveauModule)
                     ->actif()
                     ->get();
 
                 \Log::info('Templates trouvés (entreprise)', [
                     'module_id' => $module->id,
-                    'niveau' => $niveauCalcule,
+                    'niveau' => $niveauModule,
                     'templates_count' => $templates->count()
                 ]);
 
