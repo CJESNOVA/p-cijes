@@ -14,7 +14,6 @@ use App\Models\Plantemplate;
 use App\Models\Plan;
 use App\Models\Membre;
 use App\Models\Accompagnement;
-use App\Models\Diagnosticevolution;
 
 use App\Services\RecompenseService;
 use App\Services\DiagnosticStatutService;
@@ -536,15 +535,7 @@ class DiagnosticController extends Controller
         'diagnosticstatut_id' => 2, // terminé
     ]);
 
-    // � Créer une évolution pour le diagnostic PME (sans entreprise)
-    Diagnosticevolution::creerEvolution(
-        0, // Pas d'entreprise_id pour les diagnostics PME
-        $diagnostic->id,
-        null, // Pas de diagnostic précédent spécifique
-        "Diagnostic PME terminé - Score: {$totalScore}"
-    );
-
-    // �🏁 Création automatique d'un accompagnement
+    // 🏁 Création automatique d'un accompagnement
     $accompagnement = Accompagnement::create([
         'membre_id' => $membre->id,
         'accompagnementniveau_id' => 1,

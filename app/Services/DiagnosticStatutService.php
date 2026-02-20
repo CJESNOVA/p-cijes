@@ -189,7 +189,7 @@ class DiagnosticStatutService
                 'ancien_profil' => $ancienProfilId,
                 'nouveau_profil' => $nouveauProfilId,
                 'score_global' => $scoreGlobal,
-                'message' => $this->genererMessageSucces($ancienProfilId, $nouveauProfilId)
+                'message' => $this->genererMessageSucces($ancienProfilId, $nouveauProfilId, 0)
             ];
         }
         
