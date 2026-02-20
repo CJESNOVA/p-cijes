@@ -762,7 +762,7 @@ private function genererPlansAutomatiques($diagnostic)
                 'score_total' => $scoreCalcule['score_total'],
                 'score_max' => $scoreCalcule['score_max'],
                 'score_pourcentage' => $scoreCalcule['score_pourcentage'],
-                'niveau_calcule' => $this->convertirScoreEnNiveau($scoreCalcule['score_total'])
+                'niveau_calcule' => $this->calculerNiveauModule($diagnostic->id, $module->id)
             ]);
             
             // Créer ou mettre à jour le score du module avec le score cumulé
@@ -791,14 +791,15 @@ private function genererPlansAutomatiques($diagnostic)
             ]);
 
             // Chercher les templates correspondants
+            $niveauModule = $this->calculerNiveauModule($diagnostic->id, $module->id);
             $templates = Plantemplate::where('diagnosticmodule_id', $module->id)
-                ->where('niveau', $this->convertirScoreEnNiveau($scoreCalcule['score_total']))
+                ->where('niveau', $niveauModule)
                 ->actif()
                 ->get();
 
             \Log::info('Templates trouvés', [
                 'module_id' => $module->id,
-                'niveau_calcule' => $this->convertirScoreEnNiveau($scoreCalcule['score_total']),
+                'niveau_calcule' => $niveauModule,
                 'templates_count' => $templates->count()
             ]);
 
