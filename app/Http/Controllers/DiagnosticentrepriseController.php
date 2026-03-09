@@ -47,11 +47,36 @@ class DiagnosticentrepriseController extends Controller
 
         $entreprises = $entrepriseMembres->pluck('entreprise');
 
+        // 🔍 Vérifier si le membre a au moins une entreprise avec un test de qualification validé
+        $entreprisesAvecQualification = Diagnostic::where('membre_id', $membre->id)
+            ->where('diagnostictype_id', 3) // Test de qualification
+            ->where('diagnosticstatut_id', 2) // Terminé/Validé
+            ->pluck('entreprise_id')
+            ->toArray();
+
+        // Filtrer les entreprises pour n'afficher que celles avec qualification valide
+        $entreprises = $entreprises->filter(function($entreprise) use ($entreprisesAvecQualification) {
+            return in_array($entreprise->id, $entreprisesAvecQualification);
+        });
+
+        if ($entreprises->isEmpty()) {
+            return redirect()->route('diagnosticentreprisequalification.indexForm')
+                ->with('error', '⚠️ Vous devez d\'abord compléter et valider le test de qualification pour au moins une entreprise avant de pouvoir accéder au diagnostic d\'entreprise.');
+        }
+
         return view('diagnosticentreprise.choix_entreprise', compact('entreprises'));
     }
     
     public function showForm($entrepriseId, $moduleId = null)
     {
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->first();
+
+        if (!$membre) {
+            return redirect()->route('membre.createOrEdit')
+                ->with('error', '⚠️ Vous devez créer votre profil membre avant de remplir un diagnostic.');
+        }
+
         // Récupérer l'entreprise AVEC son profil
         $entreprise = Entreprise::with('entrepriseprofil')->find($entrepriseId);
         
@@ -59,6 +84,18 @@ class DiagnosticentrepriseController extends Controller
             \Log::warning('Entreprise non trouvée dans showForm, entrepriseId: ' . $entrepriseId);
             return redirect()->route('diagnosticentreprise.indexForm')
                 ->with('error', '⚠️ Entreprise non trouvée. Veuillez sélectionner une entreprise valide.');
+        }
+
+        // 🔍 Vérifier si le membre a un test de qualification validé pour cette entreprise
+        $qualificationValidee = Diagnostic::where('membre_id', $membre->id)
+            ->where('entreprise_id', $entrepriseId)
+            ->where('diagnostictype_id', 3) // Test de qualification
+            ->where('diagnosticstatut_id', 2) // Terminé/Validé
+            ->exists();
+
+        if (!$qualificationValidee) {
+            return redirect()->route('diagnosticentreprisequalification.indexForm')
+                ->with('error', '⚠️ Vous devez d\'abord compléter et valider le test de qualification pour cette entreprise avant de pouvoir accéder au diagnostic d\'entreprise.');
         }
         
         // Récupération de TOUS les modules type 2 (diagnostic entreprise), filtrés par profil
@@ -146,6 +183,18 @@ class DiagnosticentrepriseController extends Controller
             return redirect()->back()
                 ->with('error', '⚠️ Entreprise non trouvée. Veuillez vérifier votre sélection.')
                 ->withInput();
+        }
+
+        // 🔍 Vérifier si le membre a un test de qualification validé pour cette entreprise
+        $qualificationValidee = Diagnostic::where('membre_id', $membre->id)
+            ->where('entreprise_id', $entrepriseId)
+            ->where('diagnostictype_id', 3) // Test de qualification
+            ->where('diagnosticstatut_id', 2) // Terminé/Validé
+            ->exists();
+
+        if (!$qualificationValidee) {
+            return redirect()->route('diagnosticentreprisequalification.indexForm')
+                ->with('error', '⚠️ Vous devez d\'abord compléter et valider le test de qualification pour cette entreprise avant de pouvoir accéder au diagnostic d\'entreprise.');
         }
 
         // 🔍 Vérifier si au moins une réponse a été fournie
@@ -323,6 +372,18 @@ class DiagnosticentrepriseController extends Controller
             return redirect()->back()
                 ->with('error', '⚠️ Entreprise non trouvée. Veuillez vérifier votre sélection.')
                 ->withInput();
+        }
+
+        // 🔍 Vérifier si le membre a un test de qualification validé pour cette entreprise
+        $qualificationValidee = Diagnostic::where('membre_id', $membre->id)
+            ->where('entreprise_id', $entrepriseId)
+            ->where('diagnostictype_id', 3) // Test de qualification
+            ->where('diagnosticstatut_id', 2) // Terminé/Validé
+            ->exists();
+
+        if (!$qualificationValidee) {
+            return redirect()->route('diagnosticentreprisequalification.indexForm')
+                ->with('error', '⚠️ Vous devez d\'abord compléter et valider le test de qualification pour cette entreprise avant de pouvoir accéder au diagnostic d\'entreprise.');
         }
 
         $answers = $request->reponses ?? [];
