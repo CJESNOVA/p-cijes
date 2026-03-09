@@ -76,6 +76,22 @@
                 @endif
 
                 @if($currentModule)
+                    <!-- Informations de la catégorie -->
+                    <div class="bg-[#4FBE96]/10 border border-[#4FBE96]/30 rounded-lg p-4 mb-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-[#4FBE96] mb-1">
+                                    <i class="fas fa-th-large mr-2"></i>
+                                    {{ $category->titre }}
+                                </h3>
+                                <p class="text-sm text-slate-600">
+                                    Diagnostic - {{ $modules->count() }} module(s) disponible(s)
+                                </p>
+                            </div>
+                            
+                        </div>
+                    </div>
+
                     <!-- Indicateur de progression -->
                     <div class="mb-6">
                         <div class="flex items-center justify-between mb-2">
@@ -93,7 +109,7 @@
                         </div>
                     </div>
 
-                    <form action="{{ $isLastModule ? route('diagnostic.finalize', $currentModule->id) : route('diagnostic.saveModule', $currentModule->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ $isLastModule ? route('diagnostic.finalize', [$category->id, $currentModule->id]) : route('diagnostic.saveModule', [$category->id, $currentModule->id]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
         
 @php
@@ -156,54 +172,6 @@
                                         @endforeach
                                     </div>
 
-                                    <!-- Barre de navigation par numéros -->
-                                    <div class="mt-8 mb-6">
-                                        <div class="flex items-center justify-center space-x-2 flex-wrap">
-                                            @php
-                                                $currentModuleIndex = $modules->search(function($module) use ($currentModule) { return $module->id == $currentModule->id; }) + 1;
-                                            @endphp
-                                            
-                                            @foreach($modules as $index => $module)
-                                                @php
-                                                    $moduleNumber = $index + 1;
-                                                    $isCurrentModule = $module->id == $currentModule->id;
-                                                    // Vérifier si le module est complété en cherchant dans les réponses existantes
-                                                    $isCompleted = isset($existing) && !empty($existing) && 
-                                                                 collect($existing)->filter(function($responses) use ($module) {
-                                                                     return collect($responses)->keys()->first(function($questionId) use ($module) {
-                                                                         $question = \App\Models\Diagnosticquestion::find($questionId);
-                                                                         return $question && $question->diagnosticmodule_id == $module->id;
-                                                                     });
-                                                                 })->isNotEmpty();
-                                                @endphp
-                                                
-                                                @if($isCurrentModule)
-                                                    <a href="{{ route('diagnostic.showModule', $module->id) }}" 
-                                                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-[#4FBE96] to-[#4FBE96]/80 text-white font-semibold shadow-lg transform scale-110 transition-all duration-200"
-                                                       title="Module actuel: {{ $module->titre }}">
-                                                        {{ $moduleNumber }}
-                                                    </a>
-                                                @elseif($isCompleted)
-                                                    <a href="{{ route('diagnostic.showModule', $module->id) }}" 
-                                                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-green-500/80 text-white font-medium shadow-md hover:from-green-600 hover:to-green-600/80 transition-all duration-200"
-                                                       title="Module complété: {{ $module->titre }}">
-                                                        <i class="fas fa-check text-xs"></i>
-                                                    </a>
-                                                @else
-                                                    <a href="{{ route('diagnostic.showModule', $module->id) }}" 
-                                                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-navy-700 border-2 border-slate-300 dark:border-navy-600 text-slate-600 dark:text-navy-300 font-medium hover:border-[#4FBE96] hover:text-[#4FBE96] hover:bg-[#4FBE96]/5 transition-all duration-200"
-                                                       title="Module {{ $moduleNumber }}: {{ $module->titre }}">
-                                                        {{ $moduleNumber }}
-                                                    </a>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                        <div class="text-center mt-3">
-                                            <span class="text-sm text-slate-500 dark:text-navy-400">
-                                                Module {{ $currentModuleIndex }} sur {{ $modules->count() }}
-                                            </span>
-                                        </div>
-                                    </div>
 
                                     <!-- Boutons de navigation -->
                                     <div class="mt-8 flex justify-between items-center">
@@ -227,7 +195,7 @@
                                         
                                         <div class="flex space-x-3">
                                             @if($previousModule)
-                                                <a href="{{ route('diagnostic.showModule', $previousModule->id) }}" 
+                                                <a href="{{ route('diagnostic.showModule', [$category->id, $previousModule->id]) }}" 
                                                    class="btn bg-gradient-to-r from-slate-500 to-slate-500/80 text-white hover:from-slate-600 hover:to-slate-600/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
                                                     <i class="fas fa-arrow-left mr-2"></i>
                                                     Module précédent
@@ -235,7 +203,7 @@
                                             @endif
                                             
                                             @if($nextModule)
-                                                <a href="{{ route('diagnostic.showModule', $nextModule->id) }}" 
+                                                <a href="{{ route('diagnostic.showModule', [$category->id, $nextModule->id]) }}" 
                                                    class="btn bg-gradient-to-r from-slate-400 to-slate-400/80 text-white hover:from-slate-500 hover:to-slate-500/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
                                                     <i class="fas fa-arrow-right mr-2"></i>
                                                     Module suivant
@@ -243,6 +211,57 @@
                                             @endif
                                         </div>
                                     </div>
+
+                                    
+                                    <!-- Barre de navigation par numéros -->
+                                    <div class="mt-8 mb-6">
+                                        <div class="flex items-center justify-center space-x-2 flex-wrap">
+                                            @php
+                                                $currentModuleIndex = $modules->search(function($module) use ($currentModule) { return $module->id == $currentModule->id; }) + 1;
+                                            @endphp
+                                            
+                                            @foreach($modules as $index => $module)
+                                                @php
+                                                    $moduleNumber = $index + 1;
+                                                    $isCurrentModule = $module->id == $currentModule->id;
+                                                    // Vérifier si le module est complété en cherchant dans les réponses existantes
+                                                    $isCompleted = isset($existing) && !empty($existing) && 
+                                                                 collect($existing)->filter(function($responses) use ($module) {
+                                                                     return collect($responses)->keys()->first(function($questionId) use ($module) {
+                                                                         $question = \App\Models\Diagnosticquestion::find($questionId);
+                                                                         return $question && $question->diagnosticmodule_id == $module->id;
+                                                                     });
+                                                                 })->isNotEmpty();
+                                                @endphp
+                                                
+                                                @if($isCurrentModule)
+                                                    <a href="{{ route('diagnostic.showModule', [$category->id, $module->id]) }}" 
+                                                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-[#4FBE96] to-[#4FBE96]/80 text-white font-semibold shadow-lg transform scale-110 transition-all duration-200"
+                                                       title="Module actuel: {{ $module->titre }}">
+                                                        {{ $moduleNumber }}
+                                                    </a>
+                                                @elseif($isCompleted)
+                                                    <a href="{{ route('diagnostic.showModule', [$category->id, $module->id]) }}" 
+                                                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-green-500/80 text-white font-medium shadow-md hover:from-green-600 hover:to-green-600/80 transition-all duration-200"
+                                                       title="Module complété: {{ $module->titre }}">
+                                                        <i class="fas fa-check text-xs"></i>
+                                                    </a>
+                                                @else
+                                                    <a href="{{ route('diagnostic.showModule', [$category->id, $module->id]) }}" 
+                                                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-navy-700 border-2 border-slate-300 dark:border-navy-600 text-slate-600 dark:text-navy-300 font-medium hover:border-[#4FBE96] hover:text-[#4FBE96] hover:bg-[#4FBE96]/5 transition-all duration-200"
+                                                       title="Module {{ $moduleNumber }}: {{ $module->titre }}">
+                                                        {{ $moduleNumber }}
+                                                    </a>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <span class="text-sm text-slate-500 dark:text-navy-400">
+                                                Module {{ $currentModuleIndex }} sur {{ $modules->count() }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>      

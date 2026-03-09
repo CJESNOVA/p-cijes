@@ -15,6 +15,185 @@ use App\Models\Diagnosticmodule;
 class DiagnosticStatutService
 {
     /**
+     * Récupérer les règles pour un profil et type de diagnostic
+     */
+    private function getReglesPourProfil($profilId, $typeDiagnosticId = 2)
+    {
+        return Diagnosticstatutregle::where('entrepriseprofil_id', $profilId)
+            ->where('diagnostictype_id', $typeDiagnosticId)
+            ->orderBy('score_total_min')
+            ->get();
+    }
+
+    /**
+     * Vérifier les règles de blocage spécifiques
+     */
+    private function verifierReglesBlocage($scoresParBloc, $profilId, $typeDiagnosticId = 2)
+    {
+        $reglesBlocage = Diagnosticstatutregle::where('entrepriseprofil_id', $profilId)
+            ->where('diagnostictype_id', $typeDiagnosticId)
+            ->where(function($query) {
+                $query->where('bloc_juridique_min', '>', 0)
+                      ->orWhere('bloc_finance_min', '>', 0);
+            })
+            ->get();
+
+        $blocJuridique = $scoresParBloc['JURIDIQUE'] ?? 0;
+        $blocFinance = $scoresParBloc['FINANCE'] ?? 0;
+
+        foreach ($reglesBlocage as $regle) {
+            $blocageJuridique = $regle->bloc_juridique_min > 0 && $blocJuridique < $regle->bloc_juridique_min;
+            $blocageFinance = $regle->bloc_finance_min > 0 && $blocFinance < $regle->bloc_finance_min;
+
+            if ($blocageJuridique || $blocageFinance) {
+                $typeBlocage = $blocageJuridique ? 'juridique' : 'finance';
+                $seuil = $blocageJuridique ? $regle->bloc_juridique_min : $regle->bloc_finance_min;
+                
+                return [
+                    'bloque' => true,
+                    'type_blocage' => $typeBlocage,
+                    'seuil' => $seuil,
+                    'score_actuel' => $typeBlocage === 'juridique' ? $blocJuridique : $blocFinance,
+                    'regle_id' => $regle->id,
+                    'raison' => "Bloc {$typeBlocage} < {$seuil} points"
+                ];
+            }
+        }
+
+        return ['bloque' => false];
+    }
+
+    /**
+     * Déterminer le profil selon les règles de la base de données
+     */
+    private function determinerProfilSelonRegles($scoresParBloc, $scoreGlobal, $profilActuel, $typeDiagnosticId = 2)
+    {
+        // 🚨 Vérifier d'abord les règles de blocage
+        $blocage = $this->verifierReglesBlocage($scoresParBloc, $profilActuel, $typeDiagnosticId);
+        
+        if ($blocage['bloque']) {
+            \Log::info('Blocage détecté selon règle BDD', [
+                'profil_actuel' => $profilActuel,
+                'type_blocage' => $blocage['type_blocage'],
+                'seuil' => $blocage['seuil'],
+                'score_actuel' => $blocage['score_actuel'],
+                'regle_id' => $blocage['regle_id']
+            ]);
+            
+            // En cas de blocage, déterminer le profil résultant
+            if ($profilActuel == 3) { // ÉLITE -> rétrograde ÉMERGENTE
+                return 2;
+            } elseif ($profilActuel == 2) { // ÉMERGENTE -> rétrograde PÉPITE
+                return 1;
+            }
+            // PÉPITE reste PÉPITE en cas de blocage
+            return 1;
+        }
+
+        // 📈 Vérifier les règles de progression par profil cible
+        $profilsATester = [1, 2, 3]; // PÉPITE, ÉMERGENTE, ÉLITE
+        
+        foreach ($profilsATester as $profilCible) {
+            if ($profilCible <= $profilActuel) {
+                continue; // Ne pas tester les profils inférieurs ou égaux
+            }
+
+            $reglesProfil = $this->getReglesPourProfil($profilCible, $typeDiagnosticId);
+            
+            foreach ($reglesProfil as $regle) {
+                if ($this->verifierConditionRegle($regle, $scoresParBloc, $scoreGlobal)) {
+                    \Log::info('Progression selon règle BDD', [
+                        'profil_actuel' => $profilActuel,
+                        'profil_cible' => $profilCible,
+                        'regle_id' => $regle->id,
+                        'score_global' => $scoreGlobal,
+                        'condition_remplie' => true
+                    ]);
+                    
+                    return $profilCible;
+                }
+            }
+        }
+
+        // 🚨 Vérifier les règles de rétrogradation
+        foreach ($profilsATester as $profilCible) {
+            if ($profilCible >= $profilActuel) {
+                continue; // Ne pas tester les profils supérieurs ou égaux
+            }
+
+            $reglesProfil = $this->getReglesPourProfil($profilCible, $typeDiagnosticId);
+            
+            foreach ($reglesProfil as $regle) {
+                if (!$this->verifierConditionRegle($regle, $scoresParBloc, $scoreGlobal)) {
+                    \Log::info('Rétrogradation selon règle BDD', [
+                        'profil_actuel' => $profilActuel,
+                        'profil_cible' => $profilCible,
+                        'regle_id' => $regle->id,
+                        'score_global' => $scoreGlobal,
+                        'condition_non_remplie' => true
+                    ]);
+                    
+                    return $profilCible;
+                }
+            }
+        }
+
+        // 🔒 Pas de changement
+        return $profilActuel;
+    }
+
+    /**
+     * Vérifier si une condition de règle est remplie
+     */
+    private function verifierConditionRegle($regle, $scoresParBloc, $scoreGlobal)
+    {
+        // Vérifier le score total
+        if ($regle->score_total_min !== null && $scoreGlobal < $regle->score_total_min) {
+            return false;
+        }
+        
+        if ($regle->score_total_max !== null && $scoreGlobal > $regle->score_total_max) {
+            return false;
+        }
+
+        // Vérifier le nombre minimum de blocs avec score
+        if ($regle->min_blocs_score > 0) {
+            $nbBlocsAvecScore = collect($scoresParBloc)
+                ->filter(fn($score, $key) => !in_array($key, ['par_niveau', 'nb_blocs_critiques', 'nb_blocs_reference', 'nb_blocs_critiques_score', 'nb_blocs_conformes', 'nb_blocs_elite']) && $score >= ($regle->min_score_bloc ?? 0))
+                ->count();
+            
+            if ($nbBlocsAvecScore < $regle->min_blocs_score) {
+                return false;
+            }
+        }
+
+        // Vérifier les blocs juridique et finance
+        $blocJuridique = $scoresParBloc['JURIDIQUE'] ?? 0;
+        $blocFinance = $scoresParBloc['FINANCE'] ?? 0;
+        
+        if ($regle->bloc_juridique_min > 0 && $blocJuridique < $regle->bloc_juridique_min) {
+            return false;
+        }
+        
+        if ($regle->bloc_finance_min > 0 && $blocFinance < $regle->bloc_finance_min) {
+            return false;
+        }
+
+        // Vérifier qu'aucun bloc n'est inférieur au seuil
+        if ($regle->aucun_bloc_inf > 0) {
+            $blocInferieur = collect($scoresParBloc)
+                ->filter(fn($score, $key) => !in_array($key, ['par_niveau', 'nb_blocs_critiques', 'nb_blocs_reference', 'nb_blocs_critiques_score', 'nb_blocs_conformes', 'nb_blocs_elite']) && $score < $regle->aucun_bloc_inf)
+                ->isNotEmpty();
+            
+            if ($blocInferieur) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Évaluer et mettre à jour le statut d'un diagnostic
      */
     public function evaluerStatutDiagnostic($diagnosticId, $force = false)
@@ -55,7 +234,7 @@ class DiagnosticStatutService
                 Diagnosticevolution::creerEvolution(
                     $entrepriseIdPourEvolution,
                     $diagnostic->id,
-                    $derniereEvolution ? $derniereEvolution->diagnostic_id : null,
+                    $derniereEvolution ? $derniereEvolution->diagnostic_id : 0,
                     'Changement de statut automatique'
                 );
             } else {
@@ -146,11 +325,12 @@ class DiagnosticStatutService
         $scoresParBloc = $this->calculerScoresParBloc($dernierDiagnostic);
         $scoreGlobal = $this->calculerScoreGlobal($scoresParBloc);
         
-        // Déterminer le profil approprié selon les scores uniquement
-        $nouveauProfilId = $this->determinerProfilSelonScores(
+        // Déterminer le profil approprié selon les règles de la base de données
+        $nouveauProfilId = $this->determinerProfilSelonRegles(
             $scoresParBloc, 
             $scoreGlobal, 
-            $entreprise->entrepriseprofil_id
+            $entreprise->entrepriseprofil_id,
+            2 // Type diagnostic entreprise
         );
         
         // Mettre à jour uniquement si changement autorisé
@@ -166,7 +346,7 @@ class DiagnosticStatutService
             'nouveau_profil' => $nouveauProfilId
         ]);
         
-        if ($force || $this->changementAutorise($entreprise->entrepriseprofil_id, $nouveauProfilId, 0)) {
+        if ($force || $this->changementAutorise($entreprise->entrepriseprofil_id, $nouveauProfilId, 0, 2)) {
             \Log::info('evaluerProfilEntreprise - mise à jour profil', [
                 'entreprise_id' => $entrepriseId,
                 'ancien_profil' => $entreprise->entrepriseprofil_id,
@@ -395,247 +575,14 @@ class DiagnosticStatutService
     }
 
     /**
-     * Déterminer le profil selon les scores uniquement (sans délai)
-     * avec gestion des modules bloquants
-     */
-    private function determinerProfilSelonScores($scoresParBloc, $scoreGlobal, $profilActuel)
-    {
-        // 📊 Scores actuels
-        $nbBlocsCritiques = $scoresParBloc['nb_blocs_critiques_score'] ?? 0;
-        $nbBlocsConformes = $scoresParBloc['nb_blocs_conformes'] ?? 0;
-        $blocJuridique = $scoresParBloc['JURIDIQUE'] ?? 0;
-        $blocFinance = $scoresParBloc['FINANCE'] ?? 0;
-        
-        // 🚨 VÉRIFICATION DES MODULES BLOQUANTS - PRIORITÉ ABSOLUE
-        $resultatBloquant = $this->verifierModulesBloquants($scoresParBloc, $profilActuel);
-        
-        if ($resultatBloquant['bloque']) {
-            \Log::info('Module bloquant détecté - application règle', [
-                'profil_actuel' => $profilActuel,
-                'module_bloquant' => $resultatBloquant['module'],
-                'score_bloquant' => $resultatBloquant['score'],
-                'resultat' => $resultatBloquant['resultat'],
-                'raison' => $resultatBloquant['raison']
-            ]);
-            
-            return $resultatBloquant['resultat'];
-        }
-        
-        // 🚨 Vérification rétrogradation standard (si pas de blocage bloquant)
-        if ($profilActuel == 3) { // ÉLITE
-            if ($scoreGlobal < 160 || $nbBlocsConformes < 10 || $blocJuridique < 16 || $blocFinance < 16) {
-                return 2; // Rétrogradation vers ÉMERGENTE
-            }
-        }
-        
-        if ($profilActuel == 2) { // ÉMERGENTE
-            if ($scoreGlobal < 120 || $nbBlocsCritiques >= 2 || $blocJuridique < 12 || $blocFinance < 12) {
-                return 1; // Rétrogradation vers PÉPITE
-            }
-        }
-        
-        // 📈 Vérification progression (sans délais)
-        if ($profilActuel == 1) { // PÉPITE → ÉMERGENTE
-            if ($scoreGlobal >= 160 && 
-                $nbBlocsConformes >= 7 && 
-                $blocJuridique >= 14 && 
-                $blocFinance >= 14) {
-                return 2; // Progression vers ÉMERGENTE
-            }
-        }
-        
-        if ($profilActuel == 2) { // ÉMERGENTE → ÉLITE
-            if ($scoreGlobal >= 160 && 
-                $nbBlocsConformes >= 10 && // 100% des blocs
-                $blocJuridique >= 16 && 
-                $blocFinance >= 16 &&
-                $this->aucunBlocInferieur($scoresParBloc, 16)) {
-                return 3; // Progression vers ÉLITE
-            }
-        }
-        
-        // 🔒 Pas de changement
-        return $profilActuel;
-    }
-
-    /**
-     * Vérifier les règles des modules bloquants
-     */
-    private function verifierModulesBloquants($scoresParBloc, $profilActuel)
-    {
-        // Récupérer tous les modules bloquants avec leurs scores
-        $modulesBloquants = $this->getModulesBloquantsAvecScores($scoresParBloc);
-        
-        foreach ($modulesBloquants as $module) {
-            $score = $module['score'];
-            $moduleNom = $module['nom'];
-            
-            switch ($profilActuel) {
-                case 1: // PÉPITE
-                    if ($score < 8) {
-                        return [
-                            'bloque' => true,
-                            'module' => $moduleNom,
-                            'score' => $score,
-                            'resultat' => 1, // Reste PÉPITE 1
-                            'raison' => "Module bloquant < 8 points : blocage progression PÉPITE"
-                        ];
-                    }
-                    break;
-                    
-                case 2: // ÉMERGENTE
-                    if ($score < 8) {
-                        return [
-                            'bloque' => true,
-                            'module' => $moduleNom,
-                            'score' => $score,
-                            'resultat' => 1, // Rétrograde PÉPITE
-                            'raison' => "Module bloquant < 8 points : rétrogradation ÉMERGENTE → PÉPITE"
-                        ];
-                    }
-                    if ($score < 16) {
-                        return [
-                            'bloque' => true,
-                            'module' => $moduleNom,
-                            'score' => $score,
-                            'resultat' => 2, // Reste ÉMERGENTE
-                            'raison' => "Module bloquant < 16 points : blocage progression ÉMERGENTE → ÉLITE"
-                        ];
-                    }
-                    break;
-                    
-                case 3: // ÉLITE
-                    if ($score < 16) {
-                        return [
-                            'bloque' => true,
-                            'module' => $moduleNom,
-                            'score' => $score,
-                            'resultat' => 2, // Rétrograde ÉMERGENTE
-                            'raison' => "Module bloquant < 16 points : rétrogradation ÉLITE → ÉMERGENTE"
-                        ];
-                    }
-                    break;
-            }
-        }
-        
-        return ['bloque' => false];
-    }
-
-    /**
-     * Récupérer les modules bloquants avec leurs scores
-     */
-    private function getModulesBloquantsAvecScores($scoresParBloc)
-    {
-        $modulesBloquants = [];
-        
-        // Récupérer tous les modules qui ont est_bloquant = 1 dans la BDD
-        $modulesBloquantsBDD = Diagnosticmodule::where('est_bloquant', 1)->get();
-        
-        foreach ($modulesBloquantsBDD as $module) {
-            // Ajouter tous les modules bloquants avec leurs scores
-            $modulesBloquants[] = [
-                'nom' => $module->titre,
-                'score' => 0, // Score par défaut, sera mis à jour si trouvé
-                'bloc' => null,
-                'module_id' => $module->id
-            ];
-        }
-        
-        \Log::info('Modules bloquants récupérés depuis BDD', [
-            'modules_bloquants_trouves' => count($modulesBloquants),
-            'modules_bloquants_bdd' => $modulesBloquantsBDD->pluck('titre')->toArray(),
-            'scores_par_bloc' => $scoresParBloc
-        ]);
-        
-        return $modulesBloquants;
-    }
-
-    /**
-     * Déterminer le profil selon les scores et le délai
-     */
-    private function determinerProfilSelonScoresEtDelai($scoresParBloc, $scoreGlobal, $delaiMois, $profilActuel)
-    {
-        // 📊 Scores actuels
-        $nbBlocsCritiques = $scoresParBloc['nb_blocs_critiques_score'] ?? 0;
-        $nbBlocsConformes = $scoresParBloc['nb_blocs_conformes'] ?? 0;
-        $blocJuridique = $scoresParBloc['JURIDIQUE'] ?? 0;
-        $blocFinance = $scoresParBloc['FINANCE'] ?? 0;
-        
-        // 🚨 Vérification rétrogradation (immédiate)
-        if ($profilActuel == 3) { // ÉLITE
-            if ($scoreGlobal < 160 || $nbBlocsConformes < 10 || $blocJuridique < 16 || $blocFinance < 16) {
-                return 2; // Rétrogradation vers ÉMERGENTE
-            }
-        }
-        
-        if ($profilActuel == 2) { // ÉMERGENTE
-            if ($scoreGlobal < 120 || $nbBlocsCritiques >= 2 || $blocJuridique < 12 || $blocFinance < 12) {
-                return 1; // Rétrogradation vers PÉPITE
-            }
-        }
-        
-        // 📈 Vérification progression (avec délais)
-        if ($profilActuel == 1) { // PÉPITE → ÉMERGENTE
-            if ($delaiMois >= 3 && 
-                $scoreGlobal >= 160 && 
-                $nbBlocsConformes >= 7 && 
-                $blocJuridique >= 14 && 
-                $blocFinance >= 14) {
-                return 2; // Progression vers ÉMERGENTE
-            }
-        }
-        
-        if ($profilActuel == 2) { // ÉMERGENTE → ÉLITE
-            if ($delaiMois >= 3 && 
-                $scoreGlobal >= 160 && 
-                $nbBlocsConformes >= 10 && // 100% des blocs
-                $blocJuridique >= 16 && 
-                $blocFinance >= 16 &&
-                $this->aucunBlocInferieur($scoresParBloc, 16)) {
-                return 3; // Progression vers ÉLITE
-            }
-        }
-        
-        // 🔒 Pas de changement
-        return $profilActuel;
-    }
-
-    /**
-     * Vérifier si le changement de profil est autorisé
-     */
-    private function changementAutorise($profilActuel, $nouveauProfil, $delaiMois)
-    {
-        // 🚫 Rétrogradations : toujours autorisées (immédiat)
-        if ($nouveauProfil < $profilActuel) {
-            return true;
-        }
-        
-        // ⏰ Progressions : vérifier les délais minimaux
-        switch ($profilActuel) {
-            case 1: // PÉPITE → ÉMERGENTE
-                return $delaiMois >= 3;
-                
-            case 2: // ÉMERGENTE → ÉLITE
-                return $delaiMois >= 3;
-                
-            default:
-                return false;
-        }
-    }
-
-    /**
-     * Obtenir la raison du blocage
+     * Obtenir la raison du blocage selon les règles
      */
     private function getRaisonBlocage($profilActuel, $nouveauProfil, $delaiMois)
     {
         $profils = [1 => 'PÉPITE', 2 => 'ÉMERGENTE', 3 => 'ÉLITE'];
         
         if ($nouveauProfil > $profilActuel) {
-            $delaiRequis = 3; // mois
-            
-            if ($delaiMois < $delaiRequis) {
-                return "🕐 Délai minimum de {$delaiRequis} mois requis avant la progression. Actuellement : {$delaiMois} mois écoulés.";
-            }
+            return "🕐 Délai minimum requis avant la progression vers {$profils[$nouveauProfil]}. Actuellement : {$delaiMois} mois écoulés.";
         }
         
         return "📊 Conditions de score non remplies pour la progression vers {$profils[$nouveauProfil]}.";
@@ -665,6 +612,39 @@ class DiagnosticStatutService
             ->every(fn($score) => $score >= $seuil);
     }
 
+    /**
+     * Vérifier si le changement de profil est autorisé selon les règles
+     */
+    private function changementAutorise($profilActuel, $nouveauProfil, $delaiMois, $typeDiagnosticId = 2)
+    {
+        // 🚫 Rétrogradations : toujours autorisées (immédiat)
+        if ($nouveauProfil < $profilActuel) {
+            return true;
+        }
+        
+        // ⏰ Progressions : vérifier les délais minimaux selon les règles
+        $reglesProfilCible = $this->getReglesPourProfil($nouveauProfil, $typeDiagnosticId);
+        
+        foreach ($reglesProfilCible as $regle) {
+            // Vérifier si cette règle correspond à une condition de progression
+            if ($this->verifierConditionRegle($regle, [], 999999)) { // Score élevé pour forcer la vérification
+                $delaiRequis = $regle->duree_min_mois;
+                
+                \Log::info('Vérification délai progression', [
+                    'profil_actuel' => $profilActuel,
+                    'profil_cible' => $nouveauProfil,
+                    'delai_requis' => $delaiRequis,
+                    'delai_actuel' => $delaiMois,
+                    'regle_id' => $regle->id
+                ]);
+                
+                return $delaiMois >= $delaiRequis;
+            }
+        }
+        
+        // Si aucune règle spécifique trouvée, utiliser le délai par défaut
+        return $delaiMois >= 3;
+    }
 
     /**
      * Réévaluer tous les profils d'entreprise

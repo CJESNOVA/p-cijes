@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Diagnostic;
+use App\Models\Diagnosticmodule;
+use App\Models\Diagnosticquestion;
+use App\Models\Diagnosticblocstatut;
 
 class Diagnosticmodulescore extends Model
 {
@@ -11,9 +15,15 @@ class Diagnosticmodulescore extends Model
 
     protected $table = 'diagnosticmodulescores';
 
+    protected $appends = ['nom_complet'];
+
+    /**
+     * @var array
+     */
     protected $fillable = [
         'diagnostic_id',
         'diagnosticmodule_id',
+        'diagnosticquestion_id',
         'score_total',
         'score_max',
         'score_pourcentage',
@@ -21,9 +31,13 @@ class Diagnosticmodulescore extends Model
     ];
 
     protected $casts = [
+        'diagnostic_id' => 'integer',
+        'diagnosticmodule_id' => 'integer',
+        'diagnosticquestion_id' => 'integer',
         'score_total' => 'integer',
         'score_max' => 'integer',
         'score_pourcentage' => 'decimal:2',
+        'diagnosticblocstatut_id' => 'integer',
     ];
 
     public function diagnostic()
@@ -36,9 +50,21 @@ class Diagnosticmodulescore extends Model
         return $this->belongsTo(Diagnosticmodule::class);
     }
 
+    public function diagnosticquestion()
+    {
+        return $this->belongsTo(Diagnosticquestion::class);
+    }
+
     public function diagnosticblocstatut()
     {
         return $this->belongsTo(Diagnosticblocstatut::class);
+    }
+
+    public function getNomCompletAttribute()
+    {
+        $module = $this->diagnosticmodule ? $this->diagnosticmodule->titre : 'Module inconnu';
+        $diagnostic = $this->diagnostic ? "#{$this->diagnostic->id}" : 'Diagnostic inconnu';
+        return "Score Module: {$module} - {$diagnostic} ({$this->score_pourcentage}%)";
     }
 
     public function getScorePourcentageAttribute($value)

@@ -80,6 +80,19 @@
         </h2>
 
         @if($currentModule)
+            <!-- Message pour le dernier module -->
+            @if($isLastModule)
+                <div class="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-flag-checkered text-orange-500 mr-3 text-xl"></i>
+                        <div>
+                            <h4 class="font-semibold text-orange-800 dark:text-orange-200">Dernier module !</h4>
+                            <p class="text-sm text-orange-600 dark:text-orange-300">Vous êtes sur le dernier module du diagnostic. Vous pouvez maintenant le finaliser.</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Indicateur de progression -->
             <div class="mb-6">
                 <div class="flex items-center justify-between mb-2">
@@ -109,6 +122,7 @@
                     <div class="max-w-xxl">
                         <div class="mt-5">
                             <input type="hidden" name="entreprise_id" value="{{ $entrepriseId }}">
+                            <input type="hidden" name="module_id" value="{{ $currentModule->id }}">
 
                             <div class="mb-8 border-b pb-4">
                                 <h2 class="text-xl font-bold">{{ $currentModule->titre }}</h2>
@@ -162,6 +176,44 @@
                                 @endforeach
                             </div>
 
+                            <!-- Boutons de navigation -->
+                            <div class="mt-8 flex justify-between items-center">
+                                <div class="flex space-x-3">
+                                    @if($isLastModule)
+                                        <button type="submit" 
+                                                class="btn bg-gradient-to-r from-orange-500 to-orange-600/80 text-white hover:from-orange-600 hover:to-orange-700/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            Finaliser le diagnostic
+                                        </button>
+                                    @else
+                                        <button type="submit" 
+                                                class="btn bg-gradient-to-r from-[#152737] to-[#152737]/80 text-white hover:from-[#152737]/90 hover:to-[#152737]/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                            <i class="fas fa-save mr-2"></i>
+                                            Enregistrer et continuer
+                                        </button>
+                                    @endif
+                                </div>
+                                
+                                <div class="flex space-x-3">
+                                    @if($previousModule)
+                                        <a href="{{ route('diagnosticentreprise.showModule', [$entrepriseId, $previousModule->id]) }}" 
+                                           class="btn bg-gradient-to-r from-slate-500 to-slate-500/80 text-white hover:from-slate-600 hover:to-slate-600/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                            <i class="fas fa-arrow-left mr-2"></i>
+                                            Module précédent
+                                        </a>
+                                    @endif
+                                    
+                                    @if($nextModule)
+                                        <a href="{{ route('diagnosticentreprise.showModule', [$entrepriseId, $nextModule->id]) }}" 
+                                           class="btn bg-gradient-to-r from-slate-400 to-slate-400/80 text-white hover:from-slate-500 hover:to-slate-500/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                            <i class="fas fa-arrow-right mr-2"></i>
+                                            Module suivant
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+
+                            
                             <!-- Barre de navigation par numéros -->
                             <div class="mt-8 mb-6">
                                 <div class="flex items-center justify-center space-x-2 flex-wrap">
@@ -211,44 +263,7 @@
                                 </div>
                             </div>
 
-                            <!-- Boutons de navigation -->
-                            <div class="mt-8 flex justify-between items-center">
-                                <div class="flex space-x-3">
-                                    @if($isLastModule)
-                                        @if(session('showFinalization'))
-                                            <button type="submit" 
-                                                    class="btn bg-gradient-to-r from-orange-500 to-orange-600/80 text-white hover:from-orange-600 hover:to-orange-700/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                                <i class="fas fa-check-circle mr-2"></i>
-                                                Finaliser le diagnostic
-                                            </button>
-                                        @endif
-                                    @else
-                                        <button type="submit" 
-                                                class="btn bg-gradient-to-r from-[#152737] to-[#152737]/80 text-white hover:from-[#152737]/90 hover:to-[#152737]/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                            <i class="fas fa-save mr-2"></i>
-                                            Enregistrer et continuer
-                                        </button>
-                                    @endif
-                                </div>
-                                
-                                <div class="flex space-x-3">
-                                    @if($previousModule)
-                                        <a href="{{ route('diagnosticentreprise.showModule', [$entrepriseId, $previousModule->id]) }}" 
-                                           class="btn bg-gradient-to-r from-slate-500 to-slate-500/80 text-white hover:from-slate-600 hover:to-slate-600/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                            <i class="fas fa-arrow-left mr-2"></i>
-                                            Module précédent
-                                        </a>
-                                    @endif
-                                    
-                                    @if($nextModule)
-                                        <a href="{{ route('diagnosticentreprise.showModule', [$entrepriseId, $nextModule->id]) }}" 
-                                           class="btn bg-gradient-to-r from-slate-400 to-slate-400/80 text-white hover:from-slate-500 hover:to-slate-500/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                            <i class="fas fa-arrow-right mr-2"></i>
-                                            Module suivant
-                                        </a>
-                                    @endif
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>      

@@ -5,7 +5,7 @@
             <div class="flex items-center gap-4 mb-2">
                 <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h-1m2-5h-8"></path>
                     </svg>
                 </div>
                 <div>
@@ -75,62 +75,117 @@
                         </div>
                     </div>
 
-                    <!-- Résultats par module -->
+                    
+                    
+                    <!-- Résultats par module avec collapses -->
                     <h3 class="text-xl font-semibold text-slate-800 mb-4">Détail par module</h3>
                     
-                    @foreach($modules as $module)
-                        <div class="bg-white border border-slate-200 rounded-lg p-4 mb-4">
-                            <h4 class="text-lg font-semibold text-slate-800 mb-3">
-                                {{ $module->titre }}
-                            </h4>
-                            
-                            @php
-                                // Récupérer les réponses pour ce module
-                                $moduleQuestions = $module->diagnosticquestions->pluck('id');
-                                $moduleResults = $diagnostic->diagnosticresultats
-                                    ->whereIn('diagnosticquestion_id', $moduleQuestions)
-                                    ->groupBy('diagnosticquestion_id');
-                            @endphp
-                            
-                            @foreach($module->diagnosticquestions as $question)
-                                <div class="border-l-4 border-[#4FBE96] pl-4 mb-4">
-                                    <div class="font-medium text-slate-700 mb-2">
-                                        {{ $question->position }} - {{ $question->titre }}
-                                        @if($question->obligatoire)
-                                            <span class="text-red-500 ml-1">*</span>
-                                        @endif
-                                    </div>
-                                    
-                                    @if(isset($moduleResults[$question->id]))
-                                        @foreach($moduleResults[$question->id] as $result)
-                                            @php
-                                                $reponse = $result->diagnosticreponse;
-                                            @endphp
-                                            <div class="bg-[#4FBE96]/10 rounded p-3 mb-2">
-                                                <div class="flex items-start justify-between">
-                                                    <div class="flex-1">
-                                                        <span class="font-medium">{{ $reponse->titre }}</span>
-                                                        @if($reponse->explication)
-                                                            <div class="mt-2 text-sm text-slate-600 italic">
-                                                                {{ $reponse->explication }}
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                    @if(!$reponse->explication)
-                                                        <div class="text-[#4FBE96] font-semibold ml-4">
-                                                            {{ $reponse->score ?? 0 }} pts
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @else
-                                        <div class="bg-gray-50 rounded p-3 text-slate-500 italic">
-                                            Non répondu
+                    @if($modules->isNotEmpty() && $modules->first()->diagnosticmodulecategory)
+                        <!-- Header de la catégorie du diagnostic -->
+                        <div class="bg-gradient-to-r from-[#4FBE96] to-[#4FBE96]/90 text-white rounded-lg p-4 mb-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-folder-open mr-3 text-lg"></i>
+                                <h4 class="text-lg font-semibold">{{ $modules->first()->diagnosticmodulecategory->titre }}</h4>
+                                <span class="ml-3 bg-white/20 px-2 py-1 rounded-full text-sm">
+                                    {{ $modules->count() }} module(s)
+                                </span>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    @foreach($modules as $index => $module)
+                        <div class="bg-white border border-slate-200 rounded-lg mb-4 shadow-sm">
+                            <!-- Header du module (collapsable) -->
+                            <div class="p-4 cursor-pointer hover:bg-slate-50 transition-colors duration-200 rounded-t-lg"
+                                 onclick="toggleModule('module-{{ $module->id }}')">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center flex-1">
+                                        <div class="w-8 h-8 bg-[#4FBE96]/10 rounded-full flex items-center justify-center mr-3">
+                                            <span class="text-[#4FBE96] font-semibold text-sm">{{ $index + 1 }}</span>
                                         </div>
-                                    @endif
+                                        <div class="flex-1">
+                                            <h5 class="font-semibold text-slate-800">{{ $module->titre }}</h5>
+                                            <div class="text-sm text-slate-600 mt-1">
+                                                {{ $module->diagnosticquestions->count() }} question(s)
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="px-3 py-1 bg-[#4FBE96] text-white rounded-full text-sm font-semibold">
+                                            Niveau {{ $niveauxModules[$module->id] ?? 'A' }}
+                                        </span>
+                                        <span class="text-sm text-slate-600">
+                                            ({{ $niveauxModules[$module->id] == 'A' ? 'Faible' : ($niveauxModules[$module->id] == 'B' ? 'Moyen' : ($niveauxModules[$module->id] == 'C' ? 'Bon' : 'Excellent')) }})
+                                        </span>
+                                        <i id="icon-module-{{ $module->id }}" class="fas fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                                    </div>
                                 </div>
-                            @endforeach
+                            </div>
+                            
+                            <!-- Contenu du module (collapsable) -->
+                            <div id="module-{{ $module->id }}" class="hidden border-t border-slate-100 rounded-b-lg">
+                                <div class="p-4 bg-slate-50/50">
+                                    @php
+                                        // Récupérer les réponses pour ce module
+                                        $moduleQuestions = $module->diagnosticquestions->pluck('id');
+                                        $moduleResults = $diagnostic->diagnosticresultats
+                                            ->whereIn('diagnosticquestion_id', $moduleQuestions)
+                                            ->groupBy('diagnosticquestion_id');
+                                    @endphp
+                                    
+                                    @foreach($module->diagnosticquestions as $question)
+                                        <div class="border-l-4 border-[#4FBE96] pl-4 mb-4 last:mb-0">
+                                            <div class="font-medium text-slate-700 mb-2">
+                                                <span class="inline-block w-6 h-6 bg-[#4FBE96]/10 rounded-full text-center text-sm text-[#4FBE96] font-semibold mr-2">
+                                                    {{ $question->position }}
+                                                </span>
+                                                {{ $question->titre }}
+                                                @if($question->obligatoire)
+                                                    <span class="text-red-500 ml-1">*</span>
+                                                @endif
+                                            </div>
+                                            
+                                            @if(isset($moduleResults[$question->id]))
+                                                @foreach($moduleResults[$question->id] as $result)
+                                                    @php
+                                                        $reponse = $result->diagnosticreponse;
+                                                    @endphp
+                                                    <div class="bg-white rounded-lg p-3 mb-2 border border-slate-200">
+                                                        <div class="flex items-start justify-between">
+                                                            <div class="flex-1">
+                                                                <div class="flex items-start">
+                                                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                                                    <div class="flex-1">
+                                                                        <span class="font-medium text-slate-800">{{ $reponse->titre }}</span>
+                                                                        @if($reponse->explication)
+                                                                            <div class="mt-2 text-sm text-slate-600 italic bg-slate-50 p-2 rounded">
+                                                                                <i class="fas fa-info-circle text-slate-400 mr-1"></i>
+                                                                                {{ $reponse->explication }}
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="ml-4 text-right">
+                                                                <div class="bg-[#4FBE96] text-white px-2 py-1 rounded text-sm font-semibold">
+                                                                    {{ $reponse->score ?? 0 }} pts
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                                    <div class="flex items-center text-slate-500 italic">
+                                                        <i class="fas fa-times-circle text-gray-400 mr-2"></i>
+                                                        Non répondu
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -140,7 +195,7 @@
             <p class="text-gray-600 mt-2">Votre accompagnement a été créé. Vous pouvez maintenant consulter et gérer vos plans d'action.</p>
             
             <div class="mt-6 space-x-4">
-                <a href="{{ route('diagnostic.form') }}" class="inline-block btn bg-gray-500 text-white hover:bg-gray-600">
+                <a href="{{ route('diagnostic.select.category') }}" class="inline-block btn bg-gray-500 text-white hover:bg-gray-600">
                     <i class="fas fa-arrow-left mr-2"></i>Refaire un diagnostic
                 </a>
                 @if(isset($diagnostic))
@@ -165,3 +220,36 @@
         </div>
       </main>
 </x-app-layout>
+
+<script>
+function toggleModule(moduleId) {
+    const element = document.getElementById(moduleId);
+    const icon = document.getElementById('icon-' + moduleId);
+    
+    if (element.classList.contains('hidden')) {
+        element.classList.remove('hidden');
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-down');
+    } else {
+        element.classList.add('hidden');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-right');
+    }
+}
+
+// Initialiser tous les modules comme fermés au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser tous les modules comme fermés au chargement
+    const modules = document.querySelectorAll('[id^="module-"]');
+    modules.forEach(function(module) {
+        if (module.id.startsWith('module-')) {
+            module.classList.add('hidden');
+            const icon = document.getElementById('icon-' + module.id);
+            if (icon) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+            }
+        }
+    });
+});
+</script>

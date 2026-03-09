@@ -143,77 +143,168 @@
 
                 
 
-                <!-- Blocs Critiques -->
+                <!-- Blocs Critiques par Module -->
                 @if($blocsCritiquesCount > 0)
                     <div class="bg-white dark:bg-navy-800 rounded-xl shadow-lg p-6">
                         <h3 class="text-lg font-semibold text-slate-800 dark:text-navy-50 mb-4">
-                            Blocs Critiques ({{ $blocsCritiquesCount }})
+                            <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>
+                            Modules Critiques ({{ $blocsCritiquesCount }})
                         </h3>
                         
-                        <div class="space-y-3">
-                            @foreach($blocsCritiques as $bloc)
-                                <div class="p-3 rounded-lg bg-red-50 dark:bg-navy-700">
-                                    <!-- En-tête du bloc -->
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center">
-                                            <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center mr-3">
-                                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium text-slate-800 dark:text-navy-50">
-                                                    {{ $bloc['nom'] }}
+                        @php
+                            // Grouper les blocs critiques par module
+                            $modulesCritiques = [];
+                            foreach($blocsCritiques as $bloc) {
+                                $moduleId = $bloc['module_id'];
+                                if(!isset($modulesCritiques[$moduleId])) {
+                                    $modulesCritiques[$moduleId] = [
+                                        'nom' => $bloc['nom'],
+                                        'score_total' => 0,
+                                        'score_max' => 0,
+                                        'pourcentage_moyen' => 0,
+                                        'blocs' => [],
+                                        'orientations' => collect()
+                                    ];
+                                }
+                                
+                                $modulesCritiques[$moduleId]['blocs'][] = $bloc;
+                                $modulesCritiques[$moduleId]['score_total'] += $bloc['score'];
+                                $modulesCritiques[$moduleId]['score_max'] += 2; // Max 2 points par question
+                                $modulesCritiques[$moduleId]['pourcentage_moyen'] += $bloc['pourcentage'];
+                                
+                                // Fusionner les orientations
+                                if(isset($bloc['orientations'])) {
+                                    $modulesCritiques[$moduleId]['orientations'] = $modulesCritiques[$moduleId]['orientations']->merge($bloc['orientations']);
+                                }
+                            }
+                            
+                            // Calculer les moyennes
+                            foreach($modulesCritiques as $moduleId => &$module) {
+                                if(count($module['blocs']) > 0) {
+                                    $module['pourcentage_moyen'] = $module['pourcentage_moyen'] / count($module['blocs']);
+                                }
+                                $module['orientations'] = $module['orientations']->unique('dispositif');
+                            }
+                            
+                            // Trier les modules par ID numérique
+                            uasort($modulesCritiques, function($a, $b) {
+                                $idA = $a['module_id'] ?? 0;
+                                $idB = $b['module_id'] ?? 0;
+                                return $idA - $idB;
+                            });
+                        @endphp
+                        
+                        <div class="space-y-4">
+                            @foreach($modulesCritiques as $moduleId => $module)
+                                <div class="border border-red-200 dark:border-red-800 rounded-lg overflow-hidden">
+                                    <!-- Header du module -->
+                                    <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-navy-700 dark:to-navy-600 p-4">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <div class="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center mr-3">
+                                                    <i class="fas fa-cube text-white"></i>
                                                 </div>
-                                                <div class="flex items-center space-x-3 text-sm">
-                                                    <span class="text-red-500 font-medium">
-                                                        {{ $bloc['pourcentage'] }}%
-                                                    </span>
-                                                    <span class="text-slate-500">
-                                                        {{ $bloc['statut'] }}
-                                                    </span>
+                                                <div>
+                                                    <h4 class="font-semibold text-slate-800 dark:text-navy-50">
+                                                        {{ $module['nom'] }}
+                                                    </h4>
+                                                    <p class="text-sm text-slate-600 dark:text-navy-300">
+                                                        {{ count($module['blocs']) }} bloc(s) critique(s)
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-2xl font-bold text-red-600">
+                                                    {{ round($module['pourcentage_moyen'], 1) }}%
+                                                </div>
+                                                <div class="text-sm text-slate-500">
+                                                    {{ $module['score_total'] }}/{{ $module['score_max'] }} pts
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     
+                                    <!-- Barre de progression -->
+                                    <div class="w-full bg-gray-200 h-2">
+                                        <div class="bg-gradient-to-r from-red-500 to-orange-500 h-2 transition-all duration-500" 
+                                             style="width: {{ min(100, $module['pourcentage_moyen']) }}%"></div>
+                                    </div>
+                                    
                                     <!-- Orientations recommandées -->
-                                    @if(isset($bloc['orientations']) && $bloc['orientations']->isNotEmpty())
-                                        <div class="border-t border-red-200 dark:border-red-800 pt-3">
-                                            <h4 class="text-sm font-medium text-red-700 dark:text-red-400 mb-2">
-                                                Orientations recommandées (Score: {{ $bloc['score'] }}/20)
-                                            </h4>
-                                            <div class="space-y-2">
-                                                @foreach($bloc['orientations'] as $orientation)
-                                                    <div class="flex items-start gap-2 p-2 bg-white dark:bg-navy-600 rounded border border-red-200 dark:border-red-800">
-                                                        <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                            <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                                            </svg>
-                                                        </div>
-                                                        <div class="flex-1">
-                                                            <div class="text-sm font-medium text-slate-700 dark:text-navy-300">
-                                                                {{ $orientation->dispositif }}
+                                        @if($module['orientations']->isNotEmpty())
+                                            <div class="border-t border-slate-200 dark:border-navy-600 pt-3">
+                                                <h5 class="text-sm font-medium text-slate-700 dark:text-navy-300 mb-2">
+                                                    <i class="fas fa-lightbulb mr-1 text-yellow-500"></i>
+                                                    Orientations recommandées
+                                                </h5>
+                                                <div class="space-y-2">
+                                                    @foreach($module['orientations']->take(3) as $orientation)
+                                                        <div class="flex items-start gap-2 p-2 bg-slate-50 dark:bg-navy-700 rounded">
+                                                            <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                                <i class="fas fa-bolt text-green-600 text-xs"></i>
                                                             </div>
-                                                            <div class="text-xs text-slate-500 dark:text-navy-400 mt-1">
-                                                                Recommandé pour un score ≤ {{ $orientation->seuil_max }}
+                                                            <div class="flex-1">
+                                                                <div class="text-sm font-medium text-slate-700 dark:text-navy-300">
+                                                                    {{ $orientation->dispositif }}
+                                                                </div>
+                                                                <div class="text-xs text-slate-500 dark:text-navy-400">
+                                                                    Recommandé pour un score ≤ {{ $orientation->seuil_max }}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                @endforeach
+                                                    @endforeach
+                                                    @if($module['orientations']->count() > 3)
+                                                        <div class="text-center">
+                                                            <span class="text-xs text-slate-500">
+                                                                +{{ $module['orientations']->count() - 3 }} autres orientations disponibles
+                                                            </span>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
-                                    @else
-                                        <div class="border-t border-red-200 dark:border-red-800 pt-3">
-                                            <p class="text-sm text-slate-600 dark:text-navy-400 italic">
-                                                Aucune orientation spécifique disponible pour ce niveau de score.
-                                            </p>
-                                        </div>
-                                    @endif
+                                        @else
+                                            <div class="border-t border-slate-200 dark:border-navy-600 pt-3">
+                                                <p class="text-sm text-slate-600 dark:text-navy-400 italic text-center">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Aucune orientation spécifique disponible pour ce niveau de performance.
+                                                </p>
+                                            </div>
+                                        @endif
                                 </div>
                             @endforeach
                         </div>
                         
+                        <!-- Statistiques globales -->
+                        <div class="mt-6 pt-4 border-t border-slate-200 dark:border-navy-600">
+                            @php
+                                $nbModulesCritiques = count($modulesCritiques);
+                                $scoreMoyenGlobal = $nbModulesCritiques > 0 ? 
+                                    round(collect($modulesCritiques)->sum('pourcentage_moyen') / $nbModulesCritiques, 1) : 0;
+                                $orientationsTotales = collect($modulesCritiques)->sum(function($m) { 
+                                    return count($m['orientations']); 
+                                });
+                            @endphp
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                <div>
+                                    <div class="text-2xl font-bold text-red-600">
+                                        {{ $nbModulesCritiques }}
+                                    </div>
+                                    <div class="text-sm text-slate-500">Modules critiques</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-orange-600">
+                                        {{ $scoreMoyenGlobal }}%
+                                    </div>
+                                    <div class="text-sm text-slate-500">Score moyen</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-yellow-600">
+                                        {{ $orientationsTotales }}
+                                    </div>
+                                    <div class="text-sm text-slate-500">Orientations totales</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @endif
 

@@ -23,6 +23,14 @@ class Diagnosticresultat extends Model
         'spotlight',
         'etat',
     ];
+
+    protected $casts = [
+        'diagnosticquestion_id' => 'integer',
+        'diagnosticreponse_id' => 'integer',
+        'diagnostic_id' => 'integer',
+        'spotlight' => 'boolean',
+        'etat' => 'boolean',
+    ];
     
     public function diagnosticquestion()
     {

@@ -26,6 +26,14 @@ class Diagnosticreponse extends Model
     ];
     
 
+    protected $casts = [
+        'position' => 'integer',
+        'langue_id' => 'integer',
+        'diagnosticquestion_id' => 'integer',
+        'spotlight' => 'boolean',
+        'etat' => 'boolean',
+    ];
+    
     public function diagnosticquestion()
     {
         return $this->belongsTo(Diagnosticquestion::class);

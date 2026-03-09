@@ -68,7 +68,7 @@ class SidebarPanel
                 [
                     'diagnostic' => [
                         'title' => 'Tests psychotechniques',
-                        'route_name' => 'diagnostic.form'
+                        'route_name' => 'diagnostic.select.category'
                     ],
                     'diagnosticentreprise' => [
                         'title' => 'Niveaux de structuration',

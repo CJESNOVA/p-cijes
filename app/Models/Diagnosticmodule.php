@@ -18,7 +18,9 @@ class Diagnosticmodule extends Model
         'titre',
         'position',
         'description',
+        'vignette',
         'diagnosticmoduletype_id',
+        'diagnosticmodulecategory_id',
         'entrepriseprofil_id',
         'parent',
         'langue_id',
@@ -29,15 +31,25 @@ class Diagnosticmodule extends Model
     ];
     
     protected $casts = [
-        'est_bloquant' => 'boolean',
+        'diagnosticmoduletype_id' => 'integer',
+        'diagnosticmodulecategory_id' => 'integer',
         'entrepriseprofil_id' => 'integer',
+        'parent' => 'integer',
+        'langue_id' => 'integer',
+        'pays_id' => 'integer',
         'spotlight' => 'boolean',
         'etat' => 'boolean',
+        'est_bloquant' => 'boolean',
     ];
 
     public function diagnosticmoduletype()
     {
         return $this->belongsTo(Diagnosticmoduletype::class);
+    }
+
+    public function diagnosticmodulecategory()
+    {
+        return $this->belongsTo(Diagnosticmodulecategory::class);
     }
 
     public function langue()

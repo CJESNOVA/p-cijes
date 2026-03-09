@@ -20,6 +20,7 @@ class Accompagnementaxe extends Model
     ];
 
     protected $casts = [
+        'diagnosticmodule_id' => 'integer',
         'spotlight' => 'boolean',
         'etat' => 'boolean',
     ];

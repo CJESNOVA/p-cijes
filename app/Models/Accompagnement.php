@@ -11,17 +11,31 @@ class Accompagnement extends Model
 
     protected $table = 'accompagnements';
 
+    protected $appends = ['nom_complet'];
+
     /**
      * @var array
      */
     protected $fillable = [
         'membre_id',
         'entreprise_id',
+        'diagnostic_id',
         'accompagnementniveau_id',
         'dateaccompagnement',
         'accompagnementstatut_id',
         'spotlight',
         'etat',
+    ];
+
+    protected $casts = [
+        'membre_id' => 'integer',
+        'entreprise_id' => 'integer',
+        'diagnostic_id' => 'integer',
+        'accompagnementniveau_id' => 'integer',
+        'dateaccompagnement' => 'date',
+        'accompagnementstatut_id' => 'integer',
+        'spotlight' => 'boolean',
+        'etat' => 'boolean',
     ];
     
     public function membre()
@@ -32,6 +46,11 @@ class Accompagnement extends Model
     public function entreprise()
     {
         return $this->belongsTo(Entreprise::class);
+    }
+
+    public function diagnostic()
+    {
+        return $this->belongsTo(Diagnostic::class);
     }
 
     public function accompagnementniveau()
@@ -58,5 +77,11 @@ class Accompagnement extends Model
     {
         return $this->hasMany(Proposition::class);
     }
-    
+
+    public function getNomCompletAttribute(): string
+    {
+        $membre = $this->membre ? "{$this->membre->prenom} {$this->membre->nom}" : '';
+        $entreprise = $this->entreprise ? $this->entreprise->nom : '';
+        return trim("$membre - $entreprise");
+    }
 }
