@@ -26,6 +26,17 @@ class Diagnosticquestion extends Model
         'spotlight',
         'etat',
     ];
+
+    protected $casts = [
+        'diagnosticmodule_id' => 'integer',
+        'diagnosticquestiontype_id' => 'integer',
+        'diagnosticquestioncategorie_id' => 'integer',
+        'langue_id' => 'integer',
+        'obligatoire' => 'boolean',
+        'parent' => 'integer',
+        'spotlight' => 'boolean',
+        'etat' => 'boolean',
+    ];
     
     public function diagnosticmodule()
     {

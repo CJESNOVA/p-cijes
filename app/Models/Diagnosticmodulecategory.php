@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Diagnosticmoduletype extends Model
+class Diagnosticmodulecategory extends Model
 {
     use HasFactory;
 
-    protected $table = 'diagnosticmoduletypes'; 
+    protected $table = 'diagnosticmodulecategories'; 
 
     protected $fillable = [
         'titre',
@@ -21,6 +21,6 @@ class Diagnosticmoduletype extends Model
      */
     public function diagnosticmodules()
     {
-        return $this->hasMany(Diagnosticmodule::class, 'diagnosticmoduletype_id');
+        return $this->hasMany(Diagnosticmodule::class, 'diagnosticmodulecategory_id');
     }
 }

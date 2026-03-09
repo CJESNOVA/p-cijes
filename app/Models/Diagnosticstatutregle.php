@@ -11,6 +11,7 @@ class Diagnosticstatutregle extends Model
 
     protected $fillable = [
         'entrepriseprofil_id',
+        'diagnostictype_id',
         'score_total_min',
         'score_total_max',
         'min_blocs_score',
@@ -23,6 +24,7 @@ class Diagnosticstatutregle extends Model
 
     protected $casts = [
         'entrepriseprofil_id' => 'integer',
+        'diagnostictype_id' => 'integer',
         'score_total_min' => 'integer',
         'score_total_max' => 'integer',
         'min_blocs_score' => 'integer',
@@ -40,6 +42,14 @@ class Diagnosticstatutregle extends Model
     public function entrepriseprofil()
     {
         return $this->belongsTo(Entrepriseprofil::class);
+    }
+
+    /**
+     * Relation avec le type de diagnostic
+     */
+    public function diagnostictype()
+    {
+        return $this->belongsTo(Diagnostictype::class);
     }
 
     /**

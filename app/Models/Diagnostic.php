@@ -11,13 +11,14 @@ class Diagnostic extends Model
 
     protected $table = 'diagnostics';
 
+    protected $appends = ['nom_complet'];
+
     /**
      * @var array
      */
     protected $fillable = [
         'scoreglobal',
         'commentaire',
-        'accompagnement_id',
         'diagnostictype_id',
         'diagnosticstatut_id',
         'membre_id',
@@ -26,10 +27,25 @@ class Diagnostic extends Model
         'spotlight',
         'etat',
     ];
+
+    protected $casts = [
+        'diagnostictype_id' => 'integer',
+        'diagnosticstatut_id' => 'integer',
+        'membre_id' => 'integer',
+        'entreprise_id' => 'integer',
+        'entrepriseprofil_id' => 'integer',
+        'spotlight' => 'boolean',
+        'etat' => 'boolean',
+    ];
     
+    public function accompagnements()
+    {
+        return $this->hasMany(Accompagnement::class);
+    }
+
     public function accompagnement()
     {
-        return $this->belongsTo(Accompagnement::class);
+        return $this->hasOne(Accompagnement::class);
     }
 
     public function diagnostictype()
@@ -67,4 +83,10 @@ class Diagnostic extends Model
         return $this->hasMany(Diagnosticresultat::class);
     }
 
+    public function getNomCompletAttribute(): string
+    {
+        $membre = $this->membre ? "{$this->membre->prenom} {$this->membre->nom}" : '';
+        $entreprise = $this->entreprise ? $this->entreprise->nom : '';
+        return trim("Diagnostic #{$this->id} - $membre - $entreprise (Score: {$this->scoreglobal})");
+    }
 }

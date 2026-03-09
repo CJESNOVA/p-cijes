@@ -311,13 +311,13 @@
             </div>
           </div>
 
-          <!-- Scores et Expertise par module -->
+          <!-- Scores par module -->
           @if($diagnostic->diagnosticresultats->count() > 0)
             <div class="card px-4 pb-4 sm:px-5 mt-6">
               <div class="max-w-xxl">
                 <h3 class="text-lg font-semibold text-slate-800 mb-6">
                   <i class="fas fa-chart-bar mr-2 text-purple-500"></i>
-                  Scores et Expertise par module
+                  Scores par module
                 </h3>
                 
                 @php
@@ -343,7 +343,7 @@
                         }
                     }
                     
-                    // Calculer les niveaux et recommandations pour chaque module
+                    // Calculer les niveaux pour chaque module
                     foreach($scoresParModule as $moduleId => &$data) {
                         $pourcentage = $data['score_max_possible'] > 0 ? ($data['score_total'] / $data['score_max_possible']) * 100 : 0;
                         
@@ -354,36 +354,24 @@
                             $niveauColor = 'text-green-600';
                             $bgColor = 'bg-green-100';
                             $barColor = 'from-green-500 to-green-600';
-                            $expertiseText = 'Expert confirmé';
-                            $recommandation = 'Maintenir le niveau d\'expertise';
-                            $icon = 'fa-star';
                         } elseif($pourcentage >= 60) {
                             $niveau = 'C'; // Bon
                             $niveauText = 'Bon';
                             $niveauColor = 'text-blue-600';
                             $bgColor = 'bg-blue-100';
                             $barColor = 'from-blue-500 to-blue-600';
-                            $expertiseText = 'Compétent';
-                            $recommandation = 'Approfondir les connaissances';
-                            $icon = 'fa-check-circle';
                         } elseif($pourcentage >= 40) {
                             $niveau = 'B'; // Moyen
                             $niveauText = 'Moyen';
                             $niveauColor = 'text-yellow-600';
                             $bgColor = 'bg-yellow-100';
                             $barColor = 'from-yellow-500 to-yellow-600';
-                            $expertiseText = 'En développement';
-                            $recommandation = 'Formation recommandée';
-                            $icon = 'fa-exclamation-triangle';
                         } else {
                             $niveau = 'A'; // Faible
                             $niveauText = 'Faible';
                             $niveauColor = 'text-red-600';
                             $bgColor = 'bg-red-100';
                             $barColor = 'from-red-500 to-red-600';
-                            $expertiseText = 'Besoin de formation';
-                            $recommandation = 'Formation urgente requise';
-                            $icon = 'fa-times-circle';
                         }
                         
                         $data['pourcentage'] = $pourcentage;
@@ -392,30 +380,178 @@
                         $data['niveau_color'] = $niveauColor;
                         $data['bg_color'] = $bgColor;
                         $data['bar_color'] = $barColor;
-                        $data['expertise_text'] = $expertiseText;
-                        $data['recommandation'] = $recommandation;
-                        $data['icon'] = $icon;
                     }
                     
-                    // Trier par ID numérique du module
+                    // Trier par ID numérique du module (ordre 1, 2, 3, 4, 5...)
                     uasort($scoresParModule, function($a, $b) {
                         return $a['module']->id - $b['module']->id;
                     });
                     $topModules = array_slice($scoresParModule, 0, 10, true);
                 @endphp
                 
+                @if(!empty($topModules))
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        @foreach($topModules as $moduleId => $data)
+                            <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                                <!-- Header avec niveau -->
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br {{ $data['bar_color'] }} flex items-center justify-center mr-3">
+                                            <span class="text-white font-bold text-lg">{{ $data['niveau'] }}</span>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-slate-800 text-sm">{{ $data['module']->titre }}</h4>
+                                            <p class="text-xs text-slate-500">{{ $data['nombre_questions'] }} question(s)</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold {{ $data['niveau_color'] }}">{{ $data['score_total'] }}</div>
+                                        <div class="text-xs text-slate-500">/{{ $data['score_max_possible'] }} pts</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Niveau et pourcentage -->
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-3 py-1 {{ $data['bg_color'] }} {{ $data['niveau_color'] }} rounded-full text-xs font-semibold">
+                                        Niveau {{ $data['niveau'] }} - {{ $data['niveau_text'] }}
+                                    </span>
+                                    <span class="text-sm font-medium {{ $data['niveau_color'] }}">
+                                        {{ round($data['pourcentage'], 1) }}%
+                                    </span>
+                                </div>
+                                
+                                <!-- Barre de progression -->
+                                <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                                    <div class="bg-gradient-to-r {{ $data['bar_color'] }} h-3 rounded-full transition-all duration-500" 
+                                         style="width: {{ min(100, $data['pourcentage']) }}%"></div>
+                                </div>
+                                
+                                <!-- Description du niveau -->
+                                <div class="{{ $data['bg_color'] }} rounded p-2 text-center">
+                                    <p class="text-xs {{ $data['niveau_color'] }} font-medium">
+                                        @if($data['niveau'] === 'D')
+                                            🏆 Performance excellente - Module maîtrisé
+                                        @elseif($data['niveau'] === 'C')
+                                            ✅ Bon niveau de compréhension
+                                        @elseif($data['niveau'] === 'B')
+                                            ⚠️ Niveau moyen - Amélioration possible
+                                        @else
+                                            ❌ Niveau faible - Révision nécessaire
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                        <i class="fas fa-chart-bar text-4xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600">Aucun score de module disponible</p>
+                    </div>
+                @endif
+              </div>
+            </div>
+          @endif
+
+          <!-- Expertise recommandée -->
+          @if($diagnostic->diagnosticresultats->count() > 0)
+            <div class="card px-4 pb-4 sm:px-5 mt-6">
+              <div class="max-w-xxl">
+                <h3 class="text-lg font-semibold text-slate-800 mb-6">
+                  <i class="fas fa-user-tie mr-2 text-indigo-500"></i>
+                  Expertise recommandée
+                </h3>
+                
+                @php
+                    // Calculer les scores totaux et niveaux par module (même logique que Scores par module)
+                    $expertiseModules = [];
+                    foreach($diagnostic->diagnosticresultats as $result) {
+                        if($result->diagnosticquestion && $result->diagnosticreponse) {
+                            $moduleId = $result->diagnosticquestion->diagnosticmodule_id;
+                            $score = $result->diagnosticreponse->score ?? 0;
+                            
+                            if(!isset($expertiseModules[$moduleId])) {
+                                $expertiseModules[$moduleId] = [
+                                    'module' => $result->diagnosticquestion->diagnosticmodule,
+                                    'score_total' => 0,
+                                    'nombre_questions' => 0,
+                                    'score_max_possible' => 0
+                                ];
+                            }
+                            
+                            $expertiseModules[$moduleId]['score_total'] += $score;
+                            $expertiseModules[$moduleId]['nombre_questions']++;
+                            $expertiseModules[$moduleId]['score_max_possible'] += 2; // Max 2 points par question
+                        }
+                    }
+                    
+                    // Calculer les niveaux pour chaque module
+                    foreach($expertiseModules as $moduleId => &$data) {
+                        $pourcentage = $data['score_max_possible'] > 0 ? ($data['score_total'] / $data['score_max_possible']) * 100 : 0;
+                        
+                        // Calculer le niveau (A, B, C, D)
+                        if($pourcentage >= 80) {
+                            $niveau = 'D'; // Excellent
+                            $niveauText = 'Expert confirmé';
+                            $niveauColor = 'text-green-600';
+                            $bgColor = 'bg-green-100';
+                            $barColor = 'from-green-500 to-green-600';
+                            $icon = 'fa-star';
+                            $recommandation = 'Maintenir le niveau d\'expertise';
+                        } elseif($pourcentage >= 60) {
+                            $niveau = 'C'; // Bon
+                            $niveauText = 'Compétent';
+                            $niveauColor = 'text-blue-600';
+                            $bgColor = 'bg-blue-100';
+                            $barColor = 'from-blue-500 to-blue-600';
+                            $icon = 'fa-check-circle';
+                            $recommandation = 'Approfondir les connaissances';
+                        } elseif($pourcentage >= 40) {
+                            $niveau = 'B'; // Moyen
+                            $niveauText = 'En développement';
+                            $niveauColor = 'text-yellow-600';
+                            $bgColor = 'bg-yellow-100';
+                            $barColor = 'from-yellow-500 to-yellow-600';
+                            $icon = 'fa-exclamation-triangle';
+                            $recommandation = 'Formation recommandée';
+                        } else {
+                            $niveau = 'A'; // Faible
+                            $niveauText = 'Besoin de formation';
+                            $niveauColor = 'text-red-600';
+                            $bgColor = 'bg-red-100';
+                            $barColor = 'from-red-500 to-red-600';
+                            $icon = 'fa-times-circle';
+                            $recommandation = 'Formation urgente requise';
+                        }
+                        
+                        $data['pourcentage'] = $pourcentage;
+                        $data['niveau'] = $niveau;
+                        $data['niveau_text'] = $niveauText;
+                        $data['niveau_color'] = $niveauColor;
+                        $data['bg_color'] = $bgColor;
+                        $data['bar_color'] = $barColor;
+                        $data['icon'] = $icon;
+                        $data['recommandation'] = $recommandation;
+                    }
+                    
+                    // Trier par ID numérique du module
+                    uasort($expertiseModules, function($a, $b) {
+                        return $a['module']->id - $b['module']->id;
+                    });
+                @endphp
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  @foreach($topModules as $moduleId => $data)
+                  @foreach($expertiseModules as $moduleId => $data)
                     <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200">
-                        <!-- Header avec niveau -->
+                        <!-- Header du module -->
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center">
                                 <div class="w-10 h-10 rounded-lg bg-gradient-to-br {{ $data['bar_color'] }} flex items-center justify-center mr-3">
-                                    <span class="text-white font-bold text-lg">{{ $data['niveau'] }}</span>
+                                    <i class="fas {{ $data['icon'] }} text-white"></i>
                                 </div>
                                 <div>
                                     <h4 class="font-semibold text-slate-800 text-sm">{{ $data['module']->titre }}</h4>
-                                    <p class="text-xs text-slate-500">{{ $data['nombre_questions'] }} question(s)</p>
+                                    <p class="text-xs text-slate-500">Module {{ $data['module']->id }}</p>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -424,39 +560,39 @@
                             </div>
                         </div>
                         
-                        <!-- Niveau et expertise -->
+                        <!-- Niveau et recommandation -->
                         <div class="flex items-center justify-between mb-3">
                             <span class="px-3 py-1 {{ $data['bg_color'] }} {{ $data['niveau_color'] }} rounded-full text-xs font-semibold">
-                                Niveau {{ $data['niveau'] }} - {{ $data['niveau_text'] }}
+                                {{ $data['niveau_text'] }}
                             </span>
                             <span class="text-sm font-medium {{ $data['niveau_color'] }}">
-                                {{ round($data['pourcentage'], 1) }}%
+                                Niveau {{ $data['niveau'] }}
                             </span>
                         </div>
                         
                         <!-- Barre de progression -->
                         <div class="w-full bg-gray-200 rounded-full h-3 mb-3">
-                            <div class="bg-gradient-to-r {{ $data['bar_color'] }} h-3 rounded-full transition-all duration-500"
-                                 style="width: {{ min(100, $data['pourcentage']) }}%"></div>
+                            <div class="bg-gradient-to-r {{ $data['bar_color'] }} h-3 rounded-full transition-all duration-500" 
+                                 style="width: {{ $data['pourcentage'] }}%"></div>
                         </div>
                         
-                        <!-- Expertise et recommandation -->
+                        <!-- Recommandation détaillée -->
                         <div class="{{ $data['bg_color'] }} rounded-lg p-3 mb-3">
                             <div class="flex items-start">
-                                <i class="fas {{ $data['icon'] }} {{ $data['niveau_color'] }} mr-2 mt-1"></i>
+                                <i class="fas fa-lightbulb {{ $data['niveau_color'] }} mr-2 mt-1"></i>
                                 <div>
                                     <p class="text-sm font-medium {{ $data['niveau_color'] }} mb-1">
-                                        {{ $data['expertise_text'] }} - {{ $data['recommandation'] }}
+                                        {{ $data['recommandation'] }}
                                     </p>
                                     <p class="text-xs {{ $data['niveau_color'] }} opacity-75">
                                         @if($data['niveau'] === 'D')
-                                            🏆 Performance excellente - Module maîtrisé. Continuez à maintenir vos compétences et explorez des sujets avancés.
+                                            Ce module est maîtrisé. Continuez à maintenir vos compétences et explorez des sujets avancés.
                                         @elseif($data['niveau'] === 'C')
-                                            ✅ Bon niveau de compréhension. Identifiez les points restants à améliorer pour atteindre l'excellence.
+                                            Bon niveau de maîtrise. Identifiez les points restants à améliorer pour atteindre l'excellence.
                                         @elseif($data['niveau'] === 'B')
-                                            ⚠️ Niveau moyen - Amélioration possible. Une formation structurée pourrait vous aider à progresser rapidement.
+                                            Des bases sont acquises mais une formation structurée pourrait vous aider à progresser rapidement.
                                         @else
-                                            ❌ Niveau faible - Révision nécessaire. Une formation ciblée est recommandée pour construire des bases solides.
+                                            Ce module nécessite une attention particulière. Une formation ciblée est recommandée pour construire des bases solides.
                                         @endif
                                     </p>
                                 </div>

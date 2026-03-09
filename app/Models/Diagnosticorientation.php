@@ -17,6 +17,8 @@ class Diagnosticorientation extends Model
     ];
 
     protected $casts = [
+        'diagnosticmodule_id' => 'integer',
+        'diagnosticblocstatut_id' => 'integer',
         'seuil_max' => 'integer',
     ];
 

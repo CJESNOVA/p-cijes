@@ -341,12 +341,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/entreprises/entreprises', [EntrepriseController::class, 'index'])->name('entreprise.index');
     Route::delete('/entreprises/entreprise/{id}/destroy', [EntrepriseController::class, 'destroy'])->name('entreprise.destroy');
 
-    Route::get('/diagnostics/diagnostic', [DiagnosticController::class, 'showForm'])->name('diagnostic.form');
+    // Routes pour les diagnostics PME
+    Route::get('/diagnostics/select-category', [DiagnosticController::class, 'selectCategory'])->name('diagnostic.select.category');
+    Route::get('/diagnostics/diagnostic/{categoryId}', [DiagnosticController::class, 'showForm'])->name('diagnostic.form');
+    Route::get('/diagnostics/diagnostic/{categoryId}/module/{moduleId}', [DiagnosticController::class, 'showForm'])->name('diagnostic.showModule');
     Route::get('/diagnostics/mes-diagnostics', [DiagnosticController::class, 'mesDiagnostics'])->name('diagnostic.mes');
-    // Routes pour la navigation module par module
-    Route::get('/diagnostics/diagnostic/module/{moduleId}', [DiagnosticController::class, 'showForm'])->name('diagnostic.showModule');
-    Route::post('/diagnostics/diagnostic/module/{moduleId}/save', [DiagnosticController::class, 'saveModule'])->name('diagnostic.saveModule');
-    Route::post('/diagnostics/diagnostic/module/{moduleId}/finalize', [DiagnosticController::class, 'store'])->name('diagnostic.finalize');
+    
+    // Routes pour la navigation module par module (redirection vers la nouvelle structure)
+    Route::get('/diagnostics/diagnostic', [DiagnosticController::class, 'selectCategory']);
+    Route::get('/diagnostics/diagnostic/module/{moduleId}', function($moduleId) {
+        return redirect()->route('diagnostic.select.category');
+    });
+    Route::post('/diagnostics/diagnostic/{categoryId}/module/{moduleId}/save', [DiagnosticController::class, 'saveModule'])->name('diagnostic.saveModule');
+    Route::post('/diagnostics/diagnostic/{categoryId}/module/{moduleId}/finalize', [DiagnosticController::class, 'finalizeModule'])->name('diagnostic.finalize');
     
     Route::post('/diagnostics/diagnostic', [DiagnosticController::class, 'store'])->name('diagnostic.store');
     Route::get('/diagnostics/diagnostic/success/{diagnosticId}', [DiagnosticController::class, 'success'])->name('diagnostic.success');
@@ -361,8 +368,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/diagnostics/diagnosticentreprise/{entrepriseId}/finalize/{moduleId}', [DiagnosticentrepriseController::class, 'store'])->name('diagnosticentreprise.finalize');
     
     Route::post('/diagnostics/diagnosticentreprise/{entrepriseId}/store/{moduleId}', [DiagnosticentrepriseController::class, 'store'])->name('diagnosticentreprise.store');
-    
-    Route::post('/diagnostics/diagnosticentreprise/store', [DiagnosticentrepriseController::class, 'store'])->name('diagnosticentreprise.store');
     Route::get('/diagnostics/diagnosticentreprise/success/{diagnosticId}', [DiagnosticentrepriseController::class, 'success'])->name('diagnosticentreprise.success');
     Route::get('/diagnostics/diagnosticentreprise/{diagnosticId}/plans', [DiagnosticentrepriseController::class, 'listePlans'])->name('diagnosticentreprise.plans');
     

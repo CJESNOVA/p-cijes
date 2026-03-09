@@ -34,7 +34,7 @@
                 <p class="text-slate-600 dark:text-navy-300 mb-6">
                     Vous n'avez pas encore passé de diagnostic. Commencez dès maintenant !
                 </p>
-                <a href="{{ route('diagnostic.form') }}" class="btn bg-primary text-white hover:bg-primary-focus">
+                <a href="{{ route('diagnostic.select.category') }}" class="btn bg-primary text-white hover:bg-primary-focus">
                     Commencer un diagnostic
                 </a>
             </div>

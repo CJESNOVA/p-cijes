@@ -4,12 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Entreprise;
+use App\Models\Diagnostic;
+use App\Models\Diagnosticstatut;
+use App\Models\Entrepriseprofil;
+use App\Models\Membre;
 
 class Diagnosticevolution extends Model
 {
     use HasFactory;
 
+    protected $table = 'diagnosticevolutions';
+
+    protected $appends = ['nom_complet'];
+
     protected $fillable = [
+        'membre_id',
         'entreprise_id',
         'diagnostic_id',
         'diagnostic_precedent_id',
@@ -20,49 +30,53 @@ class Diagnosticevolution extends Model
     ];
 
     protected $casts = [
+        'membre_id' => 'integer',
+        'entreprise_id' => 'integer',
+        'diagnostic_id' => 'integer',
+        'diagnostic_precedent_id' => 'integer',
         'score_global' => 'integer',
         'diagnosticstatut_id' => 'integer',
         'entrepriseprofil_id' => 'integer',
     ];
 
-    /**
-     * Relation avec l'entreprise
-     */
+    public function membre()
+    {
+        return $this->belongsTo(Membre::class);
+    }
+
     public function entreprise()
     {
         return $this->belongsTo(Entreprise::class);
     }
 
-    /**
-     * Relation avec le diagnostic actuel
-     */
     public function diagnostic()
     {
         return $this->belongsTo(Diagnostic::class);
     }
 
-    /**
-     * Relation avec le diagnostic précédent
-     */
     public function diagnosticPrecedent()
     {
         return $this->belongsTo(Diagnostic::class, 'diagnostic_precedent_id');
     }
 
-    /**
-     * Relation avec le statut du diagnostic
-     */
     public function diagnosticstatut()
     {
         return $this->belongsTo(Diagnosticstatut::class);
     }
 
-    /**
-     * Relation avec le profil de l'entreprise
-     */
     public function entrepriseprofil()
     {
         return $this->belongsTo(Entrepriseprofil::class);
+    }
+
+    public function getNomCompletAttribute()
+    {
+        if ($this->entreprise) {
+            return "Évolution #{$this->id} - " . $this->entreprise->nom . " (Score: {$this->score_global})";
+        } elseif ($this->membre) {
+            return "Évolution #{$this->id} - " . $this->membre->nom_complet . " (Score: {$this->score_global})";
+        }
+        return "Évolution #{$this->id} - Inconnue (Score: {$this->score_global})";
     }
 
     /**
@@ -223,6 +237,7 @@ class Diagnosticevolution extends Model
         $diagnosticstatutId = self::determinerDiagnosticstatutPourProfil($profilId, $scoreActuel, $scorePrecedent);
 
         return self::create([
+            'membre_id' => $diagnostic->membre_id,
             'entreprise_id' => $entrepriseId,
             'diagnostic_id' => $diagnosticId,
             'diagnostic_precedent_id' => $diagnosticPrecedentId,
