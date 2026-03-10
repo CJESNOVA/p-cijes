@@ -142,6 +142,7 @@
                                                 <h3 class="text-lg font-semibold text-slate-800 dark:text-navy-50">
                                                     {{ $em->entreprise->nom }}
                                                 </h3>
+                                                <p class="text-xs text-slate-500 mt-1">{{ $em->entreprise->numero_identifiant }}</p>
                                                 @if($em->entreprise && $em->entreprise->entrepriseprofil && $em->entreprise->est_membre_cijes)
                                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1
                                                         @switch($em->entreprise->entrepriseprofil->id)

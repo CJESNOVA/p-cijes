@@ -79,8 +79,27 @@ public function entreprises()
      */
     public static function generateNumeroIdentifiant()
     {
+        $prefixe = 'MBR-CJESTG';
+        $annee = date('y'); // Deux derniers chiffres de l'année
+        $mois = date('m'); // Deux derniers chiffres du mois
+        
         do {
-            $numero = 'MBR' . date('Y') . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+            // Récupérer le dernier numéro d'ordre pour ce mois
+            $dernierNumero = self::where('numero_identifiant', 'like', $prefixe . $annee . $mois . '%')
+                ->orderBy('numero_identifiant', 'desc')
+                ->first();
+            
+            if ($dernierNumero) {
+                // Extraire le numéro d'ordre et l'incrémenter
+                $dernierOrdre = substr($dernierNumero->numero_identifiant, -5);
+                $nouvelOrdre = str_pad((int)$dernierOrdre + 1, 5, '0', STR_PAD_LEFT);
+            } else {
+                // Premier numéro du mois
+                $nouvelOrdre = '00001';
+            }
+            
+            $numero = $prefixe . $annee . $mois . $nouvelOrdre;
+            
         } while (self::where('numero_identifiant', $numero)->exists());
         
         return $numero;
