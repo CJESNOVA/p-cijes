@@ -13,7 +13,7 @@ class MailTestController extends Controller
         try {
             // Test simple avec Mail::raw
             Mail::raw('Ceci est un test email depuis CJES Africa', function ($message) {
-                $message->to('yokamly@gmail.com')
+                $message->to('lookyyokamly@yahoo.fr')
                     ->subject('📧 Test Email CJES Africa');
             });
             
