@@ -1,68 +1,30 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>🎉 Récompense obtenue</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #f9fafb;
-            color: #333;
-            padding: 30px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        h2 {
-            color: #1e3a8a;
-        }
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        li {
-            margin-bottom: 5px;
-        }
-        a {
-            color: #0ea5e9;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .footer {
-            margin-top: 25px;
-            font-size: 12px;
-            color: #999;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Bonjour {{ $membre->prenom ?? 'Utilisateur' }} {{ $membre->nom ?? 'Utilisateur' }},</h2>
-
-        <p>🎉 Félicitations ! Vous venez de recevoir une nouvelle récompense.</p>
-
-        <ul>
-            <li><strong>Action :</strong> {{ $action->titre ?? 'N/A' }}</li>
-            <li><strong>Points :</strong> {{ $action->point ?? 0 }}</li>
-            <li><strong>Date :</strong> {{ optional($recompense->updated_at)->format('d/m/Y H:i') ?? 'N/A' }}</li>
-        </ul>
-
-        <p>👉 Consultez vos récompenses ici :
-            <a href="{{ url('/bons/mes-recompenses') }}">Mes Récompenses</a>
-        </p>
-
-        <p>Merci pour votre engagement 👏</p>
-
-        <div class="footer">
-            — L’équipe CIJES Africa
-        </div>
+<x-emails-layout :subject="$subject">
+    <h1>� Nouvelle récompense obtenue !</h1>
+    
+    <p>Félicitations 🎉</p>
+    
+    <p>Vous venez de gagner <strong>{{ $points }} points</strong> pour l'action : <strong>{{ $actionTitre }}</strong>.</p>
+    
+    <div style="text-align: center; background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h2 style="color: #92400e; margin: 0;">+{{ $points }} points</h2>
+        <p style="color: #92400e; margin: 5px 0;">{{ $actionTitre }}</p>
     </div>
-</body>
-</html>
+    
+    <div style="text-align: center;">
+        <a href="{{ $lien }}" class="button">Voir mes récompenses</a>
+    </div>
+    
+    <h3>🏆 Vos récompenses</h3>
+    <p>Continuez à participer activement pour :</p>
+    <ul>
+        <li>Gagner encore plus de points</li>
+        <li>Débloquer des badges exclusifs</li>
+        <li>Accéder à des opportunités premium</li>
+        <li>Améliorer votre visibilité dans la communauté</li>
+    </ul>
+    
+    <p>Chaque action compte dans votre parcours entrepreneurial avec CJES Africa !</p>
+    
+    <p>Cordialement,<br>
+    L'équipe CJES Africa</p>
+</x-emails-layout>

@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Notifications\WelcomeNotification;
 use App\Notifications\PasswordResetNotification;
-use App\Notifications\EmailVerifiedNotification;
 use App\Notifications\PasswordResetConfirmationNotification;
+use App\Notifications\EmailVerifiedNotification;
 use App\Notifications\RecompenseNotification;
+use App\Notifications\WelcomeNotificationBlade;
+use App\Notifications\PasswordResetNotificationBlade;
 
 class MailTestController extends Controller
 {
@@ -148,6 +150,23 @@ class MailTestController extends Controller
                 $results['recompense'] = '✅ Success';
             } catch (\Exception $e) {
                 $results['recompense'] = '❌ Error: ' . $e->getMessage();
+            }
+
+            // Tester WelcomeNotificationBlade (template Blade)
+            try {
+                $user->notify(new WelcomeNotificationBlade($user->name));
+                $results['welcome_blade'] = '✅ Success';
+            } catch (\Exception $e) {
+                $results['welcome_blade'] = '❌ Error: ' . $e->getMessage();
+            }
+
+            // Tester PasswordResetNotificationBlade (template Blade)
+            try {
+                $resetToken = bin2hex(random_bytes(16));
+                $user->notify(new PasswordResetNotificationBlade($resetToken, $user->name));
+                $results['password_reset_blade'] = '✅ Success';
+            } catch (\Exception $e) {
+                $results['password_reset_blade'] = '❌ Error: ' . $e->getMessage();
             }
 
             return response()->json([
