@@ -8,6 +8,7 @@ use App\Notifications\WelcomeNotification;
 use App\Notifications\PasswordResetNotification;
 use App\Notifications\EmailVerifiedNotification;
 use App\Notifications\PasswordResetConfirmationNotification;
+use App\Notifications\RecompenseNotification;
 
 class MailTestController extends Controller
 {
@@ -134,6 +135,14 @@ class MailTestController extends Controller
                 $results['password_reset_confirmation'] = '✅ Success';
             } catch (\Exception $e) {
                 $results['password_reset_confirmation'] = '❌ Error: ' . $e->getMessage();
+            }
+
+            // Tester RecompenseNotification
+            try {
+                $user->notify(new RecompenseNotification('Test action', 50, route('dashboard')));
+                $results['recompense'] = '✅ Success';
+            } catch (\Exception $e) {
+                $results['recompense'] = '❌ Error: ' . $e->getMessage();
             }
 
             return response()->json([
