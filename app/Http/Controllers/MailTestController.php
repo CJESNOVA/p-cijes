@@ -19,7 +19,7 @@ class MailTestController extends Controller
             
             return response()->json([
                 'status' => 'success',
-                'message' => 'Email de test envoyé avec succès !'
+                'message' => 'Email de test envoyé avec succès ! lookyyokamly@yahoo.fr'
             ]);
         } catch (\Exception $e) {
             return response()->json([
