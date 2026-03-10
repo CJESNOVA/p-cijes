@@ -315,13 +315,18 @@ public function register(Request $request)
             
             // Envoyer la notification
             $user->notify(new PasswordResetNotification($resetToken, $user->name));
+            
+            // Succès explicite
+            return back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse e-mail.');
+            
         } catch (\Exception $e) {
-            // Continue même si l'email échoue
-            \Log::warning('Email de réinitialisation non envoyé: ' . $e->getMessage());
+            // Afficher l'erreur pour le debugging
+            \Log::error('Email de réinitialisation non envoyé: ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors de l\'envoi de l\'email: ' . $e->getMessage())->withInput();
         }
     }
 
-    return back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse e-mail.');
+    return back()->with('error', 'Aucun utilisateur trouvé avec cette adresse e-mail.')->withInput();
 }
 
 

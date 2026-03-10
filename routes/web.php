@@ -164,6 +164,8 @@ Route::get('/emails/verify', [\App\Http\Controllers\AuthController::class, 'emai
 // Routes de test pour les emails (à retirer en production)
 Route::get('/test-mail', [\App\Http\Controllers\MailTestController::class, 'testMail'])->name('test.mail');
 Route::get('/test-notification', [\App\Http\Controllers\MailTestController::class, 'testNotification'])->name('test.notification');
+Route::get('/test-password-reset-notification', [\App\Http\Controllers\MailTestController::class, 'testPasswordResetNotification'])->name('test.password-reset-notification');
+Route::get('/test-all-notifications', [\App\Http\Controllers\MailTestController::class, 'testAllNotifications'])->name('test.all-notifications');
 
 
 Route::get('/test-supabase-register', function () {
