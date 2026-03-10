@@ -49,14 +49,9 @@ class PasswordResetConfirmationNotification extends Notification implements Shou
             });
 
         } catch (\Exception $e) {
-            // En cas d'erreur, retourner un MailMessage basique
-            return (new MailMessage)
-                ->subject('✅ Votre mot de passe a été modifié')
-                ->greeting('Bonjour ' . $this->userName . ' 👋')
-                ->line('Votre mot de passe a été modifié avec succès.')
-                ->line('Si vous n\'avez pas demandé cette modification, veuillez nous contacter.')
-                ->action('Accéder à mon compte', route('dashboard'))
-                ->salutation('L\'équipe CJES Africa');
+            // En cas d'erreur, logger mais ne pas faire de fallback
+            \Log::error('Erreur Mail::raw dans PasswordResetConfirmationNotification: ' . $e->getMessage());
+            // Ne rien retourner - Laravel gérera l'erreur
         }
     }
 }

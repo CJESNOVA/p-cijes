@@ -44,14 +44,9 @@ class WelcomeNotification extends Notification implements ShouldQueue
             });
 
         } catch (\Exception $e) {
-            // En cas d'erreur, retourner un MailMessage basique
-            return (new MailMessage)
-                ->subject('🎉 Bienvenue sur CJES Africa !')
-                ->greeting('Bonjour ' . $this->userName . ' 👋')
-                ->line('Bienvenue dans la communauté CJES Africa !')
-                ->action('Accéder à mon tableau de bord', route('dashboard'))
-                ->line('Si vous avez des questions, n\'hésitez pas à nous contacter.')
-                ->salutation('Cordialement, L\'équipe CJES Africa');
+            // En cas d'erreur, logger mais ne pas faire de fallback
+            \Log::error('Erreur Mail::raw dans WelcomeNotification: ' . $e->getMessage());
+            // Ne rien retourner - Laravel gérera l'erreur
         }
     }
 }
