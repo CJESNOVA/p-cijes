@@ -47,8 +47,6 @@ class PasswordResetNotification extends Notification implements ShouldQueue
                     ->subject($subject);
             });
 
-            // Retourner un MailMessage vide pour éviter les erreurs
-            return (new MailMessage)->subject($subject);
         } catch (\Exception $e) {
             // En cas d'erreur, retourner un MailMessage basique
             $resetUrl = route('resetPasswordView', ['token' => $this->resetToken]);

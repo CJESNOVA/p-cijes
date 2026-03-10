@@ -43,8 +43,6 @@ class WelcomeNotification extends Notification implements ShouldQueue
                     ->subject($subject);
             });
 
-            // Retourner un MailMessage vide pour éviter les erreurs
-            return (new MailMessage)->subject($subject);
         } catch (\Exception $e) {
             // En cas d'erreur, retourner un MailMessage basique
             return (new MailMessage)
