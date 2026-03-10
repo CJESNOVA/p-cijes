@@ -72,4 +72,19 @@ class Entreprise extends Model
         return $this->hasMany(Diagnostic::class);
     }
 
+    /**
+     * Génère un numéro d'identifiant pour l'affichage uniquement
+     */
+    public function getNumeroIdentifiantAttribute()
+    {
+        $prefixe = 'CJESTG00';
+        $annee = date('y', strtotime($this->created_at)); // Deux derniers chiffres de l'année de création
+        $mois = date('m', strtotime($this->created_at)); // Deux derniers chiffres du mois de création
+        
+        // Utiliser l'ID de l'entreprise comme numéro d'ordre pour l'affichage
+        $ordre = str_pad($this->id, 5, '0', STR_PAD_LEFT);
+        
+        return $prefixe . $annee . $mois . $ordre;
+    }
+
 }
