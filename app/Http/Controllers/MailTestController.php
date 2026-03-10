@@ -23,7 +23,12 @@ class MailTestController extends Controller
             
             return response()->json([
                 'status' => 'success',
-                'message' => 'Email de test envoyé avec succès ! lookyyokamly@yahoo.fr'
+                'message' => 'Email de test envoyé avec succès ! lookyyokamly@yahoo.fr',
+                'config' => [
+                    'from_address' => config('mail.from.address'),
+                    'from_name' => config('mail.from.name'),
+                    'mailer' => config('mail.default'),
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
