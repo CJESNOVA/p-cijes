@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Notifications\WelcomeNotification;
+use App\Notifications\PasswordResetNotification;
+use App\Notifications\EmailVerifiedNotification;
+use App\Notifications\PasswordResetConfirmationNotification;
 
 class MailTestController extends Controller
 {
