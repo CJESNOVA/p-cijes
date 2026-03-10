@@ -33,8 +33,14 @@
                 @method('POST') 
                 
     @if (session('status'))
-        <div class="bg-red-100 text-red-700 p-2 rounded mb-3 text-sm">
+        <div class="bg-green-100 text-green-700 p-2 rounded mb-3 text-sm">
             {{ session('status') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="bg-red-100 text-red-700 p-2 rounded mb-3 text-sm">
+            {{ session('error') }}
         </div>
     @endif
 
