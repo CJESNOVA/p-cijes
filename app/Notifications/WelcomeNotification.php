@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Mail;
 
 class WelcomeNotification extends Notification implements ShouldQueue
 {
@@ -22,18 +23,37 @@ class WelcomeNotification extends Notification implements ShouldQueue
 
     public function toMail($notifiable)
     {
-        return (new MailMessage)
-            ->subject('🎉 Bienvenue sur CJES Africa !')
-            ->greeting('Bonjour ' . $this->userName . ' 👋')
-            ->line('Bienvenue dans la communauté CJES Africa ! Nous sommes ravis de vous compter parmi nous.')
-            ->line('Votre compte a été créé avec succès. Vous pouvez maintenant :')
-            ->line('📊 Accéder à votre tableau de bord')
-            ->line('🏢 Gérer vos entreprises')
-            ->line('💰 Suivre vos cotisations')
-            ->line('🎯 Participer aux diagnostics')
-            ->action('Accéder à mon tableau de bord', route('dashboard'))
-            ->line('Si vous avez des questions, n\'hésitez pas à nous contacter.')
-            ->salutation('Cordialement,')
-            ->salutation('L\'équipe CJES Africa');
+        // Utiliser Mail::raw directement comme dans MailTestController
+        try {
+            $subject = '🎉 Bienvenue sur CJES Africa !';
+            $content = "Bonjour " . $this->userName . " 👋\n\n";
+            $content .= "Bienvenue dans la communauté CJES Africa ! Nous sommes ravis de vous compter parmi nous.\n\n";
+            $content .= "Votre compte a été créé avec succès. Vous pouvez maintenant :\n";
+            $content .= "📊 Accéder à votre tableau de bord\n";
+            $content .= "🏢 Gérer vos entreprises\n";
+            $content .= "💰 Suivre vos cotisations\n";
+            $content .= "🎯 Participer aux diagnostics\n\n";
+            $content .= "Accédez à votre tableau de bord : " . route('dashboard') . "\n\n";
+            $content .= "Si vous avez des questions, n'hésitez pas à nous contacter.\n\n";
+            $content .= "Cordialement,\n";
+            $content .= "L'équipe CJES Africa";
+
+            Mail::raw($content, function ($message) use ($notifiable, $subject) {
+                $message->to($notifiable->email)
+                    ->subject($subject);
+            });
+
+            // Retourner un MailMessage vide pour éviter les erreurs
+            return (new MailMessage)->subject($subject);
+        } catch (\Exception $e) {
+            // En cas d'erreur, retourner un MailMessage basique
+            return (new MailMessage)
+                ->subject('🎉 Bienvenue sur CJES Africa !')
+                ->greeting('Bonjour ' . $this->userName . ' 👋')
+                ->line('Bienvenue dans la communauté CJES Africa !')
+                ->action('Accéder à mon tableau de bord', route('dashboard'))
+                ->line('Si vous avez des questions, n\'hésitez pas à nous contacter.')
+                ->salutation('Cordialement, L\'équipe CJES Africa');
+        }
     }
 }
