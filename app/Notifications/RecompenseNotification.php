@@ -39,13 +39,9 @@ class RecompenseNotification extends Notification implements ShouldQueue
             });
 
         } catch (\Exception $e) {
-            // En cas d'erreur, retourner un MailMessage basique
-            return (new MailMessage)
-                ->subject('🎁 Nouvelle récompense obtenue !')
-                ->greeting('Félicitations 🎉')
-                ->line("Vous venez de gagner **{$this->points} points** pour l'action : **{$this->actionTitre}**.")
-                ->action('Voir mes récompenses', $this->lien)
-                ->line('Continuez à participer pour gagner encore plus de récompenses !');
+            // En cas d'erreur, logger mais ne pas faire de fallback
+            \Log::error('Erreur Mail::raw dans RecompenseNotification: ' . $e->getMessage());
+            // Ne rien retourner - Laravel gérera l'erreur
         }
     }
 

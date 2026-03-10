@@ -46,14 +46,9 @@ class EmailVerifiedNotification extends Notification implements ShouldQueue
             });
 
         } catch (\Exception $e) {
-            // En cas d'erreur, retourner un MailMessage basique
-            return (new MailMessage)
-                ->subject('✅ Votre email a été confirmé !')
-                ->greeting('Félicitations ' . $this->userName . ' ! 🎉')
-                ->line('Votre adresse email a été vérifiée avec succès.')
-                ->line('Votre compte est maintenant entièrement activé.')
-                ->action('Commencer maintenant', route('dashboard'))
-                ->salutation('L\'équipe CJES Africa');
+            // En cas d'erreur, logger mais ne pas faire de fallback
+            \Log::error('Erreur Mail::raw dans EmailVerifiedNotification: ' . $e->getMessage());
+            // Ne rien retourner - Laravel gérera l'erreur
         }
     }
 }
