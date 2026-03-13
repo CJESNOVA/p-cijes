@@ -103,7 +103,7 @@
                                             <option value="">Choisir un type</option>
                                             @foreach ($membretypes as $membretype)
                                                 <option value="{{ $membretype->id }}" {{ (old('membretype_id', $membre->membretype_id ?? '') == $membretype->id) ? 'selected' : '' }}>
-                                                    {{ $membretype->titre }} @if($membretype->membrecategorie) ({{ $membretype->membrecategorie->titre }})@endif
+                                                    {{ $membretype->titre }} <!--  @if($membretype->membrecategorie) ({{ $membretype->membrecategorie->titre }})@endif }} -->
                                                 </option>
                                             @endforeach
                                         </select>
