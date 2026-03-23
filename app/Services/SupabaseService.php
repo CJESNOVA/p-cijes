@@ -93,19 +93,20 @@ class SupabaseService
         
     public function signUp($email, $password, $data = [])
 {
-    $url = rtrim(env('SUPABASE_URL'), '/') . '/auth/v1/signup';
-    $apiKey = env('SUPABASE_API_KEY');
+    // Utiliser l'endpoint admin avec SERVICE_ROLE_KEY pour contourner l'email
+    $url = rtrim(env('SUPABASE_URL'), '/') . '/auth/v1/admin/users';
+    $serviceKey = env('SUPABASE_SERVICE_ROLE_KEY');
 
     $payload = [
         'email' => $email,
         'password' => $password,
-        'data' => $data,
-        'email_confirm' => false, // ❌ Auto-confirmation sans email
+        'email_confirm' => true, // Forcer la confirmation immédiate
+        'user_metadata' => $data,
     ];
 
     $response = Http::withHeaders([
-        'apikey' => $apiKey,
-        'Authorization' => 'Bearer ' . $apiKey,
+        'apikey' => $serviceKey,
+        'Authorization' => 'Bearer ' . $serviceKey,
         'Content-Type' => 'application/json',
     ])->post($url, $payload);
 
