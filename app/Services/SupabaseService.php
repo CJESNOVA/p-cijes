@@ -18,40 +18,42 @@ class SupabaseService
         $this->roleKey = env('SUPABASE_SERVICE_ROLE_KEY');
     }
 
-    private function headers()
+    private function headers($useServiceRole = true)
     {
+        $key = $useServiceRole ? $this->roleKey : $this->apiKey;
+        
         return [
-            'apikey' => $this->apiKey,
-            'Authorization' => 'Bearer ' . $this->apiKey,
+            'apikey' => $key,
+            'Authorization' => 'Bearer ' . $key,
             'Content-Type' => 'application/json',
         ];
     }
 
     /** ===== CRUD sur les tables ===== **/
-    public function get($table, $query = [])
+    public function get($table, $query = [], $useServiceRole = true)
     {
-        return Http::withHeaders($this->headers())
+        return Http::withHeaders($this->headers($useServiceRole))
             ->get("{$this->baseUrl}/{$table}", $query)
             ->json();
     }
 
-    public function insert($table, $data)
+    public function insert($table, $data, $useServiceRole = true)
     {
-        return Http::withHeaders($this->headers())
+        return Http::withHeaders($this->headers($useServiceRole))
             ->post("{$this->baseUrl}/{$table}", $data)
             ->json();
     }
 
-    public function update($table, $id, $data)
+    public function update($table, $id, $data, $useServiceRole = true)
     {
-        return Http::withHeaders($this->headers())
+        return Http::withHeaders($this->headers($useServiceRole))
             ->patch("{$this->baseUrl}/{$table}?id=eq.{$id}", $data)
             ->json();
     }
 
-    public function delete($table, $id)
+    public function delete($table, $id, $useServiceRole = true)
     {
-        return Http::withHeaders($this->headers())
+        return Http::withHeaders($this->headers($useServiceRole))
             ->delete("{$this->baseUrl}/{$table}?id=eq.{$id}")
             ->json();
     }
