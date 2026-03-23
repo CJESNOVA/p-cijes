@@ -100,7 +100,7 @@ class SupabaseService
         'email' => $email,
         'password' => $password,
         'data' => $data,
-        'email_confirm' => true, // ✅ Comme dans ton test cURL
+        'email_confirm' => false, // ❌ Auto-confirmation sans email
     ];
 
     $response = Http::withHeaders([
