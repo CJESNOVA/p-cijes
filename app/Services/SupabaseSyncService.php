@@ -20,8 +20,8 @@ class SupabaseSyncService
     {
         $this->baseUrl = rtrim(env('SUPABASE_URL'), '/') . '/rest/v1';
         $this->headers = [
-            'apikey'        => env('SUPABASE_API_KEY'),
-            'Authorization' => 'Bearer ' . env('SUPABASE_API_KEY'),
+            'apikey'        => env('SUPABASE_SERVICE_ROLE_KEY'),
+            'Authorization' => 'Bearer ' . env('SUPABASE_SERVICE_ROLE_KEY'),
             'Content-Type'  => 'application/json',
         ];
     }
