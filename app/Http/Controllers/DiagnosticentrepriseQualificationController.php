@@ -36,7 +36,7 @@ class DiagnosticentrepriseQualificationController extends Controller
     
     public function showForm($entrepriseId, $moduleId = null)
     {
-        // Récupération de tous les modules type 3 (test de qualification), triés par position
+        // Récupération de tous les modules type 3 (test de classification), triés par position
         $allDiagnosticmodules = Diagnosticmodule::where('diagnosticmoduletype_id', 3)
             ->where('etat', 1)
             ->orderBy('position')
@@ -278,7 +278,7 @@ class DiagnosticentrepriseQualificationController extends Controller
                 ->with('success', "✅ Module {$moduleActuel}/{$totalModules} enregistré avec succès ! Continuez sur le module suivant.");
         } else {
             return redirect()->back()
-                ->with('success', '✅ Dernier module enregistré ! Vous pouvez maintenant finaliser le test de qualification.')
+                ->with('success', '✅ Dernier module enregistré ! Vous pouvez maintenant finaliser le test de classification.')
                 ->with('showFinalization', true);
         }
     }
@@ -335,7 +335,7 @@ class DiagnosticentrepriseQualificationController extends Controller
             ->first();
 
         if (!$diagnostic) {
-            return redirect()->back()->with('error', '⚠️ Aucun test de qualification en cours trouvé.');
+            return redirect()->back()->with('error', '⚠️ Aucun test de classification en cours trouvé.');
         }
 
         // � Utiliser une transaction pour la cohérence des données
@@ -429,7 +429,7 @@ class DiagnosticentrepriseQualificationController extends Controller
         ]);
 
         return redirect()->route('diagnosticentreprisequalification.success')
-            ->with('success', 'Test de qualification enregistré avec succès !')
+            ->with('success', 'Test de classification enregistré avec succès !')
             ->with('entreprise', Entreprise::with('entrepriseprofil')->find($entrepriseId))
             ->with('diagnostic', $diagnostic);
     }
@@ -534,7 +534,7 @@ class DiagnosticentrepriseQualificationController extends Controller
             ->first();
 
         if (!$diagnostic) {
-            return redirect()->back()->with('error', 'Aucun test de qualification terminé trouvé pour cette entreprise.');
+            return redirect()->back()->with('error', 'Aucun test de classification terminé trouvé pour cette entreprise.');
         }
 
         // Récupérer l'entreprise avec son profil

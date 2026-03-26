@@ -1,10 +1,10 @@
-<x-app-layout title="Test de qualification" is-sidebar-open="true" is-header-blur="true">
+<x-app-layout title="Test de classification" is-sidebar-open="true" is-header-blur="true">
     <main class="main-content w-full px-[var(--margin-x)] pb-8">
         <div class="flex items-center space-x-4 py-5 lg:py-6">
           <h2
             class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
           >
-            Test de qualification
+            Test de classification
           </h2>
           <div class="hidden h-full py-1 sm:flex">
             <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
@@ -14,7 +14,7 @@
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
               
         <h2 class="text-xl font-medium text-slate-800 lg:text-2xl mb-6">
-            Test de qualification – {{ $diagnostic->entreprise->nom ?? 'Nouvelle entreprise' }}
+            Test de classification – {{ $diagnostic->entreprise->nom ?? 'Nouvelle entreprise' }}
         </h2>
 
         @if($currentModule)
@@ -282,7 +282,7 @@
                         Aucun module disponible
                     </h3>
                     <p class="text-slate-600 dark:text-navy-400">
-                        Les tests de qualification ne sont pas encore disponibles pour le moment.
+                        Les tests de classification ne sont pas encore disponibles pour le moment.
                     </p>
                 </div>
             </div>

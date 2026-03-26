@@ -1,10 +1,10 @@
-<x-app-layout title="Test de qualification terminé" is-sidebar-open="true" is-header-blur="true">
+<x-app-layout title="Test de classification terminé" is-sidebar-open="true" is-header-blur="true">
     <main class="main-content w-full px-[var(--margin-x)] pb-8">
         <div class="flex items-center space-x-4 py-5 lg:py-6">
           <h2
             class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
           >
-            Test de qualification terminé
+            Test de classification terminé
           </h2>
           <div class="hidden h-full py-1 sm:flex">
             <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
@@ -31,10 +31,10 @@
                             <i class="fas fa-trophy text-3xl text-[#4FBE96]"></i>
                         </div>
                         <h3 class="text-2xl font-bold text-slate-800 dark:text-navy-100 mb-4">
-                            Test de qualification terminé avec succès
+                            Test de classification terminé avec succès
                         </h3>
                         <p class="text-slate-600 dark:text-navy-400 mb-8 max-w-md mx-auto">
-                            Votre test de qualification a été soumis avec succès. Voici le récapitulatif de vos réponses :
+                            Votre test de classification a été soumis avec succès. Voici le récapitulatif de vos réponses :
                         </p>
                         
                         <!-- Répartition des réponses -->
@@ -77,7 +77,7 @@
                         <div class="bg-gradient-to-br from-[#4FBE96]/10 to-[#4FBE96]/20 dark:from-[#4FBE96]/5 dark:to-[#4FBE96]/10 rounded-lg p-6 mb-8 max-w-2xl mx-auto border border-[#4FBE96]/20">
                             <div class="text-center">
                                 <h4 class="text-lg font-semibold text-[#4FBE96] dark:text-[#4FBE96]/80 mb-4">
-                                    Votre profil de qualification
+                                    Votre profil de classification
                                 </h4>
                                 <div class="text-2xl font-bold text-slate-800 dark:text-navy-100 mb-3">
                                     @if(isset($reponseMajoritaire) && $reponseMajoritaire)

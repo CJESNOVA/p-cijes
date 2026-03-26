@@ -184,7 +184,7 @@
                                         </a>
                                     @endif
                                 @elseif($diagnostic->diagnostictype->id == 3)
-                                    <!-- Type 3 : QUALIFICATION -->
+                                    <!-- Type 3 : CLASSIFICATION -->
                                     <a href="{{ route('diagnosticentreprisequalification.results', $diagnostic->entreprise_id) }}" 
                                        class="btn btn-sm bg-green-500 text-white hover:bg-green-600">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

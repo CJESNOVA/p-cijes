@@ -12,8 +12,15 @@ class RecompenseNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $actionTitre, public int $points, public string $lien)
-    {
+    public function __construct(
+        public string $actionTitre, 
+        public int $points, 
+        public string $lien,
+        public array $recompense = [],
+        public array $stats = [],
+        public array $nextRewards = []
+    ) {
+        $this->onQueue('emails');
     }
 
     public function via($notifiable)
@@ -23,26 +30,18 @@ class RecompenseNotification extends Notification implements ShouldQueue
 
     public function toMail($notifiable)
     {
-        // Utiliser Mail::raw directement comme dans MailTestController
-        try {
-            $subject = '🎁 Nouvelle récompense obtenue !';
-            
-            $content = "Félicitations 🎉\n\n";
-            $content .= "Vous venez de gagner **{$this->points} points** pour l'action : **{$this->actionTitre}**.\n\n";
-            $content .= "Voir vos récompenses : " . $this->lien . "\n\n";
-            $content .= "Continuez à participer pour gagner encore plus de récompenses !\n\n";
-            $content .= "L'équipe CJES Africa";
-
-            Mail::raw($content, function ($message) use ($notifiable, $subject) {
-                $message->to($notifiable->email)
-                    ->subject($subject);
-            });
-
-        } catch (\Exception $e) {
-            // En cas d'erreur, logger mais ne pas faire de fallback
-            \Log::error('Erreur Mail::raw dans RecompenseNotification: ' . $e->getMessage());
-            // Ne rien retourner - Laravel gérera l'erreur
-        }
+        return (new MailMessage)
+            ->subject('� Nouvelle récompense obtenue !')
+            ->view('emails.recompense', [
+                'user' => $notifiable,
+                'userName' => $notifiable->name,
+                'actionTitre' => $this->actionTitre,
+                'points' => $this->points,
+                'lien' => $this->lien,
+                'recompense' => $this->recompense,
+                'stats' => $this->stats,
+                'nextRewards' => $this->nextRewards,
+            ]);
     }
 
     public function toArray($notifiable)
@@ -51,6 +50,9 @@ class RecompenseNotification extends Notification implements ShouldQueue
             'titre' => $this->actionTitre,
             'points' => $this->points,
             'lien' => $this->lien,
+            'recompense' => $this->recompense,
+            'stats' => $this->stats,
+            'nextRewards' => $this->nextRewards,
         ];
     }
 }

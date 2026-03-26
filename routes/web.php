@@ -383,14 +383,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/entreprises/{entrepriseId}/orientations', [EntrepriseController::class, 'orientations'])->name('entreprise.orientations.index');
     Route::get('/entreprises/{entrepriseId}/progression', [EntrepriseController::class, 'progression'])->name('entreprise.progression.show');
 
-    // Routes pour le test de qualification (diagnosticmoduletype_id = 3)
-    Route::get('/diagnostics/diagnosticentreprise-qualification', [DiagnosticentrepriseQualificationController::class, 'indexForm'])->name('diagnosticentreprisequalification.indexForm');
-    Route::get('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/form', [DiagnosticentrepriseQualificationController::class, 'showForm'])->name('diagnosticentreprisequalification.showForm');
-    Route::get('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/form/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'showForm'])->name('diagnosticentreprisequalification.showModule');
-    Route::post('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/save/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'saveModule'])->name('diagnosticentreprisequalification.saveModule');
-    Route::post('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/store/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'store'])->name('diagnosticentreprisequalification.store');
-    Route::get('/diagnostics/diagnosticentreprise-qualification/{entrepriseId}/results', [DiagnosticentrepriseQualificationController::class, 'results'])->name('diagnosticentreprisequalification.results');
-    Route::get('/diagnostics/diagnosticentreprise-qualification/success', [DiagnosticentrepriseQualificationController::class, 'success'])->name('diagnosticentreprisequalification.success');
+    // Routes pour le test de classification (diagnosticmoduletype_id = 3)
+    Route::get('/diagnostics/diagnosticentreprise-classification', [DiagnosticentrepriseQualificationController::class, 'indexForm'])->name('diagnosticentreprisequalification.indexForm');
+    Route::get('/diagnostics/diagnosticentreprise-classification/{entrepriseId}/form', [DiagnosticentrepriseQualificationController::class, 'showForm'])->name('diagnosticentreprisequalification.showForm');
+    Route::get('/diagnostics/diagnosticentreprise-classification/{entrepriseId}/form/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'showForm'])->name('diagnosticentreprisequalification.showModule');
+    Route::post('/diagnostics/diagnosticentreprise-classification/{entrepriseId}/save/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'saveModule'])->name('diagnosticentreprisequalification.saveModule');
+    Route::post('/diagnostics/diagnosticentreprise-classification/{entrepriseId}/store/{moduleId}', [DiagnosticentrepriseQualificationController::class, 'store'])->name('diagnosticentreprisequalification.store');
+    Route::get('/diagnostics/diagnosticentreprise-classification/{entrepriseId}/results', [DiagnosticentrepriseQualificationController::class, 'results'])->name('diagnosticentreprisequalification.results');
+    Route::get('/diagnostics/diagnosticentreprise-classification/success', [DiagnosticentrepriseQualificationController::class, 'success'])->name('diagnosticentreprisequalification.success');
 
 
     Route::get('/evenements/espaces', [EspaceController::class, 'index'])->name('espace.index');

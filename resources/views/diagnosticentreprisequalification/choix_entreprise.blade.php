@@ -7,17 +7,17 @@
                     <i class="fas fa-home mr-1"></i>Tableau de bord
                 </a>
                 <span class="text-slate-400">/</span>
-                <span class="text-slate-700 dark:text-navy-200">Test de qualification</span>
+                <span class="text-slate-700 dark:text-navy-200">Test de classification</span>
             </div>
             
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-800 dark:text-navy-50 lg:text-3xl flex items-center">
                         <i class="fas fa-clipboard-check text-warning mr-3"></i>
-                        Test de qualification
+                        Test de classification
                     </h1>
                     <p class="text-slate-600 dark:text-navy-300 mt-2">
-                        Évaluez votre entreprise avec notre test de qualification personnalisé
+                        Évaluez votre entreprise avec notre test de classification personnalisé
                     </p>
                 </div>
                 
@@ -176,7 +176,7 @@
                                 </h3>
                                 
                                 <p class="text-slate-600 dark:text-navy-400 mb-8 max-w-md mx-auto">
-                                    Vous devez d'abord créer une entreprise avant de pouvoir effectuer un test de qualification.
+                                    Vous devez d'abord créer une entreprise avant de pouvoir effectuer un test de classification.
                                 </p>
                                 
                                 <div class="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
