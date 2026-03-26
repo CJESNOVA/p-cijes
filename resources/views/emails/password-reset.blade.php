@@ -1,110 +1,164 @@
-<x-emails-layout :subject="$subject">
-    <div class="reset-header">
-        <h1>🔐 Réinitialisation de votre mot de passe</h1>
-    </div>
-    
-    <h2>Bonjour {{ $userName ?? $user->name }} 👋</h2>
-    
-    <p>Vous avez demandé la réinitialisation de votre mot de passe pour votre compte CJES Africa.</p>
-    
-    <p>Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :</p>
-    
-    <div class="cta-container">
-        <a href="{{ $resetUrl }}" class="button">Réinitialiser mon mot de passe</a>
-    </div>
-    
-    <div class="url-fallback">
-        <p style="font-size: 14px; color: #868e96; margin: 0;">
-            Ou copiez-collez ce lien dans votre navigateur :
-        </p>
-        <p style="word-break: break-all; color: #007bff; margin: 5px 0;">
-            {{ $resetUrl }}
-        </p>
-    </div>
-    
-    <div class="security-info">
-        <h3>🔒 Informations de sécurité</h3>
-        <p><strong>Ce lien expirera dans 60 minutes</strong> pour des raisons de sécurité.</p>
-        <p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email en toute sécurité.</p>
-    </div>
-    
-    <h3>💡 Conseils pour un mot de passe sécurisé :</h3>
-    <div class="password-tips">
-        <div class="tip-item">
-            <span class="tip-icon">📏</span>
-            <span>Au moins 8 caractères</span>
-        </div>
-        <div class="tip-item">
-            <span class="tip-icon">🔤</span>
-            <span>Une lettre majuscule et une minuscule</span>
-        </div>
-        <div class="tip-item">
-            <span class="tip-icon">🔢</span>
-            <span>Un chiffre et un caractère spécial (@$!%*?&)</span>
-        </div>
-        <div class="tip-item">
-            <span class="tip-icon">🚫</span>
-            <span>Évitez les informations personnelles évidentes</span>
-        </div>
-    </div>
-</x-emails-layout>
+<center>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="container">
+        
+        <!-- HEADER -->
+        <tr>
+            <td class="header" valign="top" style="padding: 10px;; margin:0; line-height:0; font-size:0; background-color:#ffffff;">
+                <img src="https://togo.cjes.africa/wp-content/uploads/2026/03/CJES-AFRICA-MAIL-scaled.png"
+                     alt="CJES Africa"
+                     width="260"
+                     style="display:block; margin:0 auto; padding:0; border:0; width:260px; max-width:100%; height:auto;">
+            </td>
+        </tr>
+        
+        <!-- CONTENU -->
+        <tr>
+            <td class="content">
+                <h1 class="welcome-title">Réinitialisation de mot de passe</h1>
+                
+                <p style="text-align: center; font-size: 16px;">
+                    Bonjour <strong>{{ $userName ?? $user->name }}</strong>,
+                </p>
+                
+                <p style="text-align: center;">
+                    Vous recevez cet email car nous avons reçu une demande de réinitialisation de mot de passe pour votre compte <strong>CJES</strong>.
+                </p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{{ $resetUrl }}" class="cta-button">Réinitialiser mon mot de passe</a>
+                </div>
+
+                <div class="url-fallback">
+                    <p style="font-size: 14px; color: #868e96; margin: 0; text-align: center;">
+                        Ou copiez-collez ce lien dans votre navigateur :
+                    </p>
+                    <p style="word-break: break-all; color: #007bff; margin: 5px 0; text-align: center;">
+                        {{ $resetUrl }}
+                    </p>
+                </div>
+
+                <div class="security-note">
+                    <strong>⚠️ Note de sécurité :</strong> Ce lien de réinitialisation expirera dans 10 minutes. Si vous n'avez pas demandé de réinitialisation de mot de passe, aucune autre action n'est requise de votre part.
+                </div>
+                
+                <p style="text-align: center; font-size: 14px; color: #666;">
+                    Pour votre sécurité, ne partagez jamais ce lien avec qui que ce soit.
+                </p>
+                
+                <p style="text-align: center; font-weight: bold; margin-top: 20px;">
+                    Cordialement,<br>
+                    <span style="color: #2c3e50;">L'équipe CJES</span>
+                </p>
+
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td align="center">
+                            <a href="https://www.facebook.com/EcoCJES" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/facebook-new.png" alt="Facebook" width="24" height="24"></a>
+                            <a href="https://www.instagram.com/eco_cjes/?hl=fr" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/instagram-new.png" alt="Instagram" width="24" height="24"></a>
+                            <a href="mailto:support@cjes.africa" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/email.png" alt="E-mail" width="24" height="24"></a>
+                            <a href="https://cijes.cjes.africa/" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/globe.png" alt="Web" width="24" height="24"></a>
+                            <a href="https://wa.me/0022890700002" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/whatsapp.png" alt="WhatsApp" width="24" height="24"></a>
+                            <a href="https://www.linkedin.com/company/cjes/?viewAsMember=true" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/linkedin.png" alt="LinkedIn" width="24" height="24"></a>
+                            <a href="https://www.youtube.com/@lacjet" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/youtube-play.png" alt="YouTube" width="24" height="24"></a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        
+        <!-- FOOTER -->
+        <tr>
+            <td class="footer">
+                <p style="margin: 0;">Vous recevez cet email car une demande de sécurité a été initiée.</p>
+                <p style="margin: 5px 0 0 0;">Support : <a href="mailto:support@cjes.africa">support@cjes.africa</a></p> 
+            </td>
+        </tr>
+        
+    </table>
+</center>
 
 <style>
-.reset-header h1 {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: #667eea;
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-.cta-container {
+.header {
+    padding: 30px 0;
     text-align: center;
-    margin: 30px 0;
+}
+
+.content {
+    padding: 0 40px 40px 40px;
+    color: #333333;
+    line-height: 1.6;
+}
+
+.footer {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 30px 40px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.footer a {
+    color: #84E2AF;
+    text-decoration: none;
+}
+
+.welcome-title {
+    color: #84E2AF;
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 25px;
+}
+
+.cta-button {
+    display: inline-block;
+    background-color: #84E2AF;
+    color: #ffffff !important;
+    padding: 15px 35px;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 16px;
+    animation: pulsate 2s infinite ease-in-out;
+    box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3);
 }
 
 .url-fallback {
     background-color: #f8f9fa;
-    padding: 15px;
+    border: 1px solid #e9ecef;
     border-radius: 6px;
+    padding: 15px;
     margin: 20px 0;
     text-align: center;
 }
 
-.security-info {
-    background-color: #f8f9fa;
-    border-left: 4px solid #667eea;
-    padding: 20px;
-    margin: 30px 0;
-    border-radius: 4px;
-}
-
-.security-info h3 {
-    color: #667eea;
-    margin-top: 0;
-    font-size: 18px;
-}
-
-.password-tips {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
+.security-note {
+    background-color: #fff9f0;
+    border-left: 4px solid #ffcc00;
+    padding: 15px;
     margin: 20px 0;
+    font-size: 13px;
+    color: #666;
+    text-align: left;
 }
 
-.tip-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    color: #666666;
+@keyframes pulsate {
+    0% { transform: scale(1); box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3); }
+    50% { transform: scale(1.03); box-shadow: 0 6px 15px rgba(132, 226, 175, 0.5); }
+    100% { transform: scale(1); box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3); }
 }
 
-.tip-item:last-child {
-    margin-bottom: 0;
-}
-
-.tip-icon {
-    margin-right: 12px;
-    font-size: 18px;
+@media only screen and (max-width: 600px) {
+    .container { width: 95% !important; margin: 10px auto !important; }
+    .content { padding: 0 20px 30px 20px !important; }
+    .cta-button { width: 80% !important; text-align: center; }
 }
 </style>
