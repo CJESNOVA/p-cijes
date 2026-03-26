@@ -261,7 +261,7 @@ public function dashboard($entrepriseId)
 
 ### **✅ Focalisation sur le Diagnostic Entreprise**
 - Uniquement les vues pour le diagnostic entreprise
-- Pas de confusion avec diagnostic membre ou qualification
+- Pas de confusion avec diagnostic membre ou classification
 - Logique métier PÉPITE/ÉMERGENTE/ÉLITE intégrée
 - Orientations CJES spécifiques
 

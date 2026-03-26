@@ -177,11 +177,13 @@ public function register(Request $request)
             'regex:/[0-9]/',
             'regex:/[@$!%*?&]/',
         ],
+        'condition_general' => 'required', // Condition générale personnalisée
     ], [
         'password.required' => 'Le mot de passe est obligatoire.',
         'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
         'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         'password.regex' => 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial (@$!%*?&).',
+        'condition_general.required' => 'Les Conditions d\'Utilisation et la Politique de Confidentialité sont requises.',
     ]);
 
     // 🔗 Redirection après vérification email

@@ -6,14 +6,14 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Facades\Mail;
 
-class PasswordResetConfirmationNotification extends Notification implements ShouldQueue
+class PasswordConfirmationNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(public string $userName)
     {
+        $this->onQueue('emails');
     }
 
     public function via($notifiable)
@@ -25,10 +25,9 @@ class PasswordResetConfirmationNotification extends Notification implements Shou
     {
         return (new MailMessage)
             ->subject('✅ Confirmation de modification de mot de passe')
-            ->view('emails.password-reset-confirmation', [
+            ->view('emails.password-confirmation', [
                 'user' => $notifiable,
                 'userName' => $this->userName,
-                'dashboardUrl' => route('dashboard')
             ]);
     }
 }

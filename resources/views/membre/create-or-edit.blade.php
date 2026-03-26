@@ -220,7 +220,7 @@
                                             </svg>
                                         </div>
                                         <input
-                                            type="tel" 
+                                            type="number" 
                                             name="telephone" 
                                             value="{{ old('telephone', $membre->telephone ?? '') }}" 
                                             required

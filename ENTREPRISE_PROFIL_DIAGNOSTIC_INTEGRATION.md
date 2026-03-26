@@ -119,7 +119,7 @@ ORDER BY position;
 
 ### **DiagnosticentrepriseQualificationController**
 ```php
-// Pour le type 3 (qualification)
+// Pour le type 3 (classification)
 $modules = $this->getModulesForProfil($entreprise->entrepriseprofil_id, 3);
 ```
 
