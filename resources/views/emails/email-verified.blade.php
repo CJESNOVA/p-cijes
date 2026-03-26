@@ -1,3 +1,4 @@
+<x-emails-layout :subject="$subject">
 <center>
     <table border="0" cellpadding="0" cellspacing="0" width="100%" class="container">
         
@@ -188,3 +189,5 @@
     .cta-button { width: 80% !important; text-align: center; }
 }
 </style>
+
+</x-emails-layout>
