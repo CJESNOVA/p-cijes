@@ -1,4 +1,106 @@
-<x-emails-layout :subject="$subject">
+<!DOCTYPE html>
+<html lang="fr" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Confirmation de modification de mot de passe</title>
+    <style>
+        /* CONFIGURATION GÉNÉRALE */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        img {
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        
+        /* STYLES DU DESIGN */
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .header {
+            padding: 30px 0;
+            text-align: center;
+        }
+        .content {
+            padding: 0 40px 40px 40px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .welcome-title {
+            color: #84E2AF;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 25px;
+        }
+
+        /* ANIMATION DU BOUTON */
+        @keyframes pulsate {
+            0% { transform: scale(1); box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3); }
+            50% { transform: scale(1.03); box-shadow: 0 6px 15px rgba(132, 226, 175, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3); }
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #84E2AF;
+            color: #ffffff !important;
+            padding: 15px 35px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            animation: pulsate 2s infinite ease-in-out;
+            box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3);
+        }
+        .info-box {
+            background-color: #f0fbf5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+            border: 1px solid #d4f2e1;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 30px 40px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .footer a {
+            color: #84E2AF;
+            text-decoration: none;
+        }
+
+        /* MOBILE RESPONSIVE */
+        @media only screen and (max-width: 600px) {
+            .container { width: 95% !important; margin: 10px auto !important; }
+            .content { padding: 0 20px 30px 20px !important; }
+            .cta-button { width: 80% !important; text-align: center; }
+        }
+    </style>
+</head>
+<body>
 <center>
     <table border="0" cellpadding="0" cellspacing="0" width="100%" class="container">
         
@@ -68,81 +170,5 @@
         
     </table>
 </center>
-
-<style>
-.container {
-    max-width: 600px;
-    margin: 20px auto;
-    background-color: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-
-.header {
-    padding: 30px 0;
-    text-align: center;
-}
-
-.content {
-    padding: 0 40px 40px 40px;
-    color: #333333;
-    line-height: 1.6;
-}
-
-.footer {
-    background-color: #2c3e50;
-    color: #ecf0f1;
-    padding: 30px 40px;
-    text-align: center;
-    font-size: 12px;
-}
-
-.footer a {
-    color: #84E2AF;
-    text-decoration: none;
-}
-
-.welcome-title {
-    color: #84E2AF;
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 25px;
-}
-
-.cta-button {
-    display: inline-block;
-    background-color: #84E2AF;
-    color: #ffffff !important;
-    padding: 15px 35px;
-    text-decoration: none;
-    border-radius: 50px;
-    font-weight: bold;
-    font-size: 16px;
-    animation: pulsate 2s infinite ease-in-out;
-    box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3);
-}
-
-.info-box {
-    background-color: #f0fbf5;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 25px 0;
-    text-align: center;
-    border: 1px solid #d4f2e1;
-}
-
-@keyframes pulsate {
-    0% { transform: scale(1); box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3); }
-    50% { transform: scale(1.03); box-shadow: 0 6px 15px rgba(132, 226, 175, 0.5); }
-    100% { transform: scale(1); box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3); }
-}
-
-@media only screen and (max-width: 600px) {
-    .container { width: 95% !important; margin: 10px auto !important; }
-    .content { padding: 0 20px 30px 20px !important; }
-    .cta-button { width: 80% !important; text-align: center; }
-}
-</style>
-
-</x-emails-layout>
+</body>
+</html>
