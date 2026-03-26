@@ -1,160 +1,145 @@
-<x-emails-layout :subject="$subject">
-    <div class="confirmation-header">
-        <h1>✅ Confirmation de modification de mot de passe</h1>
-    </div>
-    
-    <h2>Bonjour {{ $userName ?? $user->name }} 👋</h2>
-    
-    <p>Nous vous confirmons que votre mot de passe a été modifié avec succès pour votre compte CJES Africa.</p>
-    
-    <div class="success-box">
-        <h3>🎉 Modification réussie !</h3>
-        <p>Votre mot de passe a été mis à jour et votre compte est maintenant sécurisé avec vos nouveaux identifiants.</p>
-    </div>
-    
-    <h3>📋 Détails de la modification :</h3>
-    <div class="details-grid">
-        <div class="detail-item">
-            <span class="detail-label">Date :</span>
-            <span class="detail-value">{{ now()->format('d/m/Y à H:i') }}</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-label">Navigateur :</span>
-            <span class="detail-value">{{ request()->userAgent() ?? 'Non disponible' }}</span>
-        </div>
-    </div>
-    
-    <div class="cta-container">
-        <a href="{{ $dashboardUrl ?? route('dashboard') }}" class="button">Accéder à mon compte</a>
-    </div>
-    
-    <div class="security-tips">
-        <h3>� Conseils de sécurité</h3>
-        <div class="tips-list">
-            <div class="tip-item">
-                <span class="tip-icon">🤫</span>
-                <span>Ne partagez jamais votre mot de passe avec qui que ce soit</span>
-            </div>
-            <div class="tip-item">
-                <span class="tip-icon">🔐</span>
-                <span>Utilisez des mots de passe différents pour chaque service</span>
-            </div>
-            <div class="tip-item">
-                <span class="tip-icon">📱</span>
-                <span>Activez l'authentification à deux facteurs si disponible</span>
-            </div>
-            <div class="tip-item">
-                <span class="tip-icon">👁️</span>
-                <span>Surveillez les activités suspectes sur votre compte</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="warning-box">
-        <p style="font-weight: 600; color: #dc3545; margin: 0;">
-            ⚠️ Si vous n'êtes pas à l'origine de cette modification, contactez-nous immédiatement à support@cjes.africa
-        </p>
-    </div>
-</x-emails-layout>
+<center>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="container">
+        
+        <!-- HEADER -->
+        <tr>
+            <td class="header" valign="top" style="padding: 10px;; margin:0; line-height:0; font-size:0; background-color:#ffffff;">
+                <img src="https://togo.cjes.africa/wp-content/uploads/2026/03/CJES-AFRICA-MAIL-scaled.png"
+                     alt="CJES Africa"
+                     width="260"
+                     style="display:block; margin:0 auto; padding:0; border:0; width:260px; max-width:100%; height:auto;">
+            </td>
+        </tr>
+        
+        <!-- CONTENU -->
+        <tr>
+            <td class="content">
+                <h1 class="welcome-title" style="color: #84E2AF; text-align: center; font-size: 24px; margin-bottom: 25px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    Mot de passe modifié <span style="font-size: 26px; font-family: Arial, sans-serif; font-weight: bold;">✔</span>
+                </h1>                    
+                
+                <p style="text-align: center; font-size: 16px;">
+                    Bonjour <strong>{{ $userName ?? $user->name }}</strong>,
+                </p>
+                
+                <div class="info-box">
+                    <p style="margin: 0; color: #2c3e50;">
+                        Votre mot de passe a été modifié avec succès. Vous pouvez désormais vous connecter à votre compte en utilisant vos nouveaux identifiants.
+                    </p>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{{ config('app.url') }}/dashboard" class="cta-button">Se connecter maintenant</a>
+                </div>
+                
+                <p style="text-align: center; font-size: 14px; color: #666; margin-top: 25px;">
+                    Si vous n'êtes pas à l'origine de cette modification, veuillez contacter immédiatement notre support technique.
+                </p>
+                
+                <p style="text-align: center; font-weight: bold; margin-top: 30px;">
+                    Cordialement,<br>
+                    <span style="color: #2c3e50;">L'équipe CJES</span>
+                </p>
+
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td align="center">
+                            <a href="https://www.facebook.com/EcoCJES" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/facebook-new.png" alt="Facebook" width="24" height="24"></a>
+                            <a href="https://www.instagram.com/eco_cjes/?hl=fr" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/instagram-new.png" alt="Instagram" width="24" height="24"></a>
+                            <a href="mailto:support@cjes.africa" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/email.png" alt="E-mail" width="24" height="24"></a>
+                            <a href="https://cijes.cjes.africa/" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/globe.png" alt="Web" width="24" height="24"></a>
+                            <a href="https://wa.me/0022890700002" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/whatsapp.png" alt="WhatsApp" width="24" height="24"></a>
+                            <a href="https://www.linkedin.com/company/cjes/?viewAsMember=true" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/linkedin.png" alt="LinkedIn" width="24" height="24"></a>
+                            <a href="https://www.youtube.com/@lacjet" style="display: inline-block; margin: 0 4px;"><img src="https://img.icons8.com/fluent-systems-filled/24/84E2AF/youtube-play.png" alt="YouTube" width="24" height="24"></a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        
+        <!-- FOOTER -->
+        <tr>
+            <td class="footer">
+                <p style="margin: 0;">Vous recevez cet email car une demande de sécurité a été initiée.</p>
+                <p style="margin: 5px 0 0 0;">Support : <a href="mailto:support@cjes.africa">support@cjes.africa</a></p> 
+            </td>
+        </tr>
+        
+    </table>
+</center>
 
 <style>
-.confirmation-header h1 {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: #28a745;
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-.success-box {
-    background-color: #d4edda;
-    border-left: 4px solid #28a745;
-    padding: 20px;
-    margin: 30px 0;
-    border-radius: 4px;
+.header {
+    padding: 30px 0;
     text-align: center;
 }
 
-.success-box h3 {
-    color: #155724;
-    margin-top: 0;
-    font-size: 20px;
+.content {
+    padding: 0 40px 40px 40px;
+    color: #333333;
+    line-height: 1.6;
 }
 
-.details-grid {
-    background-color: #f8f9fa;
-    padding: 20px;
+.footer {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 30px 40px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.footer a {
+    color: #84E2AF;
+    text-decoration: none;
+}
+
+.welcome-title {
+    color: #84E2AF;
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 25px;
+}
+
+.cta-button {
+    display: inline-block;
+    background-color: #84E2AF;
+    color: #ffffff !important;
+    padding: 15px 35px;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 16px;
+    animation: pulsate 2s infinite ease-in-out;
+    box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3);
+}
+
+.info-box {
+    background-color: #f0fbf5;
     border-radius: 8px;
-    margin: 20px 0;
-}
-
-.detail-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.detail-item:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
-.detail-label {
-    font-weight: 600;
-    color: #495057;
-}
-
-.detail-value {
-    color: #6c757d;
-}
-
-.cta-container {
-    text-align: center;
-    margin: 30px 0;
-}
-
-.security-tips {
-    background-color: #f8f9fa;
-    border-left: 4px solid #17a2b8;
     padding: 20px;
-    margin: 30px 0;
-    border-radius: 4px;
+    margin: 25px 0;
+    text-align: center;
+    border: 1px solid #d4f2e1;
 }
 
-.security-tips h3 {
-    color: #17a2b8;
-    margin-top: 0;
-    font-size: 18px;
+@keyframes pulsate {
+    0% { transform: scale(1); box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3); }
+    50% { transform: scale(1.03); box-shadow: 0 6px 15px rgba(132, 226, 175, 0.5); }
+    100% { transform: scale(1); box-shadow: 0 4px 10px rgba(132, 226, 175, 0.3); }
 }
 
-.tips-list {
-    margin-top: 15px;
-}
-
-.tip-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    color: #666666;
-}
-
-.tip-item:last-child {
-    margin-bottom: 0;
-}
-
-.tip-icon {
-    margin-right: 12px;
-    font-size: 18px;
-}
-
-.warning-box {
-    background-color: #f8d7da;
-    border-left: 4px solid #dc3545;
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 4px;
+@media only screen and (max-width: 600px) {
+    .container { width: 95% !important; margin: 10px auto !important; }
+    .content { padding: 0 20px 30px 20px !important; }
+    .cta-button { width: 80% !important; text-align: center; }
 }
 </style>
