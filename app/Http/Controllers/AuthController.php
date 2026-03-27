@@ -107,7 +107,8 @@ class AuthController extends Controller
         $membre = Membre::where('user_id', $user->id)->first();
         if ($membre) {
             // 🎁 Attribuer récompense de connexion fréquente
-            $recompenseService->attribuerRecompense('CONNEXION_FREQ', $membre, null, $membre->id);
+        // 💡 Pas de montant logique pour une connexion, utilisation de points fixes
+        $recompenseService->attribuerRecompense('CONNEXION_50', $membre, null, $membre->id, null);
         }
 
         return redirect()->intended(route('dashboard'));
