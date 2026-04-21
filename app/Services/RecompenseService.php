@@ -209,26 +209,7 @@ class RecompenseService
 
             DB::commit();
 
-$returnRecompense = $recompense;
-
-        try { 
-            Mail::send('emails.recompense', [
-                'membre' => $membre,
-                'action' => $action,
-                'recompense' => $recompense,
-            ], function ($message) use ($membre) {
-                $message->to($membre->email ?? 'yokamly@gmail.com')
-                        ->subject('🎁 Nouvelle récompense obtenue - CJES Africa');
-            });
-
-            } catch (\Exception $e) { 
-                \Log::error('Erreur envoi mail récompense : ' . $e->getMessage(), [
-                    'membre_id' => $membre->id ?? null,
-                    'action' => $action->titre ?? null,
-                ]);
-            }
-            
-            return $returnRecompense;
+            return $recompense;
 
         } catch (\Throwable $e) {
             DB::rollBack();
