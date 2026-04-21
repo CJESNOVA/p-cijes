@@ -76,7 +76,7 @@ class Proposition extends Model
     // Scopes utiles
     public function scopeActive($query)
     {
-        return $query->where('etat', true);
+        return $query->where('etat', 1);
     }
 
     public function scopeSpotlight($query)

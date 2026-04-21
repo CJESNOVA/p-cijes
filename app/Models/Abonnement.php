@@ -23,7 +23,7 @@ class Abonnement extends Model
         'date_echeance',
         'date_paiement',
         'statut',
-        'est_a_jour',
+        'est_actif',
         'nombre_rappels',
         'reference_paiement',
         'mode_paiement',
@@ -39,7 +39,7 @@ class Abonnement extends Model
         'date_fin' => 'date',
         'date_echeance' => 'date',
         'date_paiement' => 'date',
-        'est_a_jour' => 'boolean',
+        'est_actif' => 'boolean',
         'etat' => 'boolean',
     ];
 

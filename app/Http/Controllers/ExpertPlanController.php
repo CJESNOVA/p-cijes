@@ -35,12 +35,12 @@ class ExpertPlanController extends Controller
             'accompagnement.entreprise.secteur',
             'accompagnement.membre'
         ])
-        ->where('etat', true)
+        ->where('etat', 1)
         ->whereHas('accompagnement', function($q) {
-            $q->where('etat', true);
+            $q->where('etat', 1);
         })
         ->whereHas('accompagnement.entreprise', function($q) {
-            $q->where('etat', true);
+            $q->where('etat', 1);
         });
 
         // Plans du même secteur que l'expert (prioritaires)

@@ -92,7 +92,7 @@ class Reductiontype extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('etat', true);
+        return $query->where('etat', 1);
     }
 
     public function scopeActivePromotion($query)
@@ -101,21 +101,21 @@ class Reductiontype extends Model
                     ->whereNotNull('date_fin')
                     ->where('date_debut', '<=', now())
                     ->where('date_fin', '>=', now())
-                    ->where('etat', true);
+                    ->where('etat', 1);
     }
 
     public function scopeUpcomingPromotion($query)
     {
         return $query->whereNotNull('date_debut')
                     ->where('date_debut', '>', now())
-                    ->where('etat', true);
+                    ->where('etat', 1);
     }
 
     public function scopeExpiredPromotion($query)
     {
         return $query->whereNotNull('date_fin')
                     ->where('date_fin', '<', now())
-                    ->where('etat', true);
+                    ->where('etat', 1);
     }
 
     public function scopeForProfil($query, $profilId)

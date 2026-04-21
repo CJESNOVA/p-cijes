@@ -33,7 +33,7 @@ class CotisationController extends Controller
                       ->orderBy('created_at', 'desc');
             }])->get();
 
-        $cotisationtypes = Cotisationtype::where('etat', true)->get();
+        $cotisationtypes = Cotisationtype::where('etat', 1)->get();
 
         return view('cotisation.index', compact('entreprises', 'cotisationtypes'));
     }
@@ -56,7 +56,7 @@ class CotisationController extends Controller
         $entreprise->load('entrepriseprofil');
         
         // Types de cotisations génériques (entrepriseprofil_id = 0) + spécifiques au profil
-        $cotisationtypes = Cotisationtype::where('etat', 0)
+        $cotisationtypes = Cotisationtype::where('etat', 1)
             ->where(function($query) use ($entreprise) {
                 $query->where('entrepriseprofil_id', 0) // Types génériques
                       ->orWhere('entrepriseprofil_id', $entreprise->entrepriseprofil_id); // Types spécifiques au profil
@@ -148,7 +148,7 @@ class CotisationController extends Controller
             'ressourcecompte_id' => $ressourcecompte->id,
             'datetransaction' => now(),
             'operationtype_id' => 2, // Débit
-            'spotlight' => true,
+            'spotlight' => 1,
             'etat' => 1,
         ]);
 
@@ -168,11 +168,11 @@ class CotisationController extends Controller
             'date_echeance' => $dateEcheance,
             'date_paiement' => now(),
             'statut' => 'paye',
-            'est_a_jour' => true,
+            'est_a_jour' => 1,
             'nombre_rappels' => 0,
             'mode_paiement' => 'Ressource KOBO',
             'commentaires' => $request->commentaires,
-            'etat' => true,
+            'etat' => 1,
         ]);
 
         // Créer l'enregistrement cotisationressource
@@ -184,8 +184,8 @@ class CotisationController extends Controller
             'membre_id' => $ressourcecompte->membre_id,
             'entreprise_id' => $entreprise->id,
             'paiementstatut_id' => 1, // Payé
-            'spotlight' => true,
-            'etat' => true,
+            'spotlight' => 1,
+            'etat' => 1,
         ]);
 
         // 🔗 Récupérer le membre propriétaire du compte ressource
@@ -214,7 +214,7 @@ class CotisationController extends Controller
             return redirect()->back()->with('error', 'Vous n\'avez pas les droits pour modifier cette cotisation.');
         }
 
-        $cotisationtypes = Cotisationtype::where('etat', true)->get();
+        $cotisationtypes = Cotisationtype::where('etat', 1)->get();
 
         return view('cotisation.edit', compact('cotisation', 'cotisationtypes'));
     }
@@ -303,7 +303,7 @@ class CotisationController extends Controller
         $membre = Membre::where('user_id', $userId)->first();
         $ressourceKOBO = Ressourcecompte::where('membre_id', $membre->id)
                                     ->where('ressourcetype_id', 1) // KOBO
-                                    ->where('etat', true)
+                                    ->where('etat', 1)
                                     ->first();
 
         if (!$ressourceKOBO) {
@@ -329,7 +329,7 @@ class CotisationController extends Controller
             'montant_paye' => $cotisation->montant,
             'montant_restant' => 0,
             'statut' => 'paye',
-            'est_a_jour' => true,
+            'est_a_jour' => 1,
             'date_paiement' => now(),
             'mode_paiement' => 'Ressource KOBO',
         ]);
@@ -343,7 +343,7 @@ class CotisationController extends Controller
             'ressourcecompte_id' => $ressourceKOBO->id,
             'datetransaction' => now(),
             'operationtype_id' => 2, // Débit
-            'spotlight' => true,
+            'spotlight' => 1,
             'etat' => 1,
         ]);
 
@@ -356,8 +356,8 @@ class CotisationController extends Controller
             'membre_id' => $membre->id,
             'entreprise_id' => $cotisation->entreprise->id,
             'paiementstatut_id' => 1, // Payé
-            'spotlight' => true,
-            'etat' => true,
+            'spotlight' => 1,
+            'etat' => 1,
         ]);
 
         // Mettre à jour le solde du compte KOBO

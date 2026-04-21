@@ -10,10 +10,10 @@ class PropositionstatutSeeder extends Seeder
     public function run(): void
     {
         $statuts = [
-            ['titre' => 'En attente', 'etat' => true],
-            ['titre' => 'Acceptée', 'etat' => true],
-            ['titre' => 'Refusée', 'etat' => true],
-            ['titre' => 'Annulée', 'etat' => true],
+            ['titre' => 'En attente', 'etat' => 1],
+            ['titre' => 'Acceptée', 'etat' => 1],
+            ['titre' => 'Refusée', 'etat' => 1],
+            ['titre' => 'Annulée', 'etat' => 1],
         ];
 
         foreach ($statuts as $statut) {

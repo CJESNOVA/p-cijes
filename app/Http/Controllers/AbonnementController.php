@@ -33,7 +33,7 @@ class AbonnementController extends Controller
                       ->orderBy('created_at', 'desc');
             }])->get();
 
-        $abonnementtypes = Abonnementtype::where('etat', true)->get();
+        $abonnementtypes = Abonnementtype::where('etat', 1)->get();
 
         return view('abonnement.index', compact('entreprises', 'abonnementtypes'));
     }
@@ -148,7 +148,7 @@ class AbonnementController extends Controller
             'ressourcecompte_id' => $ressourcecompte->id,
             'datetransaction' => now(),
             'operationtype_id' => 2, // Débit
-            'spotlight' => true,
+            'spotlight' => 1,
             'etat' => 1,
         ]);
 
@@ -168,11 +168,11 @@ class AbonnementController extends Controller
             'date_echeance' => $dateEcheance,
             'date_paiement' => now(),
             'statut' => 'paye',
-            'est_a_jour' => true,
+            'est_actif' => 1,
             'nombre_rappels' => 0,
             'mode_paiement' => 'Ressource KOBO',
             'commentaires' => $request->commentaires,
-            'etat' => true,
+            'etat' => 1,
         ]);
 
         // Créer l'enregistrement abonnementressource
@@ -184,8 +184,8 @@ class AbonnementController extends Controller
             'membre_id' => $ressourcecompte->membre_id,
             'entreprise_id' => $entreprise->id,
             'paiementstatut_id' => 1, // Payé
-            'spotlight' => true,
-            'etat' => true,
+            'spotlight' => 1,
+            'etat' => 1,
         ]);
 
         // 🔗 Récupérer le membre propriétaire du compte ressource
@@ -214,7 +214,7 @@ class AbonnementController extends Controller
             return redirect()->back()->with('error', 'Vous n\'avez pas les droits pour modifier cet abonnement.');
         }
 
-        $abonnementtypes = Abonnementtype::where('etat', true)->get();
+        $abonnementtypes = Abonnementtype::where('etat', 1)->get();
 
         return view('abonnement.edit', compact('abonnement', 'abonnementtypes'));
     }
@@ -303,7 +303,7 @@ class AbonnementController extends Controller
         $membre = Membre::where('user_id', $userId)->first();
         $ressourceKOBO = Ressourcecompte::where('membre_id', $membre->id)
                                     ->where('ressourcetype_id', 1) // KOBO
-                                    ->where('etat', true)
+                                    ->where('etat', 1)
                                     ->first();
 
         if (!$ressourceKOBO) {
@@ -329,7 +329,7 @@ class AbonnementController extends Controller
             'montant_paye' => $abonnement->montant,
             'montant_restant' => 0,
             'statut' => 'paye',
-            'est_a_jour' => true,
+            'est_actif' => 1,
             'date_paiement' => now(),
             'mode_paiement' => 'Ressource KOBO',
         ]);
@@ -343,7 +343,7 @@ class AbonnementController extends Controller
             'ressourcecompte_id' => $ressourceKOBO->id,
             'datetransaction' => now(),
             'operationtype_id' => 2, // Débit
-            'spotlight' => true,
+            'spotlight' => 1,
             'etat' => 1,
         ]);
 
@@ -356,8 +356,8 @@ class AbonnementController extends Controller
             'membre_id' => $membre->id,
             'entreprise_id' => $abonnement->entreprise->id,
             'paiementstatut_id' => 1, // Payé
-            'spotlight' => true,
-            'etat' => true,
+            'spotlight' => 1,
+            'etat' => 1,
         ]);
 
         // Mettre à jour le solde du compte KOBO

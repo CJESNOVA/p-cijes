@@ -57,7 +57,7 @@ class Plantemplate extends Model
 
     public function scopeActif($query)
     {
-        return $query->where('etat', true);
+        return $query->where('etat', 1);
     }
 
     public function scopeSpotlight($query)

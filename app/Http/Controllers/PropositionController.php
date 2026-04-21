@@ -29,12 +29,12 @@ class PropositionController extends Controller
         }
 
         // Récupérer les statuts de proposition disponibles
-        $statuts = Propositionstatut::where('etat', true)->get();
+        $statuts = Propositionstatut::where('etat', 1)->get();
         
         // Récupérer les prestations de l'expert connecté
         // L'expert est un membre qui peut être associé à une ou plusieurs entreprises
         $entreprisesIds = $membre->entreprisemembres()->pluck('entreprise_id');
-        $prestations = Prestation::where('etat', true)
+        $prestations = Prestation::where('etat', 1)
             ->whereIn('entreprise_id', $entreprisesIds)
             ->get();
 
@@ -58,7 +58,7 @@ class PropositionController extends Controller
 
         // Récupérer les prestations de l'expert connecté
         $entreprisesIds = $membre->entreprisemembres()->pluck('entreprise_id');
-        $prestations = Prestation::where('etat', true)
+        $prestations = Prestation::where('etat', 1)
             ->whereIn('entreprise_id', $entreprisesIds)
             ->get();
 
@@ -103,7 +103,7 @@ class PropositionController extends Controller
             'propositionstatut_id' => $statutEnAttente->id ?? 1,
             'date_proposition' => now(),
             'date_expiration' => $request->date_expiration,
-            'etat' => true,
+            'etat' => 1,
         ]);
 
         return redirect()->route('expert.plans.show', $request->plan_id)

@@ -34,7 +34,7 @@ class AbonnementressourceController extends Controller
                       $q->where('membre_id', $membre->id);
                   });
         })
-        ->where('etat', true)
+        ->where('etat', 1)
         ->orderByDesc('created_at')
         ->get();
 
