@@ -79,6 +79,11 @@ public function alertes()
     return $this->hasMany(Alerte::class);
 }
 
+public function recompenses()
+{
+    return $this->hasMany(Recompense::class);
+}
+
 /**
      * Génère un numéro d'identifiant unique
      */

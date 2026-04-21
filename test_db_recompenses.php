@@ -15,7 +15,7 @@ use App\Models\Membre;
 echo "=== VÉRIFICATION BDD RÉCOMPENSES ===\n\n";
 
 // Récupérer le membre test
-$membre = Membre::first();
+$membre = Membre::find(17);
 if (!$membre) {
     echo "Aucun membre trouvé\n";
     exit;
