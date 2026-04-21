@@ -56,7 +56,7 @@ class CotisationController extends Controller
         $entreprise->load('entrepriseprofil');
         
         // Types de cotisations génériques (entrepriseprofil_id = 0) + spécifiques au profil
-        $cotisationtypes = Cotisationtype::where('etat', true)
+        $cotisationtypes = Cotisationtype::where('etat', 0)
             ->where(function($query) use ($entreprise) {
                 $query->where('entrepriseprofil_id', 0) // Types génériques
                       ->orWhere('entrepriseprofil_id', $entreprise->entrepriseprofil_id); // Types spécifiques au profil

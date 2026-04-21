@@ -56,7 +56,7 @@ class AbonnementController extends Controller
         $entreprise->load('entrepriseprofil');
         
         // Types d'abonnements génériques (entrepriseprofil_id = 0) + spécifiques au profil
-        $abonnementtypes = Abonnementtype::where('etat', true)
+        $abonnementtypes = Abonnementtype::where('etat', 1)
             ->where(function($query) use ($entreprise) {
                 $query->where('entrepriseprofil_id', 0) // Types génériques
                       ->orWhere('entrepriseprofil_id', $entreprise->entrepriseprofil_id); // Types spécifiques au profil
