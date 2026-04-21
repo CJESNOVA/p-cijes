@@ -1,0 +1,123 @@
+<x-app-layout title="Mes Accompagnements" is-sidebar-open="true" is-header-blur="true">
+    <main class="main-content w-full px-[var(--margin-x)] pb-8">
+        <!-- Header moderne -->
+        <div class="mb-2">
+            <div class="flex items-center gap-4 mb-2">
+                <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4FBE96] to-[#4FBE96] flex items-center justify-center shadow-lg">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 dark:text-navy-50">
+                        Mes Accompagnements
+                    </h1>
+                    <p class="mt-2 text-slate-600 dark:text-navy-200 text-lg">
+                        Suivez votre progression et vos plans d'action
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-12 lg:gap-6">
+            <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
+              @if($accompagnements)
+                  @if($accompagnements->isEmpty())
+                      <p>Aucun accompagnement trouvé.</p>
+                  @else
+                      <div class="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-2 lg:gap-6 xl:grid-cols-2">
+                          @foreach($accompagnements as $accompagnement)
+                              <div class="bg-white dark:bg-navy-700 shadow rounded-lg p-4 flex flex-col justify-between">
+                                  <div class="space-y-2">
+                                      <h3 class="text-lg font-semibold text-slate-800 dark:text-navy-50">
+                                          {{ $accompagnement->entreprise->nom ?? '—' }}
+                                      </h3>
+                                      <p class="text-sm text-slate-600 dark:text-navy-200">
+                                          <strong>Membre :</strong> {{ $accompagnement->membre->nom ?? '' }} {{ $accompagnement->membre->prenom ?? '' }}
+                                      </p>
+                                      <p class="text-sm text-slate-600 dark:text-navy-200">
+                                          <strong>Niveau :</strong> {{ $accompagnement->accompagnementniveau->titre ?? '' }}
+                                      </p>
+                                      <p class="text-sm text-slate-600 dark:text-navy-200">
+                                          <strong>Statut :</strong> {{ $accompagnement->accompagnementstatut->titre ?? '' }}
+                                      </p>
+                                      <p class="text-sm text-slate-600 dark:text-navy-200">
+                                          <strong>Date :</strong> {{ \Carbon\Carbon::parse($accompagnement->dateaccompagnement)->format('d/m/Y') }}
+                                      </p>
+                                  </div>
+                                  <div class="mt-4 space-y-2">
+                                      @if($accompagnement->accompagnementstatut_id == 1)
+                                        @php
+                                          // Récupérer le diagnostic PME
+                                          $diagnosticPME = $accompagnement->diagnostics->where('membre_id', $accompagnement->membre_id)->where('entreprise_id', 0)->first();
+                                        @endphp
+                                        
+                                        <!-- Bouton pour voir le résultat du diagnostic PME -->
+                                        @if($diagnosticPME && $diagnosticPME->diagnosticstatut_id == 2)
+                                          <a href="{{ route('diagnostic.success', $diagnosticPME->id) }}" 
+                                           class="btn w-full bg-[#4FBE96] text-white flex items-center justify-center gap-2 mb-2">
+                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                              </svg>
+                                              Voir le résultat PME
+                                          </a>
+                                          
+                                          <!-- Bouton pour voir les plans PME -->
+                                          <a href="{{ route('diagnostic.plans', $diagnosticPME->id) }}" 
+                                           class="btn w-full bg-[#152737] text-white flex items-center justify-center gap-2">
+                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 012-2v10a2 2 0 012 2h2a2 2 0 012-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 012-2z"/>
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5.5a1 1 0 11.414 1.414L9 14z"/>
+                                              </svg>
+                                              Voir les plans PME
+                                          </a>
+                                        @endif
+                                        
+                                        <!-- Si accompagnement d'entreprise -->
+                                        @if($accompagnement->entreprise)
+                                          @php
+                                            // Récupérer le diagnostic Entreprise
+                                            $diagnosticEntreprise = $accompagnement->diagnostics->where('entreprise_id', $accompagnement->entreprise_id)->first();
+                                          @endphp
+                                          
+                                          <!-- Bouton pour voir le résultat du diagnostic Entreprise -->
+                                          @if($diagnosticEntreprise && $diagnosticEntreprise->diagnosticstatut_id == 2)
+                                            <a href="{{ route('diagnosticentreprise.success', $diagnosticEntreprise->id) }}" 
+                                               class="btn w-full bg-[#4FBE96] text-white flex items-center justify-center gap-2 mb-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                                </svg>
+                                                Voir le résultat Entreprise
+                                            </a>
+                                            
+                                            <!-- Bouton pour voir les plans Entreprise -->
+                                            <a href="{{ route('diagnosticentreprise.plans', $diagnosticEntreprise->id) }}" 
+                                               class="btn w-full bg-[#152737] text-white flex items-center justify-center gap-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 012-2v10a2 2 0 012 2h2a2 2 0 012-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 012-2z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5.5a1 1 0 11.414 1.414L9 14z"/>
+                                                </svg>
+                                                Voir les plans Entreprise
+                                            </a>
+                                          @endif
+                                        @endif
+                                      @else
+                                        <span class="text-slate-400 text-sm text-center">
+                                          Les diagnostics ne sont pas encore disponibles
+                                        </span>
+                                      @endif
+                                  </div>
+                              </div>
+                          @endforeach
+                      </div>
+                  @endif
+              @endif
+
+          </div> 
+
+            <div class="col-span-12 py-6 lg:sticky lg:bottom-0 lg:col-span-4 lg:self-end">
+                @include('layouts.sidebar')
+            </div>    
+
+        </div>
+      </main>
+</x-app-layout>

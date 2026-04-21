@@ -1,0 +1,1 @@
+INSERT INTO "public"."countries" ("id", "name", "iso_code", "calling_code", "flag_url", "language_id", "currency_id") VALUES ('3c4fbe39-dfa8-43c0-b7fd-bb946236543d', 'Togo', 'TG', null, 'TG', 'f9a16e49-d975-4d63-b201-5aee5888ac44', '257c3a20-4f61-4b9c-9df1-d841fb58a029');

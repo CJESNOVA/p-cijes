@@ -1,0 +1,41 @@
+# Logs
+*.log
+npm-debug.log
+yarn-error.log
+
+# OS / Éditeurs
+.DS_Store
+Thumbs.db
+/.idea
+/.vscode
+/.fleet
+/.zed
+/.nova
+
+# Environnement
+.env
+.env.*
+/auth.json
+
+# PHP / Laravel
+/vendor
+.phpactor.json
+.phpunit.result.cache
+/.phpunit.cache
+Homestead.json
+Homestead.yaml
+
+# Node / Vite
+/node_modules
+/public/build
+/public/hot
+
+# Storage Laravel (on garde le dossier, pas le contenu)
+storage/*.key
+storage/*.sqlite
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+!storage/.gitignore
+
