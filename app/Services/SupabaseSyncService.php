@@ -55,49 +55,21 @@ class SupabaseSyncService
         }
 
         try {
-            if (!empty($compte->resource_account_id)) {
-                // 🔁 UPDATE sur Supabase
-                $response = Http::withHeaders($this->headers)
-                    ->patch("{$this->baseUrl}/resource_accounts?id=eq.{$compte->resource_account_id}", $payload);
+            // On utilise l'ID local pour la synchronisation
+            // 🔁 UPDATE sur Supabase
+            $response = Http::withHeaders($this->headers)
+                ->patch("{$this->baseUrl}/resource_accounts?id=eq.{$compte->id}", $payload);
 
-                if ($response->failed()) {
-                    Log::error("❌ Échec de la mise à jour du compte Supabase", [
-                        'compte_id' => $compte->id,
-                        'error'     => $response->body(),
-                        'status'    => $response->status(),
-                    ]);
-                } else {
-                    Log::info("🔁 Compte Supabase mis à jour avec succès", [
-                        'compte_id'  => $compte->id,
-                        'supabase_id'=> $compte->resource_account_id,
-                    ]);
-                }
+            if ($response->failed()) {
+                Log::error("❌ Échec de la mise à jour du compte Supabase", [
+                    'compte_id' => $compte->id,
+                    'error'     => $response->body(),
+                    'status'    => $response->status(),
+                ]);
             } else {
-                // 🆕 CREATE sur Supabase
-                $response = Http::withHeaders(array_merge($this->headers, [
-                                    'Prefer' => 'return=representation'
-                                ]))
-                    ->post("{$this->baseUrl}/resource_accounts", $payload);
-
-                if ($response->failed()) {
-                    Log::error("❌ Échec de la création du compte Supabase", [
-                        'compte_id' => $compte->id,
-                        'error'     => $response->body(),
-                        'status'    => $response->status(),
-                    ]);
-                } else {
-                    $responseData = $response->json();
-                    $remoteId = $responseData['id'] ?? ($responseData[0]['id'] ?? null);
-
-                    if ($remoteId) {
-                        $compte->update(['resource_account_id' => $remoteId]);
-                    }
-
-                    Log::info("✅ Compte Supabase créé avec succès", [
-                        'compte_id' => $compte->id,
-                        'response'  => $responseData,
-                    ]);
-                }
+                Log::info("🔁 Compte Supabase mis à jour avec succès", [
+                    'compte_id'  => $compte->id,
+                ]);
             }
         } catch (\Exception $e) {
             Log::error("💥 Exception lors du push du compte Supabase", [
@@ -118,7 +90,7 @@ class SupabaseSyncService
         $payload = [
             'amount'              => $transaction->montant ?? 0,
             'reference'           => $transaction->reference,
-            'resource_account_id' => $transaction->ressourcecompte?->resource_account_id,
+            'resource_account_id' => $transaction->ressourcecompte_id,
             'operation_type'      => $transaction->operationtype?->titre ?? '+',
             'status'              => $transaction->etat ?? 0,
             'method'              => 'Tmoney',
@@ -149,10 +121,7 @@ class SupabaseSyncService
                 $responseData = $response->json();
                 $remoteId = $responseData['id'] ?? ($responseData[0]['id'] ?? null);
 
-                if ($remoteId) {
-                    $transaction->update(['resource_transaction_id' => $remoteId]);
-                }
-
+                // On ne peut pas stocker l'ID distant
                 Log::info("✅ Transaction synchronisée avec succès.", [
                     'transaction_id' => $transaction->id,
                     'response'       => $responseData,

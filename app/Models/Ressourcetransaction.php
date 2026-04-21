@@ -20,9 +20,9 @@ class Ressourcetransaction extends Model
         'ressourcecompte_id',
         'datetransaction',
         'operationtype_id',
+        'description',
         'spotlight',
         'etat',
-        'resource_transaction_id',
     ];
     
     public function ressourcecompte()

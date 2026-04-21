@@ -404,7 +404,8 @@ class FormationController extends Controller
                 
         $entreprise = Entreprise::findOrFail($formation->entreprise_id ?? $receveurEntrepriseId ?? null);
 
-            $recompenseService->attribuerRecompense('FORMATION_GRATUITE', $membre, $entreprise ?? null, $formation->id);
+            // 💡 Pas de montant logique pour une formation gratuite, utilisation de points fixes
+            $recompenseService->attribuerRecompense('FORMATION_GRATUITE', $membre, $entreprise ?? null, $formation->id, null);
         }
 
         DB::commit();

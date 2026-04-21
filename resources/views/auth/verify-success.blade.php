@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>✅ Email vérifié - CIJES Africa</title>
+    <title>✅ Email vérifié - CJES Africa</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -44,7 +44,7 @@
     <div class="container">
         <h1>✅ Mail de confirmation envoyé !</h1>
         <p>Merci de confirmer votre adresse email.<br>
-        Après cela vous pourrez accéder à votre compte e-CIJES Africa.</p>
+        Après cela vous pourrez accéder à votre compte e-CJES Africa.</p>
         <a href="{{ url('/membres/dashboard') }}">Aller à l’accueil</a>
     </div>
 </body>

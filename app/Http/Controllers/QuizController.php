@@ -256,7 +256,8 @@ public function submit(Request $request, Formation $formation, Quiz $quiz, Recom
 
     // ✅ Si le score atteint ou dépasse le seuil de réussite → attribuer récompense
     if ($quiz->seuil_reussite && $scorePourcentage >= $quiz->seuil_reussite) {
-        $recompenseService->attribuerRecompense('QUIZ_FORMATION', $membre, null, $quiz->id);
+        // 💡 Utiliser le score en pourcentage comme base pour le calcul en pourcentage
+        $recompenseService->attribuerRecompense('QUIZ_FORMATION', $membre, null, $quiz->id, $scorePourcentage);
     }
 
     return redirect()

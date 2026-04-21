@@ -25,10 +25,15 @@ use App\Services\DiagnosticStatutService;
 class DiagnosticentrepriseController extends Controller
 {
     protected $diagnosticStatutService;
+    protected $recompenseService;
 
-    public function __construct(DiagnosticStatutService $diagnosticStatutService)
+    public function __construct(DiagnosticStatutService $diagnosticStatutService, RecompenseService $recompenseService)
     {
         $this->diagnosticStatutService = $diagnosticStatutService;
+        $this->recompenseService = $recompenseService;
+        
+        // Injecter le RecompenseService dans le DiagnosticStatutService
+        $this->diagnosticStatutService->recompenseService = $recompenseService;
     }
 
     public function indexForm()
@@ -581,8 +586,49 @@ class DiagnosticentrepriseController extends Controller
         ->count();
 
     if ($nbDiagnostics === 1) {
-        // 🪙 Déclenche la récompense "DIAG_ENTREPRISE_COMPLET"
-        $recompense = $recompenseService->attribuerRecompense('DIAG_ENTREPRISE_COMPLET', $membre, $entreprise ?? null, $diagnostic->id);
+        // 🪙 Déclenche la récompense "DIAG_ENTREPRISE"
+        // 💡 Utiliser le score global du diagnostic comme base pour le calcul en pourcentage
+        $recompense = $recompenseService->attribuerRecompense('DIAG_ENTREPRISE', $membre, $entreprise ?? null, $diagnostic->id, null);
+        
+        // 🏆 Ajout du paiement PREMIER_DIAG_ENTREPRISE
+        $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+        $resultatModule = $moduleController->attribuerModuleViaAction(
+            'diagnostics',
+            $diagnostic->id,
+            'PREMIER_DIAG_ENTREPRISE',
+            $membre,
+            [
+                'entreprise' => $entreprise,
+                'description' => 'Premier diagnostic entreprise terminé',
+                'reference' => 'PREMIER-ENT-' . $diagnostic->id . '-' . date('YmdHis')
+            ]
+        );
+        
+        \Log::info('Paiement PREMIER_DIAG_ENTREPRISE effectué', [
+            'success' => $resultatModule['success'],
+            'message' => $resultatModule['message'] ?? 'OK'
+        ]);
+    } else {
+        // 🏁 Déclenche le paiement AUTRE_DIAG_ENTREPRISE pour les diagnostics suivants
+        \Log::info('Diagnostic entreprise suivant détecté - Attribution AUTRE_DIAG_ENTREPRISE');
+        
+        $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+        $resultatModule = $moduleController->attribuerModuleViaAction(
+            'diagnostics',
+            $diagnostic->id,
+            'AUTRE_DIAG_ENTREPRISE',
+            $membre,
+            [
+                'entreprise' => $entreprise,
+                'description' => 'Diagnostic entreprise terminé (suivant)',
+                'reference' => 'AUTRE-ENT-' . $diagnostic->id . '-' . date('YmdHis')
+            ]
+        );
+        
+        \Log::info('Paiement AUTRE_DIAG_ENTREPRISE effectué', [
+            'success' => $resultatModule['success'],
+            'message' => $resultatModule['message'] ?? 'OK'
+        ]);
     }
 
     return redirect("/diagnostics/diagnosticentreprise/success/{$diagnostic->id}")

@@ -903,16 +903,57 @@ class DiagnosticController extends Controller
         $this->genererPlansAutomatiques($diagnostic);
         \Log::info('Génération plans automatiques terminée');
 
-        // 🏆 Vérifie si c'est le premier diagnostic PME du membre
+        // Déclencher le paiement via action selon que c'est le premier diagnostic ou non
         \Log::info('Vérification premier diagnostic');
         $nbDiagnostics = Diagnostic::where('membre_id', $membre->id)->where('entreprise_id', 0)
             ->where('diagnosticstatut_id', 2)
             ->count();
 
-        // 🏁 Déclenche la récompense "DIAG_PME_PREMIER"
+        // 🏁 Déclenche la récompense "DIAG_DIRIGEANT"
         if ($nbDiagnostics == 1) {
             \Log::info('Attribution récompense premier diagnostic');
-            $recompense = $recompenseService->attribuerRecompense('DIAG_PME_PREMIER', $membre, null, $diagnostic->id);
+            // 💡 Utiliser le score total comme base pour le calcul en pourcentage
+            $recompense = $recompenseService->attribuerRecompense('DIAG_DIRIGEANT', $membre, null, $diagnostic->id, null);
+            
+            // 🏆 Ajout du paiement PREMIER_DIAG_DIRIGEANT
+            $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+            $resultatModule = $moduleController->attribuerModuleViaAction(
+                'diagnostics',
+                $diagnostic->id,
+                'PREMIER_DIAG_DIRIGEANT',
+                $membre,
+                [
+                    'entreprise' => null, // Diagnostic PME (pas d'entreprise)
+                    'description' => 'Premier diagnostic dirigeant terminé',
+                    'reference' => 'PREMIER-DIAG-' . $diagnostic->id . '-' . date('YmdHis')
+                ]
+            );
+            
+            \Log::info('Paiement PREMIER_DIAG_DIRIGEANT effectué', [
+                'success' => $resultatModule['success'],
+                'message' => $resultatModule['message'] ?? 'OK'
+            ]);
+        } else {
+            // 🏁 Déclenche le paiement AUTRE_DIAG_DIRIGEANT pour les diagnostics suivants
+            \Log::info('Diagnostic suivant détecté - Attribution AUTRE_DIAG_DIRIGEANT');
+            
+            $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+            $resultatModule = $moduleController->attribuerModuleViaAction(
+                'diagnostics',
+                $diagnostic->id,
+                'AUTRE_DIAG_DIRIGEANT',
+                $membre,
+                [
+                    'entreprise' => null, // Diagnostic PME (pas d'entreprise)
+                    'description' => 'Diagnostic dirigeant terminé (suivant)',
+                    'reference' => 'AUTRE-DIAG-' . $diagnostic->id . '-' . date('YmdHis')
+                ]
+            );
+            
+            \Log::info('Paiement AUTRE_DIAG_DIRIGEANT effectué', [
+                'success' => $resultatModule['success'],
+                'message' => $resultatModule['message'] ?? 'OK'
+            ]);
         }
         
         \Log::info('Fin processDiagnosticFinalization', ['total_score' => $totalScore]);

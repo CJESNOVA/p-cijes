@@ -26,6 +26,11 @@ class Entrepriseprofil extends Model
         return $this->hasMany(Cotisationtype::class);
     }
 
+    public function abonnementtypes()
+    {
+        return $this->hasMany(Abonnementtype::class);
+    }
+
     public function reductiontypes()
     {
         return $this->hasMany(Reductiontype::class);

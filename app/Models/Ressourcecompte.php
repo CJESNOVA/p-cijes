@@ -21,14 +21,19 @@ class Ressourcecompte extends Model
         'membre_id',
         'ressourcetype_id',
         'entreprise_id',
+        'user_id',
         'spotlight',
         'etat',
-        'resource_account_id',
     ];
     
     public function membre()
     {
         return $this->belongsTo(Membre::class);
+    }
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function ressourcetype()

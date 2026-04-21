@@ -81,6 +81,14 @@ class SidebarPanel
                         'title' => 'Cotisations payées',
                         'route_name' => 'cotisationressource.index'
                     ],
+                    'abonnement' => [
+                        'title' => 'Mes abonnements',
+                        'route_name' => 'abonnement.index'
+                    ],
+                    'abonnementressource' => [
+                        'title' => 'Abonnements payés',
+                        'route_name' => 'abonnementressource.index'
+                    ],
                 ],
             ]
         ];
@@ -451,6 +459,14 @@ class SidebarPanel
                         'title' => 'Mes ressources',
                         'route_name' => 'ressourcecompte.index'
                     ],
+                    'demande_sika' => [
+                        'title' => 'Demande SIKA',
+                        'route_name' => 'ressourcecompte.createDemande'
+                    ],
+                    'demandes' => [
+                        'title' => 'Mes demandes',
+                        'route_name' => 'demande.index'
+                    ],
                     'conversion' => [
                         'title' => 'Mes conversions',
                         'route_name' => 'conversion.index'
@@ -606,6 +622,7 @@ class SidebarPanel
     }
 
 
+    
     public static function all(){
         return [
             self::membres(), 
@@ -616,7 +633,7 @@ class SidebarPanel
             self::experts(), 
             self::prestations(), 
             self::bons(), 
-            self::forums(), 
+            self::forums(),
             self::dashboards()
         ];
     }

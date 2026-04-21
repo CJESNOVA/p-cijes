@@ -9,10 +9,12 @@ use App\Models\Entreprise;
 use App\Models\Membre;
 use App\Models\Ressourcecompte;
 use App\Models\Ressourcetransaction;
+use App\Models\Ressourcetypeoffretype;
 use App\Models\Operationtype;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Services\RecompenseService;
 
 class CotisationController extends Controller
 {
@@ -117,6 +119,15 @@ class CotisationController extends Controller
             return redirect()->back()->with('error', 'Solde insuffisant. Montant requis : ' . number_format($cotisationtype->montant, 2) . ' FCFA. Solde disponible : ' . number_format($ressourcecompte->solde, 2) . ' FCFA.');
         }
         
+        // Vérifier compatibilité ressource ↔ offre (cotisation = offretype_id 5)
+        $isCompatible = Ressourcetypeoffretype::where('ressourcetype_id', $ressourcecompte->ressourcetype_id)
+            ->where('offretype_id', 5) // 5 = cotisations
+            ->exists();
+
+        if (!$isCompatible) {
+            return redirect()->back()->with('error', "❌ Ce type de ressource ne peut pas payer une cotisation.");
+        }
+        
         // Calculer les dates automatiquement en utilisant nombre_jours
         $dateDuJour = now();
         $dateDebut = $dateDuJour->copy();
@@ -176,6 +187,14 @@ class CotisationController extends Controller
             'spotlight' => true,
             'etat' => true,
         ]);
+
+        // 🔗 Récupérer le membre propriétaire du compte ressource
+        if ($ressourcecompte->membre) {
+            // 🎁 Attribuer récompense de paiement cotisation
+            // 💡 Utiliser le montant de la cotisation comme base pour le calcul en pourcentage
+            // ✅ Le membre et l'entreprise sont corrects : propriétaire du compte qui a payé
+            $recompenseService->attribuerRecompense('PAIEMENT_COTISATION', $ressourcecompte->membre, $entreprise, $cotisation->id, $cotisation->montant ?? 0);
+        }
 
         return redirect()->route('cotisation.index')
                     ->with('success', 'Cotisation ' . $cotisationtype->titre . ' payée avec succès ! ' . number_format($cotisationtype->montant, 2) . ' XOF débités du compte ressource.');
@@ -294,6 +313,15 @@ class CotisationController extends Controller
         $montantAPayer = $cotisation->montant_restant;
         if ($ressourceKOBO->solde < $montantAPayer) {
             return redirect()->back()->with('error', 'Solde insuffisant. Montant à payer : ' . number_format($montantAPayer, 2) . ' FCFA. Votre solde actuel : ' . number_format($ressourceKOBO->solde, 2) . ' FCFA.');
+        }
+
+        // Vérifier compatibilité ressource ↔ offre (cotisation = offretype_id 5)
+        $isCompatible = Ressourcetypeoffretype::where('ressourcetype_id', $ressourceKOBO->ressourcetype_id)
+            ->where('offretype_id', 5) // 5 = cotisations
+            ->exists();
+
+        if (!$isCompatible) {
+            return redirect()->back()->with('error', "❌ Ce type de ressource ne peut pas payer une cotisation.");
         }
 
         // Mettre à jour la cotisation

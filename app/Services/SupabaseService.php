@@ -151,12 +151,31 @@ class SupabaseService
 
     public function signIn(string $email, string $password)
     {
-        return Http::withHeaders($this->headers())
-            ->post("{$this->authUrl}/token?grant_type=password", [
-                'email'    => $email,
-                'password' => $password,
-            ])
-            ->json();
+        $fullUrl = "{$this->authUrl}/token?grant_type=password";
+        
+        // Debug temporaire
+        \Log::info('Supabase SignIn Debug', [
+            'supabase_url' => env('SUPABASE_URL'),
+            'auth_url' => $this->authUrl,
+            'full_url' => $fullUrl,
+            'email' => $email
+        ]);
+        
+        try {
+            return Http::withHeaders($this->headers())
+                ->post($fullUrl, [
+                    'email'    => $email,
+                    'password' => $password,
+                ])
+                ->json();
+        } catch (\Exception $e) {
+            \Log::error('Supabase SignIn Error', [
+                'error' => $e->getMessage(),
+                'full_url' => $fullUrl,
+                'auth_url' => $this->authUrl
+            ]);
+            throw $e;
+        }
     }
 
 

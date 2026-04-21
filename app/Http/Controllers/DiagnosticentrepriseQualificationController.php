@@ -12,6 +12,7 @@ use App\Services\RecompenseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DiagnosticentrepriseQualificationController extends Controller
 {
@@ -283,7 +284,7 @@ class DiagnosticentrepriseQualificationController extends Controller
         }
     }
 
-    public function store(Request $request, $entrepriseId, $moduleId)
+    public function store(Request $request, $entrepriseId, $moduleId, RecompenseService $recompenseService)
     {
         $userId = Auth::id();
         $membre = Membre::where('user_id', $userId)->first();
@@ -428,6 +429,64 @@ class DiagnosticentrepriseQualificationController extends Controller
             'diagnosticstatut_id' => 2, // Terminé
         ]);
 
+        // 🔗 Récupérer le membre lié
+        if ($diagnostic->entreprise) {
+            // 🎁 Attribuer récompense de test de classification (ancien système)
+            // 💡 Utiliser le score global du diagnostic comme base pour le calcul en pourcentage
+            $recompenseService->attribuerRecompense('TEST_CLASSIFICATION', $membre, $diagnostic->entreprise, $diagnostic->id, null);
+
+            // 💰 Nouveau système : Attribuer module ressource via action TEST_CLASSIFICATION_V2
+            $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+            
+            $resultatModule = $moduleController->attribuerModuleViaAction(
+                'diagnostics',              // module_type
+                $diagnostic->id,            // module_id  
+                'TEST_CLASSIFICATION_V2',   // action_code
+                $membre,                     // membre
+                [
+                    'entreprise' => $diagnostic->entreprise,
+                    'description' => 'Diagnostic entreprise terminé - Test de classification V2',
+                    'reference' => 'DIAG-' . $diagnostic->id . '-' . date('YmdHis')
+                ]
+            );
+
+            // Logger le résultat du module
+            if ($resultatModule['success']) {
+                \Log::info('Module diagnostic attribué avec succès', [
+                    'diagnostic_id' => $diagnostic->id,
+                    'module_ressource_id' => $resultatModule['data']['module_ressource_id'],
+                    'action_code' => 'TEST_CLASSIFICATION_V2',
+                    'montant_retrait' => $resultatModule['data']['montant']
+                ]);
+                
+                // ✅ Diagnostic validé avec succès
+                return redirect()->route('diagnosticentreprisequalification.success')
+                    ->with('success', 'Test de classification enregistré avec succès !')
+                    ->with('entreprise', Entreprise::with('entrepriseprofil')->find($entrepriseId))
+                    ->with('diagnostic', $diagnostic);
+                    
+            } else {
+                // ❌ Échec du paiement - Diagnostic non validé
+                \Log::warning('Échec attribution module diagnostic - Diagnostic non validé', [
+                    'diagnostic_id' => $diagnostic->id,
+                    'action_code' => 'TEST_CLASSIFICATION_V2',
+                    'erreur' => $resultatModule['message'],
+                    'raison' => 'Aucune ressource disponible pour le paiement'
+                ]);
+                
+                // Remettre le diagnostic en statut "en cours"
+                $diagnostic->update([
+                    'diagnosticstatut_id' => 1, // En cours
+                ]);
+                
+                return redirect()->route('diagnosticentreprisequalification.showModule', [$entrepriseId, $moduleId])
+                    ->with('error', 'Impossible de valider le diagnostic : ' . $resultatModule['message'])
+                    ->with('entreprise', Entreprise::with('entrepriseprofil')->find($entrepriseId))
+                    ->with('diagnostic', $diagnostic);
+            }
+        }
+
+        // Si pas d'entreprise, valider normalement
         return redirect()->route('diagnosticentreprisequalification.success')
             ->with('success', 'Test de classification enregistré avec succès !')
             ->with('entreprise', Entreprise::with('entrepriseprofil')->find($entrepriseId))

@@ -26,48 +26,110 @@ class RecompenseService
      * @param \App\Models\Membre $membre
      * @param null|\App\Models\Entreprise $entreprise
      * @param mixed $source  // id ou référence de la source (ex: quiz_id)
+     * @param float|null $montant  // montant pour calcul en pourcentage (optionnel)
      * @return Recompense|false
      */
-    public function attribuerRecompense(string $actionCode, $membre, $entreprise = null, $source = null)
+    public function attribuerRecompense(string $actionCode, $membre, $entreprise = null, $source = null, $montant = null)
     {
         $action = Action::where('code', $actionCode)->first();
         if (! $action) {
             return false;
         }
 
+        // 🎯 CALCUL DES POINTS - Montant fixe ou pourcentage
         $points = (int) ($action->point ?? 0);
+        
+        // 📊 GESTION DU SEUIL EN POURCENTAGE
+        if ($action->seuil && str_contains($action->seuil, '%') && $montant) {
+            $pourcentage = (float) str_replace('%', '', $action->seuil);
+            
+            // 💡 Utiliser directement le montant fourni
+            $points = (int) ($montant * ($pourcentage / 100));
+            
+            \Log::info('Calcul points par pourcentage', [
+                'action_code' => $actionCode,
+                'pourcentage' => $pourcentage,
+                'montant_fourni' => $montant,
+                'points_calculés' => $points
+            ]);
+        }
 
         DB::beginTransaction();
 
         try {
-            // 1) Vérifier limite d'attribution
+            // 1) 🚦 VÉRIFIER LIMITE D'ATTRIBUTION
             if ($action->limite) {
-                $nbRecompenses = Recompense::where('action_id', $action->id)
-                    ->where(function ($q) use ($membre, $entreprise) {
-                        $q->where('membre_id', $membre->id);
-                        if ($entreprise) {
-                            $q->orWhere('entreprise_id', $entreprise->id);
-                        }
-                    })
-                    ->count();
+                // 📊 Compter les récompenses existantes pour cette action
+                $query = Recompense::where('action_id', $action->id);
+                
+                // 🎯 Logique de propriété : entreprise优先 si existe
+                if ($entreprise) {
+                    // Récompense d'entreprise : vérifier par entreprise
+                    $query->where('entreprise_id', $entreprise->id);
+                    \Log::info('Vérification limite - Récompense entreprise', [
+                        'entreprise_id' => $entreprise->id,
+                        'action_code' => $actionCode,
+                        'limite' => $action->limite
+                    ]);
+                } else {
+                    // Récompense personnelle : vérifier par membre
+                    $query->where('membre_id', $membre->id)
+                          ->whereNull('entreprise_id');
+                    \Log::info('Vérification limite - Récompense personnelle', [
+                        'membre_id' => $membre->id,
+                        'action_code' => $actionCode,
+                        'limite' => $action->limite
+                    ]);
+                }
+                
+                $nbRecompenses = $query->count();
 
                 if ($nbRecompenses >= $action->limite) {
+                    \Log::warning('Limite de récompense atteinte', [
+                        'action_code' => $actionCode,
+                        'nb_recompenses' => $nbRecompenses,
+                        'limite' => $action->limite,
+                        'entreprise_id' => $entreprise->id ?? null,
+                        'membre_id' => $membre->id
+                    ]);
                     DB::rollBack();
                     return false;
                 }
             }
 
-            // 2) Créer / récupérer compte ressource
+            // 2) 🏦 CRÉER/RÉCUPÉRER COMPTE RESSOURCE
             $ressourceCompte = null;
             if ($action->ressourcetype_id) {
                 $criteria = ['ressourcetype_id' => $action->ressourcetype_id];
 
+                // 🎯 Logique de propriété de la récompense
                 if ($entreprise) {
+                    // 💼 RÉCOMPENSE D'ENTREPRISE - appartient à l'entreprise
                     $criteria['entreprise_id'] = $entreprise->id;
-                    $defaults = ['membre_id' => $membre->id, 'solde' => 0, 'etat' => 1, 'spotlight' => 0];
+                    $defaults = [
+                        'membre_id' => $membre->id,        // Membre déclencheur
+                        'solde' => 0, 
+                        'etat' => 1, 
+                        'spotlight' => 0
+                    ];
+                    \Log::info('Création compte ressource - Entreprise', [
+                        'entreprise_id' => $entreprise->id,
+                        'membre_id' => $membre->id,
+                        'ressourcetype_id' => $action->ressourcetype_id
+                    ]);
                 } else {
+                    // 👤 RÉCOMPENSE PERSONNELLE - appartient au membre
                     $criteria['membre_id'] = $membre->id;
-                    $defaults = ['entreprise_id' => null, 'solde' => 0, 'etat' => 1, 'spotlight' => 0];
+                    $defaults = [
+                        'entreprise_id' => null,           // Pas d'entreprise
+                        'solde' => 0, 
+                        'etat' => 1, 
+                        'spotlight' => 0
+                    ];
+                    \Log::info('Création compte ressource - Personnel', [
+                        'membre_id' => $membre->id,
+                        'ressourcetype_id' => $action->ressourcetype_id
+                    ]);
                 }
 
                 $ressourceCompte = Ressourcecompte::firstOrCreate($criteria, $defaults);
@@ -100,6 +162,7 @@ class RecompenseService
                     'ressourcecompte_id' => $ressourceCompte->id,
                     'datetransaction' => Carbon::now(),
                     'operationtype_id' => 1,
+                    'description' => "Récompense pour l’action : " . $action->titre,
                     'spotlight' => 0,
                     'etat' => 1,
                 ]);
@@ -126,7 +189,7 @@ class RecompenseService
             ]);
 
             // 6) Envoi de notification Laravel (database + mail)
-            /*$notifTarget = null;
+            $notifTarget = null;
 
             if (method_exists($membre, 'notify')) {
                 $notifTarget = $membre;
@@ -142,7 +205,7 @@ class RecompenseService
                 ));
             } else {
                 Log::warning("Aucune cible notifiable trouvée pour membre id={$membre->id} lors de l'attribution d'une récompense.");
-            }*/
+            }
 
             DB::commit();
 
@@ -155,7 +218,7 @@ $returnRecompense = $recompense;
                 'recompense' => $recompense,
             ], function ($message) use ($membre) {
                 $message->to($membre->email ?? 'yokamly@gmail.com')
-                        ->subject('🎁 Nouvelle récompense obtenue - CIJES Africa');
+                        ->subject('🎁 Nouvelle récompense obtenue - CJES Africa');
             });
 
             } catch (\Exception $e) { 
@@ -173,6 +236,7 @@ $returnRecompense = $recompense;
                 'action' => $actionCode,
                 'membre_id' => $membre->id ?? null,
                 'entreprise_id' => $entreprise->id ?? null,
+                'montant' => $montant,
             ]);
             //return $e->getMessage();
             return false;

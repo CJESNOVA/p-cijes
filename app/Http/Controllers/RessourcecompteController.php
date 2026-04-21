@@ -7,18 +7,29 @@ use App\Models\Ressourcecompte;
 use App\Models\Ressourcetransaction;
 use App\Models\Entreprisemembre;
 use App\Models\Membre;
+use App\Models\Entreprise;
+use App\Models\Demande;
+use App\Models\Demandetype;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\RecompenseService;
 
 class RessourcecompteController extends Controller
 {
+    protected $recompenseService;
+    
+    public function __construct(RecompenseService $recompenseService)
+    {
+        $this->recompenseService = $recompenseService;
+    }
+
     /**
      * Liste des ressources du membre connecté et de ses entreprises
      */
-    
+
     public function index()
 {
     $userId = Auth::id();
@@ -84,6 +95,157 @@ class RessourcecompteController extends Controller
             ->get();
 
         return view('ressourcecompte.create', compact('type', 'entreprises'));
+    }
+
+
+
+    /**
+     * Formulaire de demande de ressources (type 4 - SIKA)
+     */
+    public function createDemande()
+    {
+        $type = Ressourcetype::find(4);
+        if (!$type) {
+            return redirect()->route('ressourcecompte.index')->with('error', 'Type de ressource SIKA non trouvé.');
+        }
+
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->first();
+
+        if (!$membre) {
+            return redirect()
+                ->route('membre.createOrEdit')
+                ->with('error', 'Vous devez d\'abord créer votre profil membre.');
+        }
+
+        $entreprises = Entreprisemembre::where('membre_id', $membre->id)
+            ->with('entreprise')
+            ->get();
+
+        // Récupérer les ressources du membre
+        $ressourcecomptes = Ressourcecompte::where('membre_id', $membre->id)->get();
+
+        // Types de documents requis pour la demande de visa
+        $demandetypes = Demandetype::where('etat', 1)->get();
+
+        // Documents déjà soumis par le membre
+        $demandes = Demande::with(['ressourcecompte', 'demandetype'])
+            ->whereIn('ressourcecompte_id', $ressourcecomptes->pluck('id'))
+            ->get();
+
+        // Indexer les documents par type pour pré-remplir le formulaire
+        $demandesByType = $demandes->keyBy('demandetype_id');
+
+        return view('demande.create-demande', compact('type', 'membre', 'entreprises', 'demandetypes', 'demandes', 'demandesByType'));
+    }
+
+
+
+    /**
+     * Enregistrer une demande de ressource (type 4 - SIKA) avec documents
+     */
+    public function storeDemande(Request $request)
+    {
+        // Validation
+        $request->validate([
+            'montant_demande' => 'required|numeric|min:1000',
+            'entreprise_id' => 'nullable|exists:entreprises,id',
+            'description' => 'required|string|min:10|max:500',
+        ]);
+
+        // Récupérer le membre connecté
+        $userId = Auth::id();
+        $membre = Membre::where('user_id', $userId)->first();
+
+        if (!$membre) {
+            return redirect()
+                ->route('membre.createOrEdit')
+                ->with('error', 'Vous devez d\'abord créer votre profil membre.');
+        }
+
+        // Récupérer l'entreprise si sélectionnée
+        $entreprise = null;
+        if ($request->entreprise_id) {
+            $entreprise = \App\Models\Entreprise::find($request->entreprise_id);
+        }
+
+        // Créer le compte ressource (type 4 - SIKA)
+        $ressource = Ressourcecompte::firstOrCreate(
+            [
+                'membre_id'        => $membre->id,
+                'entreprise_id'    => $request->entreprise_id,
+                'ressourcetype_id' => 4,
+            ],
+            [
+                'solde'     => 0,
+                'spotlight' => 0,
+                'etat'      => 1,
+            ]
+        );
+
+        // Traiter les fichiers uploadés selon les demandetypes
+        $demandetypes = Demandetype::where('etat', 1)->get();
+        $fichiersTraites = 0;
+
+        foreach ($demandetypes as $demandetype) {
+            $inputName = 'demande_' . $demandetype->id;
+
+            if ($request->hasFile($inputName)) {
+                $file = $request->file($inputName);
+                
+                // Validation du fichier
+                if ($file->isValid() && $file->getSize() <= 10485760) { // Max 10MB
+                    // Stockage du fichier avec Supabase
+                    $storage = new \App\Services\SupabaseStorageService();
+                    $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
+                    $path = 'demandes/' . time() . '_' . $cleanName;
+                    $url = $storage->upload($path, file_get_contents($file->getRealPath()));
+                    
+                    // Créer ou mettre à jour la demande
+                    Demande::updateOrCreate(
+                        [
+                            'ressourcecompte_id' => $ressource->id,
+                            'demandetype_id' => $demandetype->id,
+                        ],
+                        [
+                            'titre' => $demandetype->titre,
+                            'fichier' => $path,
+                            'datedemande' => now(),
+                            'etat' => 1,
+                        ]
+                    );
+                    
+                    $fichiersTraites++;
+                }
+            }
+        }
+
+        // Créer une transaction de type demande (état 0 = en attente de validation)
+        $reference = 'DEMANDE-SIKA-' . strtoupper(Str::random(8));
+
+        $transaction = Ressourcetransaction::create([
+            'montant'            => $request->montant_demande,
+            'reference'          => $reference,
+            'ressourcecompte_id' => $ressource->id,
+            'datetransaction'    => now(),
+            'operationtype_id'   => 1, // crédit (en attente)
+            'description'        => $request->description,
+            'spotlight'          => 0,
+            'etat'               => 0, // 0 = en attente de validation
+        ]);
+
+        // Attribuer récompense pour demande de SIKA
+        $this->recompenseService->attribuerRecompense('DEMANDE_SIKA', $membre, $entreprise, $transaction->id, null);
+
+        $message = "Votre demande de SIKA d'un montant de {$request->montant_demande} FCFA a été soumise avec succès. Référence: {$reference}";
+        
+        if ($fichiersTraites > 0) {
+            $message .= " ({$fichiersTraites} document(s) téléchargé(s))";
+        }
+
+        return redirect()
+            ->route('ressourcecompte.index')
+            ->with('success', $message);
     }
 
 
@@ -254,6 +416,13 @@ public function callback($id, Request $request)
             'transaction_id' => $transaction->id,
             'nouveau_solde' => $compte->solde
         ]);
+
+        if ($transaction->ressourcecompte->membre) {
+            // 🎁 Attribuer récompense de recharge
+            // 💡 Utiliser le montant de la transaction comme base pour le calcul en pourcentage
+            // ✅ Le membre et l'entreprise sont corrects : propriétaires du compte rechargé
+            $this->recompenseService->attribuerRecompense('RECHARGE_KOBO', $transaction->ressourcecompte->membre, $transaction->ressourcecompte->entreprise, $transaction->id, $transaction->montant);
+        }
 
         return response()->json(['status' => 'ok'], 200);
     }

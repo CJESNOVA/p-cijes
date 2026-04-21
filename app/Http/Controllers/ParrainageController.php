@@ -94,7 +94,6 @@ public function activer($id, RecompenseService $recompenseService)
         ->where('etat', 0)
         ->firstOrFail();
 
-
     DB::beginTransaction();
 
     try {
@@ -102,23 +101,30 @@ public function activer($id, RecompenseService $recompenseService)
         $parrainage->etat = 1;
         $parrainage->save();
 
-        //dd($parrainage);
         // 2. Récompense pour le Parrain (Bon + Coris)
-        $recompense_parrain = $recompenseService->attribuerRecompense('PARRAINAGE_PARRAIN', $parrain, null, $parrainage->id);
+        // 💡 Pas de montant logique pour un parrainage, utilisation de points fixes
+        // ✅ Le parrain est correct : membre qui a parrainé quelqu'un
+        $recompense_parrain = $recompenseService->attribuerRecompense('PARRAINAGE', $parrain, null, $parrainage->id, null);
 
         // 3. Récompense pour le Filleul (Coris uniquement)
         $filleul = $parrainage->membrefilleul; // relation ->belongsTo(Membre::class, 'membre_filleul_id')
-        $recompense_filleul = $recompenseService->attribuerRecompense('PARRAINAGE_FILLEUL', $filleul, null, $parrainage->id);
+        if ($filleul) {
+            // ✅ Le filleul est correct : membre qui a été parrainé
+            $recompense_filleul = $recompenseService->attribuerRecompense('PARRAINAGE_FILLEUL', $filleul, null, $parrainage->id, null);
+        } else {
+            $recompense_filleul = null;
+        }
 
-        if ($recompense_parrain && $recompense_filleul) {
-
-        //dd($recompense_parrain);
-        DB::commit();
-        return back()->with('success', '✅ Parrainage activé : récompenses attribuées au parrain et au filleul.');
-        }else{
-        DB::rollBack();
-        //dd($recompense_parrain);
-        return back()->with('error', 'Récompense déjà attribée ...');
+        // 4. Valider la transaction si au moins une récompense attribuée
+        if ($recompense_parrain || $recompense_filleul) {
+            DB::commit();
+            $message = '✅ Parrainage activé : ';
+            if ($recompense_parrain) $message .= 'récompense attribuée au parrain. ';
+            if ($recompense_filleul) $message .= 'récompense attribuée au filleul.';
+            return back()->with('success', $message);
+        } else {
+            DB::rollBack();
+            return back()->with('error', '❌ Aucune récompense n\'a pu être attribuée.');
         }
 
     } catch (\Exception $e) {
@@ -126,7 +132,4 @@ public function activer($id, RecompenseService $recompenseService)
         return back()->with('error', '⚠️ Erreur : ' . $e->getMessage());
     }
 }
-
-
-
 }

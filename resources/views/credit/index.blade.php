@@ -38,6 +38,42 @@
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
 
+                <!-- Définition de SIKA -->
+                <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-6 mb-8">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-blue-900 mb-2">Qu'est-ce que SIKA ?</h3>
+                            <div class="text-sm text-blue-800 space-y-2">
+                                <p><strong>SIKA</strong> est un dispositif de <strong>financement</strong> mis en place par CJES Africa pour soutenir les entrepreneurs et porteurs de projets.</p>
+                                <div class="bg-white/50 rounded-lg p-3 mt-3">
+                                    <h4 class="font-semibold text-blue-900 mb-1">🎯 Objectifs de SIKA :</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-blue-800">
+                                        <li>Financer le démarrage d'activités économiques</li>
+                                        <li>Soutenir la croissance des PME existantes</li>
+                                        <li>Faciliter l'accès au crédit pour les entrepreneurs</li>
+                                        <li>Promouvoir l'entrepreneuriat local</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white/50 rounded-lg p-3 mt-3">
+                                    <h4 class="font-semibold text-blue-900 mb-1">💡 Comment ça marche ?</h4>
+                                    <ol class="list-decimal list-inside space-y-1 text-blue-800">
+                                        <li>Soumettez votre demande de financement</li>
+                                        <li>Votre dossier est étudié par le comité de validation</li>
+                                        <li>En cas d'acceptation, les fonds sont débloqués</li>
+                                        <li>Vous bénéficiez d'un accompagnement personnalisé</li>
+                                    </ol>
+                                </div>
+                                <p class="mt-3"><strong>💸 Pour faire une demande :</strong> Utilisez l'option "Demande SIKA" dans le menu "Ressources" de votre espace personnel.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 @if($credits)
               <div class="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-2 lg:gap-6 xl:grid-cols-2">
 

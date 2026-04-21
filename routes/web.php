@@ -22,6 +22,8 @@ use App\Http\Controllers\SujetController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\CotisationController;
 use App\Http\Controllers\CotisationressourceController;
+use App\Http\Controllers\AbonnementController;
+use App\Http\Controllers\AbonnementressourceController;
 use App\Http\Controllers\ConseillerController;
 use App\Http\Controllers\FormationController;
 use App\Http\Controllers\AccompagnementController;
@@ -46,8 +48,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PropositionMembreController;
+use App\Http\Controllers\AbonnementtypeController;
 
 use App\Http\Controllers\RessourceSyncController;
+use App\Http\Controllers\DemandeController;
 
 Route::post('/ressourcecomptes/sync', [RessourceSyncController::class, 'syncToSupabase'])
     ->name('ressourcecomptes.sync')
@@ -73,7 +77,7 @@ Route::get('/test-mail', function () {
     try {
         Mail::raw('Ceci est un test depuis Laravel local.', function ($message) {
             $message->to('yokamly@gmail.com')
-                    ->subject('Test Mail CIJES Africa');
+                    ->subject('Test Mail CJES Africa');
         });
 
         return '✅ Mail envoyé avec succès !';
@@ -108,7 +112,7 @@ Route::get('/test-mail', function () {
             'recompense' => $recompense,
         ], function ($message) use ($membre) {
             $message->to($membre->email ?? 'yokamly@gmail.com')
-                    ->subject('🎁 Nouvelle récompense obtenue - CIJES Africa');
+                    ->subject('🎁 Nouvelle récompense obtenue - CJES Africa');
         });
 
         return "Mail envoyé avec succès à : " . ($membre->email ?? 'yokamly@gmail.com');
@@ -528,6 +532,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/bons/ressourcecomptes/', [RessourcecompteController::class, 'index'])->name('ressourcecompte.index');
     Route::get('/bons/ressourcecomptes/create', [RessourcecompteController::class, 'create'])->name('ressourcecompte.create');
     Route::post('/bons/ressourcecomptes/', [RessourcecompteController::class, 'store'])->name('ressourcecompte.store');
+    
+    // Routes pour les demandes de SIKA (type 4)
+    Route::get('/bons/ressourcecomptes/demande', [RessourcecompteController::class, 'createDemande'])->name('ressourcecompte.createDemande');
+    Route::post('/bons/ressourcecomptes/demande', [RessourcecompteController::class, 'storeDemande'])->name('ressourcecompte.storeDemande');
+
+    // Routes pour la gestion des demandes (documents)
+    Route::get('/demandes', [DemandeController::class, 'index'])->name('demande.index');
+    Route::get('/demandes/form', [DemandeController::class, 'indexForm'])->name('demande.form');
+    Route::post('/demandes/store', [DemandeController::class, 'storeOrUpdateDemandes'])->name('demande.store');
+    Route::get('/demandes/{id}/download', [DemandeController::class, 'download'])->name('demande.download');
 
     Route::get('/prestations/prestationressources', [PrestationressourceController::class, 'index'])->name('prestationressource.index');
 
@@ -605,6 +619,19 @@ Route::middleware('auth')->group(function () {
     // Cotisations payées
     Route::get('/entreprises/cotisations/payees', [CotisationressourceController::class, 'index'])->name('cotisationressource.index');
     Route::get('/entreprises/cotisations/payees/{id}', [CotisationressourceController::class, 'show'])->name('cotisationressource.show');
+
+    // Routes pour la gestion des abonnements (réservé aux entreprises membres CJES)
+    Route::get('/entreprises/abonnements', [AbonnementController::class, 'index'])->name('abonnement.index');
+    Route::get('/entreprises/abonnements/create/{entrepriseId}', [AbonnementController::class, 'create'])->name('abonnement.create');
+    Route::post('/entreprises/abonnements', [AbonnementController::class, 'store'])->name('abonnement.store');
+    Route::get('/entreprises/abonnements/{id}/edit', [AbonnementController::class, 'edit'])->name('abonnement.edit');
+    Route::put('/entreprises/abonnements/{id}', [AbonnementController::class, 'update'])->name('abonnement.update');
+    Route::delete('/entreprises/abonnements/{id}', [AbonnementController::class, 'destroy'])->name('abonnement.destroy');
+    Route::post('/entreprises/abonnements/{id}/mark-as-paid', [AbonnementController::class, 'markAsPaid'])->name('abonnement.markAsPaid');
+    
+    // Abonnements payés
+    Route::get('/entreprises/abonnements/payes', [AbonnementressourceController::class, 'index'])->name('abonnementressource.index');
+    Route::get('/entreprises/abonnements/payes/{id}', [AbonnementressourceController::class, 'show'])->name('abonnementressource.show');
 
 
 });

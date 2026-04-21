@@ -180,6 +180,53 @@
                     </div>
                 </div>
 
+                <!-- Boutons de navigation -->
+                <div class="flex justify-between items-center">
+                    <div class="flex space-x-3">
+                        @if($isLastModule)
+                            @if(session('showFinalization'))
+                                <div class="alert flex rounded-lg bg-[#4FBE96] px-4 py-3 text-white mb-4 shadow-lg">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Tous les modules sont complétés ! Vous pouvez maintenant finaliser votre test.
+                                </div>
+                            @endif
+                            <button type="submit" formaction="{{ route('diagnosticentreprisequalification.store', ['entrepriseId' => $entrepriseId, 'moduleId' => $currentModule->id]) }}" 
+                                    class="btn bg-gradient-to-r from-[#4FBE96] to-[#4FBE96]/80 text-white hover:from-[#4FBE96]/90 hover:to-[#4FBE96]/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Finaliser le test
+                            </button>
+                        @else
+                            <button type="submit" formaction="{{ route('diagnosticentreprisequalification.saveModule', ['entrepriseId' => $entrepriseId, 'moduleId' => $currentModule->id]) }}" 
+                                    class="btn bg-gradient-to-r from-[#152737] to-[#152737]/80 text-white hover:from-[#152737]/90 hover:to-[#152737]/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                <i class="fas fa-save mr-2"></i>
+                                Enregistrer et continuer
+                            </button>
+                        @endif
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        @if($previousModule)
+                            <a href="{{ route('diagnosticentreprisequalification.showModule', [$entrepriseId, $previousModule->id]) }}" 
+                               class="btn bg-gradient-to-r from-slate-500 to-slate-500/80 text-white hover:from-slate-600 hover:to-slate-600/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Module précédent
+                            </a>
+                        @endif
+                        
+                        @if($nextModule)
+                            <a href="{{ route('diagnosticentreprisequalification.showModule', [$entrepriseId, $nextModule->id]) }}" 
+                               class="btn bg-gradient-to-r from-slate-400 to-slate-400/80 text-white hover:from-slate-500 hover:to-slate-500/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                <i class="fas fa-arrow-right mr-2"></i>
+                                Module suivant
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                
+
                 <!-- Barre de navigation par numéros -->
                 <div class="mt-8 mb-6">
                     <div class="flex items-center justify-center space-x-2 flex-wrap">
@@ -226,51 +273,6 @@
                         <span class="text-sm text-slate-500 dark:text-navy-400">
                             Module {{ $currentModuleIndex }} sur {{ $modules->count() }}
                         </span>
-                    </div>
-                </div>
-
-                <!-- Boutons de navigation -->
-                <div class="flex justify-between items-center">
-                    <div class="flex space-x-3">
-                        @if($isLastModule)
-                            @if(session('showFinalization'))
-                                <div class="alert flex rounded-lg bg-[#4FBE96] px-4 py-3 text-white mb-4 shadow-lg">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Tous les modules sont complétés ! Vous pouvez maintenant finaliser votre test.
-                                </div>
-                            @endif
-                            <button type="submit" formaction="{{ route('diagnosticentreprisequalification.store', ['entrepriseId' => $entrepriseId, 'moduleId' => $currentModule->id]) }}" 
-                                    class="btn bg-gradient-to-r from-[#4FBE96] to-[#4FBE96]/80 text-white hover:from-[#4FBE96]/90 hover:to-[#4FBE96]/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                <i class="fas fa-check-circle mr-2"></i>
-                                Finaliser le test
-                            </button>
-                        @else
-                            <button type="submit" formaction="{{ route('diagnosticentreprisequalification.saveModule', ['entrepriseId' => $entrepriseId, 'moduleId' => $currentModule->id]) }}" 
-                                    class="btn bg-gradient-to-r from-[#152737] to-[#152737]/80 text-white hover:from-[#152737]/90 hover:to-[#152737]/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                <i class="fas fa-save mr-2"></i>
-                                Enregistrer et continuer
-                            </button>
-                        @endif
-                    </div>
-                    
-                    <div class="flex space-x-3">
-                        @if($previousModule)
-                            <a href="{{ route('diagnosticentreprisequalification.showModule', [$entrepriseId, $previousModule->id]) }}" 
-                               class="btn bg-gradient-to-r from-slate-500 to-slate-500/80 text-white hover:from-slate-600 hover:to-slate-600/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                <i class="fas fa-arrow-left mr-2"></i>
-                                Module précédent
-                            </a>
-                        @endif
-                        
-                        @if($nextModule)
-                            <a href="{{ route('diagnosticentreprisequalification.showModule', [$entrepriseId, $nextModule->id]) }}" 
-                               class="btn bg-gradient-to-r from-slate-400 to-slate-400/80 text-white hover:from-slate-500 hover:to-slate-500/70 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                <i class="fas fa-arrow-right mr-2"></i>
-                                Module suivant
-                            </a>
-                        @endif
                     </div>
                 </div>
             </form>

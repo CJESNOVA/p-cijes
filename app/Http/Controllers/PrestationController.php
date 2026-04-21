@@ -332,7 +332,7 @@ public function inscrireStore(Request $request, $id)
         if ($montant > 0) {
             // Vérifier compatibilité ressource ↔ prestation
             $isCompatible = Ressourcetypeoffretype::where('ressourcetype_id', $ressourcecompte->ressourcetype_id)
-                ->where('offretype_id', 2) // 2 = prestations
+                ->where('offretype_id', 1) // 1 = prestations
                 ->exists();
 
             if (!$isCompatible) {
@@ -368,6 +368,11 @@ public function inscrireStore(Request $request, $id)
                 'etat' => 1,
             ]);
             $receveurCompte->increment('solde', $montant);
+        }
+
+        // Intégrer notre système de paiement par action
+        if ($montant > 0 && $entrepriseId) {
+            $this->traiterPaiementPrestationViaAction($montant, $entrepriseId, $ressourcecompte, $prestation, $membre);
         }
 
 
@@ -643,6 +648,88 @@ public function inscrireStore(Request $request, $id)
                 'message' => 'Erreur lors du calcul du montant: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Traiter le paiement de la prestation via notre système d'actions
+     */
+    private function traiterPaiementPrestationViaAction($montant, $entrepriseId, $ressourcecompte, $prestation, $membre)
+    {
+        // Récupérer l'entreprise
+        $entreprise = \App\Models\Entreprise::find($entrepriseId);
+        
+        if (!$entreprise) {
+            \Log::warning('Entreprise non trouvée pour paiement prestation', ['entreprise_id' => $entrepriseId]);
+            return;
+        }
+        
+        // Déterminer le code d'action
+        $actionCode = $this->determinerCodeActionPrestation($entreprise->entrepriseprofil_id, $ressourcecompte->ressourcetype_id);
+        
+        if (!$actionCode) {
+            \Log::warning('Code action non déterminé', [
+                'entreprise_profil_id' => $entreprise->entrepriseprofil_id,
+                'ressource_type_id' => $ressourcecompte->ressourcetype_id
+            ]);
+            return;
+        }
+        
+        // Appeler l'API de paiement
+        try {
+            $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+            $resultat = $moduleController->attribuerModuleViaAction(
+                'prestations',
+                $prestation->id,
+                $actionCode,
+                $membre,
+                [
+                    'entreprise' => $entreprise,
+                    'montant' => $montant,
+                    'description' => "Paiement prestation {$actionCode}",
+                    'reference' => 'PI-' . $prestation->id . '-' . date('YmdHis')
+                ]
+            );
+            
+            if ($resultat['success']) {
+                \Log::info('Paiement prestation effectué avec succès', [
+                    'action_code' => $actionCode,
+                    'prestation_id' => $prestation->id,
+                    'montant' => $montant
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors du paiement prestation via action', [
+                'action_code' => $actionCode,
+                'prestation_id' => $prestation->id,
+                'erreur' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Déterminer le code d'action de paiement selon le profil de l'entreprise et le type de ressource
+     */
+    private function determinerCodeActionPrestation($entrepriseProfilId, $ressourceTypeId)
+    {
+        $mapping = [
+            1 => [ // Pépite
+                3 => 'PI_PEPITE_BON',   // Bon
+                1 => 'PI_PEPITE_KOBO',  // Kobo  
+                4 => 'PI_PEPITE_SIKA',  // Sika
+            ],
+            2 => [ // Émergeant
+                3 => 'PI_EMERGEANT_BON',
+                1 => 'PI_EMERGEANT_KOBO',
+                4 => 'PI_EMERGEANT_SIKA',
+            ],
+            3 => [ // Élite
+                3 => 'PI_ELITE_BON',
+                1 => 'PI_ELITE_KOBO',
+                4 => 'PI_ELITE_SIKA',
+            ]
+        ];
+        
+        return $mapping[$entrepriseProfilId][$ressourceTypeId] ?? null;
     }
 
 

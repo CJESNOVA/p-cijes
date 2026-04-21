@@ -9,9 +9,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 use App\Services\SupabaseStorageService;
+use App\Services\RecompenseService;
 
 class MembreController extends Controller
 {
+    protected $recompenseService;
+    
+    public function __construct(RecompenseService $recompenseService)
+    {
+        $this->recompenseService = $recompenseService;
+    }
+    
     public function createOrEdit()
     {
         $userId = Auth::id();
@@ -74,10 +82,24 @@ class MembreController extends Controller
         $wasCreated = $membre->wasRecentlyCreated;
 
         if ($wasCreated) {
+        // 🔗 Récupérer le membre créé
+        if ($membre) {
+            // 🎁 Attribuer récompense d'inscription 
+            // 💡 Pas de montant logique pour une inscription, utilisation de points fixes
+            // ✅ Le membre est correct : celui qui vient de s'inscrire
+            $this->recompenseService->attribuerRecompense('INSCRIPTION', $membre, null, $membre->id, null);
+        }
             // Rediriger vers le tableau de bord après la création du profil
             return redirect()->route('dashboard')
                 ->with('success', 'Votre profil a été créé avec succès ! Bienvenue sur la plateforme e-CIJES.');
         } else {
+        // 🔗 Récupérer le membre modifié
+        if ($membre) {
+            // 🎁 Attribuer récompense de complétion du profil
+            // 💡 Pas de montant logique pour la complétion de profil, utilisation de points fixes
+            // ✅ Le membre est correct : celui qui vient de compléter son profil
+            $this->recompenseService->attribuerRecompense('PROFIL_COMPLET', $membre, null, $membre->id, null);
+        }
             // Rediriger vers le tableau de bord après la modification du profil
             return redirect()->route('dashboard')
                 ->with('success', 'Votre profil a été mis à jour avec succès !');

@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
         // Créer les profils d'entreprise PÉPITE/ÉMERGENTE/ÉLITE
         $this->call(EntrepriseProfilSeeder::class);
 
+        // Créer les types d'abonnement
+        $this->call(AbonnementtypeSeeder::class);
+
         // User::factory(10)->create();
 
         User::factory()->create([

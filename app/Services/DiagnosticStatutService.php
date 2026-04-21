@@ -14,6 +14,12 @@ use App\Models\Diagnosticmodule;
 
 class DiagnosticStatutService
 {
+    protected $recompenseService;
+
+    public function __construct(RecompenseService $recompenseService = null)
+    {
+        $this->recompenseService = $recompenseService;
+    }
     /**
      * Récupérer les règles pour un profil et type de diagnostic
      */
@@ -209,6 +215,17 @@ class DiagnosticStatutService
         $nouveauStatut = $this->trouverStatutSelonRegles($scoresParBloc, $scoreGlobal, $diagnostic);
 
         if ($nouveauStatut && ($force || $ancienStatutId !== $nouveauStatut->id)) {
+
+            // 🎁 INSÉRER RÉCOMPENSE ICI - Progression de diagnostic statut
+            if ($ancienStatutId && $ancienStatutId < $nouveauStatut->id && $diagnostic->entreprise) {
+                // Logique de récompense pour PASSAGE_NIVEAU
+                $membre = $this->getMembrePrincipalEntreprise($diagnostic->entreprise);
+                if ($membre) {
+                    // 💡 Utiliser le score global comme montant pour le calcul en pourcentage
+                    $this->recompenseService->attribuerRecompense('PASSAGE_NIVEAU', $membre, $diagnostic->entreprise, $diagnostic->id, null);
+                }
+            }
+
             // Mettre à jour le diagnostic
             $diagnostic->update([
                 'diagnosticstatut_id' => $nouveauStatut->id,
@@ -354,6 +371,17 @@ class DiagnosticStatutService
             ]);
             
             $ancienProfilId = $entreprise->entrepriseprofil_id;
+
+            // 🎁 INSÉRER RÉCOMPENSE ICI - Progression de profil d'entreprise
+            if ($ancienProfilId < $nouveauProfilId) {
+                // Logique de récompense pour PASSAGE_PROFIL
+                $membre = $this->getMembrePrincipalEntreprise($entreprise);
+                if ($membre) {
+                    // 💡 Utiliser le score global comme montant pour le calcul en pourcentage
+                    $this->recompenseService->attribuerRecompense('PASSAGE_PROFIL', $membre, $entreprise, $dernierDiagnostic->id, null);
+                }
+            }
+ 
             $entreprise->update(['entrepriseprofil_id' => $nouveauProfilId]);
             
             // Créer une évolution pour le changement de profil
@@ -707,5 +735,24 @@ class DiagnosticStatutService
     {
         $profils = [1 => 'PÉPITE', 2 => 'ÉMERGENTE', 3 => 'ÉLITE'];
         return $profils[$profilId] ?? 'Non défini';
+    }
+
+    /**
+     * Récupérer le membre principal d'une entreprise
+     */
+    private function getMembrePrincipalEntreprise($entreprise)
+    {
+        if (!$entreprise) {
+            return null;
+        }
+
+        // Chercher le premier membre actif de l'entreprise
+        return $entreprise->entreprisesmembres()
+            ->with('membre')
+            ->whereHas('membre', function ($query) {
+                $query->where('etat', 1);
+            })
+            ->first()
+            ?->membre;
     }
 }

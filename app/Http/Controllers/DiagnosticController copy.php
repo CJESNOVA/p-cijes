@@ -171,7 +171,8 @@ class DiagnosticController extends Controller
 
             if ($nbDiagnostics === 1) {
                 // 🪙 Déclenche la récompense "DIAG_PME_PREMIER"
-                $recompense = $recompenseService->attribuerRecompense('DIAG_PME_PREMIER', $membre, null, $diagnostic->id);
+                // 💡 Utiliser le score total comme base pour le calcul en pourcentage
+                $recompense = $recompenseService->attribuerRecompense('DIAG_PME_PREMIER', $membre, null, $diagnostic->id, $totalScore ?? 0);
 
             }
 

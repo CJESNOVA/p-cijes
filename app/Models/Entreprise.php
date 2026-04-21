@@ -52,6 +52,11 @@ class Entreprise extends Model
         return $this->hasMany(Cotisation::class);
     }
 
+    public function abonnements()
+    {
+        return $this->hasMany(Abonnement::class);
+    }
+
     public function membres()
     {
         return $this->hasMany(Membre::class);

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API de Gestion des Paiements - Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .code-block { background: #1e293b; color: #e2e8f0; }
+        .method-get { background: #10b981; }
+        .method-post { background: #3b82f6; }
+        .endpoint-card:hover { transform: translateY(-2px); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .json-key { color: #60a5fa; }
+        .json-string { color: #86efac; }
+        .json-number { color: #fbbf24; }
+        .json-boolean { color: #f87171; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold flex items-center">
+                        <i class="fas fa-credit-card mr-3"></i>
+                        API de Gestion des Paiements
+                    </h1>
+                    <p class="mt-2 text-green-100">Plateforme de déclenchement de paiements par actions pour les applications externes</p>
+                </div>
+                <div class="text-right">
+                    <div class="bg-white/20 rounded-lg px-4 py-2">
+                        <span class="text-sm">Version</span>
+                        <span class="font-bold ml-2">v1.0.0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-6">
+            <div class="flex space-x-8">
+                <button onclick="showTab('overview')" class="tab-btn py-4 px-2 border-b-2 border-green-500 text-green-600 font-medium">
+                    <i class="fas fa-home mr-2"></i>Overview
+                </button>
+                <button onclick="showTab('endpoints')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-code mr-2"></i>Endpoints
+                </button>
+                <button onclick="showTab('examples')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-flask mr-2"></i>Exemples
+                </button>
+                <button onclick="showTab('actions')" class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-list mr-2"></i>Actions
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="container mx-auto px-6 py-8">
+        
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-info-circle text-green-500 mr-2"></i>
+                    Introduction
+                </h2>
+                <p class="text-gray-700 mb-4">
+                    Cette API permet aux plateformes externes de déclencher des paiements via actions prédéfinies, de créer automatiquement les transactions et de mettre à jour les soldes des ressources des membres de manière sécurisée et traçable.
+                </p>
+                
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+                    <h3 class="font-bold text-green-800 mb-2">
+                        <i class="fas fa-lightbulb mr-2"></i>Base URL
+                    </h3>
+                    <code class="text-green-700">http://votre-domaine.com/api/payments</code>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h3 class="font-bold text-green-800 mb-2">
+                            <i class="fas fa-check-circle mr-2"></i>Caractéristiques
+                        </h3>
+                        <ul class="text-green-700 space-y-1">
+                            <li><i class="fas fa-check mr-2"></i>Déclenchement de paiements par actions</li>
+                            <li><i class="fas fa-check mr-2"></i>Création automatique de transactions</li>
+                            <li><i class="fas fa-check mr-2"></i>Mise à jour des soldes ressources</li>
+                            <li><i class="fas fa-check mr-2"></i>Support multi-entreprises</li>
+                            <li><i class="fas fa-check mr-2"></i>Validation complète</li>
+                            <li><i class="fas fa-check mr-2"></i>Gestion des priorités (2-3-4-1)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h3 class="font-bold text-blue-800 mb-2">
+                            <i class="fas fa-shield-alt mr-2"></i>Sécurité
+                        </h3>
+                        <ul class="text-blue-700 space-y-1">
+                            <li><i class="fas fa-lock mr-2"></i>Authentification Laravel</li>
+                            <li><i class="fas fa-user-check mr-2"></i>Validation des utilisateurs</li>
+                            <li><i class="fas fa-building mr-2"></i>Vérification des entreprises</li>
+                            <li><i class="fas fa-history mr-2"></i>Journalisation complète</li>
+                            <li><i class="fas fa-bug mr-2"></i>Gestion des erreurs</li>
+                            <li><i class="fas fa-database mr-2"></i>Transactions atomiques</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Endpoints Tab -->
+        <div id="endpoints" class="tab-content">
+            <!-- Endpoint 1: Déclencher Paiement -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 endpoint-card transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold">Déclencher un paiement</h3>
+                    <span class="method-post text-white px-3 py-1 rounded">POST</span>
+                </div>
+                
+                <div class="mb-4">
+                    <code class="text-lg">/api/payments/trigger</code>
+                </div>
+
+                <p class="text-gray-700 mb-4">
+                    Permet de déclencher un paiement via une action prédéfinie. L'API crée automatiquement la transaction, met à jour le solde de la ressource et enregistre l'opération dans les logs.
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-bold mb-2">
+                            <i class="fas fa-arrow-down text-blue-500 mr-2"></i>Paramètres
+                        </h4>
+                        <div class="bg-gray-50 rounded p-3">
+                            <table class="w-full text-sm">
+                                <tr class="border-b">
+                                    <td class="font-medium py-2">action_code</td>
+                                    <td class="text-red-500">Requis</td>
+                                    <td>Code de l'action de paiement</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="font-medium py-2">supabase_user_id</td>
+                                    <td class="text-red-500">Requis*</td>
+                                    <td>ID Supabase de l'utilisateur</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="font-medium py-2">user_id</td>
+                                    <td class="text-red-500">Requis*</td>
+                                    <td>ID Laravel de l'utilisateur (alternative)</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="font-medium py-2">supabase_startup_id</td>
+                                    <td class="text-gray-500">Optionnel</td>
+                                    <td>ID Supabase de l'entreprise</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="font-medium py-2">entreprise_id</td>
+                                    <td class="text-gray-500">Optionnel</td>
+                                    <td>ID Laravel de l'entreprise</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="font-medium py-2">diagnostic_id</td>
+                                    <td class="text-gray-500">Optionnel</td>
+                                    <td>ID du diagnostic (contexte)</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="font-medium py-2">montant</td>
+                                    <td class="text-gray-500">Optionnel</td>
+                                    <td>Montant personnalisé</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="font-medium py-2">reference</td>
+                                    <td class="text-gray-500">Optionnel</td>
+                                    <td>Référence personnalisée</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-medium py-2">description</td>
+                                    <td class="text-gray-500">Optionnel</td>
+                                    <td>Description personnalisée</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mt-3">
+                            <p class="text-sm text-blue-700">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Note:</strong> Vous devez fournir soit <code>supabase_user_id</code> soit <code>user_id</code>, mais pas les deux.
+                                <code>supabase_user_id</code> est recommandé pour la compatibilité avec l'écosystème Supabase.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold mb-2">
+                            <i class="fas fa-arrow-up text-green-500 mr-2"></i>Réponse (200)
+                        </h4>
+                        <div class="code-block rounded p-3 text-sm overflow-x-auto">
+                            <pre>{
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"message"</span>: <span class="json-string">"Paiement effectué avec succès"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"payment_id"</span>: <span class="json-number">456</span>,
+    <span class="json-key">"montant"</span>: <span class="json-number">3000</span>,
+    <span class="json-key">"reference"</span>: <span class="json-string">"API-PREMIER-DIAG-123-20240409143000"</span>,
+    <span class="json-key">"action_code"</span>: <span class="json-string">"PREMIER_DIAG_DIRIGEANT"</span>,
+    <span class="json-key">"user_id"</span>: <span class="json-string">"user123"</span>,
+    <span class="json-key">"supabase_user_id"</span>: <span class="json-string">"supabase_12345"</span>,
+    <span class="json-key">"membre_id"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"entreprise_id"</span>: <span class="json-number">456</span>
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endpoint 2: Lister Actions -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 endpoint-card transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold">Lister les actions de paiement disponibles</h3>
+                    <span class="method-get text-white px-3 py-1 rounded">GET</span>
+                </div>
+                
+                <div class="mb-4">
+                    <code class="text-lg">/api/payments/actions</code>
+                </div>
+
+                <p class="text-gray-700 mb-4">
+                    Retourne la liste de toutes les actions de paiement disponibles avec leurs configurations directement depuis la base de données.
+                </p>
+
+                <div class="code-block rounded p-3 text-sm overflow-x-auto">
+                    <pre>{
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"message"</span>: <span class="json-string">"Liste des actions de paiement disponibles"</span>,
+  <span class="json-key">"data"</span>: [
+    {
+      <span class="json-key">"code"</span>: <span class="json-string">"PREMIER_DIAG_DIRIGEANT"</span>,
+      <span class="json-key">"titre"</span>: <span class="json-string">"Réalisation du 1er diagnostic du dirigeant"</span>,
+      <span class="json-key">"point"</span>: <span class="json-number">3000</span>,
+      <span class="json-key">"seuil"</span>: <span class="json-string">"1"</span>,
+      <span class="json-key">"description"</span>: <span class="json-string">"Premier diagnostic dirigeant"</span>
+    }
+  ]
+}</pre>
+                </div>
+            </div>
+
+            <!-- Endpoint 3: Vérifier Statut -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 endpoint-card transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold">Vérifier le statut d'un paiement</h3>
+                    <span class="method-get text-white px-3 py-1 rounded">GET</span>
+                </div>
+                
+                <div class="mb-4">
+                    <code class="text-lg">/api/payments/status/{reference}</code>
+                </div>
+
+                <p class="text-gray-700 mb-4">
+                    Permet de vérifier le statut d'un paiement en utilisant sa référence unique.
+                </p>
+
+                <div class="code-block rounded p-3 text-sm overflow-x-auto">
+                    <pre>{
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"reference"</span>: <span class="json-string">"API-PREMIER-DIAG-123-20240409143000"</span>,
+    <span class="json-key">"status"</span>: <span class="json-string">"completed"</span>,
+    <span class="json-key">"message"</span>: <span class="json-string">"Paiement traité avec succès"</span>
+  }
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Examples Tab -->
+        <div id="examples" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-flask text-purple-500 mr-2"></i>
+                    Exemples d'utilisation
+                </h2>
+
+                <!-- Exemple 1: Module Pépite -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-2">1. Module de formation Pépite</h3>
+                    <p class="text-gray-600 mb-3">Paiement pour complétion du module Pépite</p>
+                    
+                    <div class="bg-gray-50 rounded p-4">
+                        <h4 class="font-medium mb-2">Requête:</h4>
+                        <div class="code-block rounded p-3 text-sm mb-3 overflow-x-auto">
+                            <pre>POST /api/payments/trigger
+Content-Type: application/json
+
+{
+  <span class="json-key">"action_code"</span>: <span class="json-string">"MODULE_PEPITE"</span>,
+  <span class="json-key">"supabase_user_id"</span>: <span class="json-string">"supabase_12345"</span>,
+  <span class="json-key">"reference"</span>: <span class="json-string">"MODULE-PEPITE-001"</span>,
+  <span class="json-key">"description"</span>: <span class="json-string">"Module Pépite complété"</span>
+}</pre>
+                        </div>
+                        
+                        <h4 class="font-medium mb-2">Résultat:</h4>
+                        <ul class="text-green-700 space-y-1">
+                            <li><i class="fas fa-check mr-2"></i>Transaction de 1500 points créée</li>
+                            <li><i class="fas fa-check mr-2"></i>Solde du compte ressource Type 2 débité</li>
+                            <li><i class="fas fa-check mr-2"></i>Module ressource attribué</li>
+                            <li><i class="fas fa-check mr-2"></i>Log complet généré</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Exemple 1b: Module Émergent -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-2">1b. Module de formation Émergent</h3>
+                    <p class="text-gray-600 mb-3">Paiement pour complétion du module Émergent</p>
+                    
+                    <div class="bg-gray-50 rounded p-4">
+                        <h4 class="font-medium mb-2">Requête:</h4>
+                        <div class="code-block rounded p-3 text-sm mb-3 overflow-x-auto">
+                            <pre>POST /api/payments/trigger
+Content-Type: application/json
+
+{
+  <span class="json-key">"action_code"</span>: <span class="json-string">"MODULE_EMERGEANT"</span>,
+  <span class="json-key">"user_id"</span>: <span class="json-string">"3c49fbe3"</span>,
+  <span class="json-key">"reference"</span>: <span class="json-string">"MODULE-EMERGEANT-002"</span>
+}</pre>
+                        </div>
+                        
+                        <h4 class="font-medium mb-2">Résultat:</h4>
+                        <ul class="text-green-700 space-y-1">
+                            <li><i class="fas fa-check mr-2"></i>Transaction de 1200 points créée</li>
+                            <li><i class="fas fa-check mr-2"></i>Solde du compte ressource Type 2 débité</li>
+                            <li><i class="fas fa-check mr-2"></i>Module ressource attribué</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Exemple 2: Certification Elite -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-2">2. Certification Elite</h3>
+                    <p class="text-gray-600 mb-3">Paiement pour certification Elite avec entreprise</p>
+                    
+                    <div class="bg-gray-50 rounded p-4">
+                        <h4 class="font-medium mb-2">Requête:</h4>
+                        <div class="code-block rounded p-3 text-sm mb-3 overflow-x-auto">
+                            <pre>POST /api/payments/trigger
+Content-Type: application/json
+
+{
+  <span class="json-key">"action_code"</span>: <span class="json-string">"CERTIF_ELITE"</span>,
+  <span class="json-key">"supabase_user_id"</span>: <span class="json-string">"supabase_12345"</span>,
+  <span class="json-key">"supabase_startup_id"</span>: <span class="json-string">"startup_12345"</span>,
+  <span class="json-key">"montant"</span>: <span class="json-number">3000</span>,
+  <span class="json-key">"reference"</span>: <span class="json-string">"CERTIF-ELITE-001"</span>,
+  <span class="json-key">"description"</span>: <span class="json-string">"Certification Elite obtenue"</span>
+}</pre>
+                        </div>
+                        
+                        <h4 class="font-medium mb-2">Résultat:</h4>
+                        <ul class="text-green-700 space-y-1">
+                            <li><i class="fas fa-check mr-2"></i>Transaction de 3000 points créée</li>
+                            <li><i class="fas fa-check mr-2"></i>Entreprise trouvée via supabase_startup_id</li>
+                            <li><i class="fas fa-check mr-2"></i>Module ressource attribué</li>
+                            <li><i class="fas fa-check mr-2"></i>Montant personnalisé utilisé</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Exemple 3: Certification Pépite -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-2">3. Certification Pépite</h3>
+                    <p class="text-gray-600 mb-3">Paiement pour certification Pépite</p>
+                    
+                    <div class="bg-gray-50 rounded p-4">
+                        <h4 class="font-medium mb-2">Requête:</h4>
+                        <div class="code-block rounded p-3 text-sm mb-3 overflow-x-auto">
+                            <pre>POST /api/payments/trigger
+Content-Type: application/json
+
+{
+  <span class="json-key">"action_code"</span>: <span class="json-string">"CERTIF_PEPITE"</span>,
+  <span class="json-key">"supabase_user_id"</span>: <span class="json-string">"supabase_12345"</span>,
+  <span class="json-key">"supabase_startup_id"</span>: <span class="json-string">"startup_12345"</span>
+}</pre>
+                        </div>
+                        
+                        <h4 class="font-medium mb-2">Résultat:</h4>
+                        <ul class="text-green-700 space-y-1">
+                            <li><i class="fas fa-check mr-2"></i>Transaction de 2500 points créée</li>
+                            <li><i class="fas fa-check mr-2"></i>Type 2 utilisé (priorité 2-3-4-1)</li>
+                            <li><i class="fas fa-check mr-2"></i>Compatibilité ignorée (ressource_type_id = 0)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Exemple 4: Erreur de validation -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-2">4. Gestion des erreurs</h3>
+                    <p class="text-gray-600 mb-3">Exemple de réponse en cas d'erreur de validation</p>
+                    
+                    <div class="bg-gray-50 rounded p-4">
+                        <h4 class="font-medium mb-2">Requête invalide:</h4>
+                        <div class="code-block rounded p-3 text-sm mb-3 overflow-x-auto">
+                            <pre>POST /api/payments/trigger
+Content-Type: application/json
+
+{
+  <span class="json-key">"action_code"</span>: <span class="json-string">""</span>,
+  <span class="json-key">"supabase_user_id"</span>: <span class="json-string">"inexistant"</span>
+}</pre>
+                        </div>
+                        
+                        <h4 class="font-medium mb-2">Réponse (422):</h4>
+                        <div class="code-block rounded p-3 text-sm overflow-x-auto">
+                            <pre>{
+  <span class="json-key">"success"</span>: <span class="json-boolean">false</span>,
+  <span class="json-key">"message"</span>: <span class="json-string">"Données invalides"</span>,
+  <span class="json-key">"errors"</span>: {
+    <span class="json-key">"action_code"</span>: [<span class="json-string">"Le champ action_code est requis."</span>],
+    <span class="json-key">"supabase_user_id"</span>: [<span class="json-string">"L'utilisateur sélectionné n'est pas valide."</span>]
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Tab -->
+        <div id="actions" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4">
+                    <i class="fas fa-list text-green-500 mr-2"></i>
+                    Actions de Paiement Disponibles
+                </h2>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-3 text-left">Code</th>
+                                <th class="px-4 py-3 text-left">Titre</th>
+                                <th class="px-4 py-3 text-center">Points</th>
+                                <th class="px-4 py-3 text-center">Limite</th>
+                                <th class="px-4 py-3 text-left">Type</th>
+                                <th class="px-4 py-3 text-left">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3 font-mono text-sm">MODULE_PEPITE</td>
+                                <td class="px-4 py-3">Module Pépite</td>
+                                <td class="px-4 py-3 text-center font-bold">1500</td>
+                                <td class="px-4 py-3 text-center">Illimité</td>
+                                <td class="px-4 py-3"><span class="bg-teal-100 text-teal-800 px-2 py-1 rounded">Formation</span></td>
+                                <td class="px-4 py-3 text-sm">Module de formation Pépite</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3 font-mono text-sm">MODULE_EMERGEANT</td>
+                                <td class="px-4 py-3">Module Émergent</td>
+                                <td class="px-4 py-3 text-center font-bold">1200</td>
+                                <td class="px-4 py-3 text-center">Illimité</td>
+                                <td class="px-4 py-3"><span class="bg-teal-100 text-teal-800 px-2 py-1 rounded">Formation</span></td>
+                                <td class="px-4 py-3 text-sm">Module de formation Émergent</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3 font-mono text-sm">MODULE_ELITE</td>
+                                <td class="px-4 py-3">Module Elite</td>
+                                <td class="px-4 py-3 text-center font-bold">2000</td>
+                                <td class="px-4 py-3 text-center">Illimité</td>
+                                <td class="px-4 py-3"><span class="bg-teal-100 text-teal-800 px-2 py-1 rounded">Formation</span></td>
+                                <td class="px-4 py-3 text-sm">Module de formation Elite</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3 font-mono text-sm">CERTIF_PEPITE</td>
+                                <td class="px-4 py-3">Certification Pépite</td>
+                                <td class="px-4 py-3 text-center font-bold">2500</td>
+                                <td class="px-4 py-3 text-center">Illimité</td>
+                                <td class="px-4 py-3"><span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded">Certification</span></td>
+                                <td class="px-4 py-3 text-sm">Certification Pépite</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3 font-mono text-sm">CERTIF_EMERGEANT</td>
+                                <td class="px-4 py-3">Certification Émergent</td>
+                                <td class="px-4 py-3 text-center font-bold">2000</td>
+                                <td class="px-4 py-3 text-center">Illimité</td>
+                                <td class="px-4 py-3"><span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded">Certification</span></td>
+                                <td class="px-4 py-3 text-sm">Certification Émergent</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3 font-mono text-sm">CERTIF_ELITE</td>
+                                <td class="px-4 py-3">Certification Elite</td>
+                                <td class="px-4 py-3 text-center font-bold">3000</td>
+                                <td class="px-4 py-3 text-center">Illimité</td>
+                                <td class="px-4 py-3"><span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded">Certification</span></td>
+                                <td class="px-4 py-3 text-sm">Certification Elite</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                    <h3 class="font-bold text-yellow-800 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>Notes importantes
+                    </h3>
+                    <ul class="text-yellow-700 space-y-1">
+                        <li><i class="fas fa-arrow-right mr-2"></i>Les actions de modules sont illimitées et peuvent être utilisées plusieurs fois</li>
+                        <li><i class="fas fa-arrow-right mr-2"></i>Les actions de certifications sont illimitées et peuvent être utilisées plusieurs fois</li>
+                        <li><i class="fas fa-arrow-right mr-2"></i>Le système respecte la priorité 2-3-4-1 pour les comptes ressources</li>
+                        <li><i class="fas fa-arrow-right mr-2"></i>La compatibilité est ignorée pour ressource_type_id = 0</li>
+                        <li><i class="fas fa-arrow-right mr-2"></i>Toutes les transactions sont atomiques et journalisées</li>
+                        <li><i class="fas fa-arrow-right mr-2"></i>Les modules utilisent des badges de couleur teal, les certifications utilisent des badges indigo</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold mb-2">API de Gestion des Paiements</h3>
+                    <p class="text-gray-400">Documentation technique v1.0.0</p>
+                </div>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <button onclick="window.print()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded">
+                        <i class="fas fa-print mr-2"></i>Imprimer
+                    </button>
+                    <button onclick="copyBaseUrl()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+                        <i class="fas fa-copy mr-2"></i>Copier URL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Update button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-green-500', 'text-green-600');
+                btn.classList.add('border-transparent', 'text-gray-600');
+            });
+            
+            event.target.classList.remove('border-transparent', 'text-gray-600');
+            event.target.classList.add('border-green-500', 'text-green-600');
+        }
+
+        function copyBaseUrl() {
+            const baseUrl = 'http://votre-domaine.com/api/payments';
+            navigator.clipboard.writeText(baseUrl);
+            
+            // Show feedback
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copié!';
+            btn.classList.add('bg-green-500');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-green-500');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
