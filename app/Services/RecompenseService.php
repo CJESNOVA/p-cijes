@@ -31,10 +31,28 @@ class RecompenseService
      */
     public function attribuerRecompense(string $actionCode, $membre, $entreprise = null, $source = null, $montant = null)
     {
+        // 📝 LOG DÉBUT
+        \Log::info('🚀 DÉBUT ATTRIBUTION RÉCOMPENSE', [
+            'action_code' => $actionCode,
+            'membre_id' => $membre->id ?? null,
+            'membre_nom' => ($membre->prenom ?? '') . ' ' . ($membre->nom ?? ''),
+            'entreprise_id' => $entreprise->id ?? null,
+            'source' => $source,
+            'montant' => $montant,
+        ]);
+
         $action = Action::where('code', $actionCode)->first();
         if (! $action) {
+            \Log::error('❌ Action non trouvée', ['action_code' => $actionCode]);
             return false;
         }
+
+        \Log::info('✅ Action trouvée', [
+            'action_id' => $action->id,
+            'action_titre' => $action->titre,
+            'action_point' => $action->point,
+            'action_limite' => $action->limite,
+        ]);
 
         // 🎯 CALCUL DES POINTS - Montant fixe ou pourcentage
         $points = (int) ($action->point ?? 0);
@@ -58,6 +76,11 @@ class RecompenseService
 
         try {
             // 1) 🚦 VÉRIFIER LIMITE D'ATTRIBUTION
+            \Log::info('🔍 Début vérification limite', [
+                'action_limite' => $action->limite,
+                'has_entreprise' => !is_null($entreprise),
+            ]);
+
             if ($action->limite) {
                 // 📊 Compter les récompenses existantes pour cette action
                 $query = Recompense::where('action_id', $action->id);
@@ -83,9 +106,15 @@ class RecompenseService
                 }
                 
                 $nbRecompenses = $query->count();
+                
+                \Log::info('📊 Résultat vérification limite', [
+                    'nb_recompenses' => $nbRecompenses,
+                    'limite' => $action->limite,
+                    'depasse' => $nbRecompenses >= $action->limite,
+                ]);
 
                 if ($nbRecompenses >= $action->limite) {
-                    \Log::warning('Limite de récompense atteinte', [
+                    \Log::warning('❌ Limite de récompense atteinte', [
                         'action_code' => $actionCode,
                         'nb_recompenses' => $nbRecompenses,
                         'limite' => $action->limite,
@@ -94,6 +123,12 @@ class RecompenseService
                     ]);
                     DB::rollBack();
                     return false;
+                } else {
+                    \Log::info('✅ Limite OK, attribution possible', [
+                        'nb_recompenses' => $nbRecompenses,
+                        'limite' => $action->limite,
+                        'restant' => $action->limite - $nbRecompenses,
+                    ]);
                 }
             }
 
