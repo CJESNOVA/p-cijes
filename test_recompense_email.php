@@ -41,7 +41,7 @@ $recompenseService = new RecompenseService();
 echo "Test d'attribution de récompense...\n";
 
 $result = $recompenseService->attribuerRecompense(
-    'INSCRIPTION', 
+    'CONNEXION_50', 
     $membre
 );
 
