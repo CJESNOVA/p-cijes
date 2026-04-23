@@ -17,7 +17,7 @@ echo "=== TEST COMPLET DU SYSTÈME DE RÉCOMPENSES ===\n\n";
 
 try {
     // 1. Récupérer un utilisateur et membre existant pour les tests
-    $user = User::find(9);
+    $user = User::find(10);
     if (!$user) {
         echo "❌ Aucun utilisateur trouvé. Créez d'abord un utilisateur.\n";
         exit(1);
