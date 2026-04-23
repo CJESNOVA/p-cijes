@@ -171,6 +171,12 @@ class RecompenseService
             }
 
             // 3) Créer la récompense
+            \Log::info('🎁 Création récompense', [
+                'points' => $points,
+                'action_id' => $action->id,
+                'membre_id' => $membre->id,
+            ]);
+
             $recompense = Recompense::create([
                 'valeur' => $points,
                 'commentaire' => "Récompense pour l’action : " . $action->titre,
@@ -183,32 +189,59 @@ class RecompenseService
                 'etat' => 1,
             ]);
 
+            \Log::info('✅ Récompense créée', [
+                'recompense_id' => $recompense->id,
+                'valeur' => $recompense->valeur,
+            ]);
+
             if ($entreprise) {
                 $recompense->entreprise_id = $entreprise->id;
                 $recompense->save();
+                \Log::info('✅ Récompense liée à entreprise', ['entreprise_id' => $entreprise->id]);
             }
 
             // 4) Transaction + mise à jour du solde
+            \Log::info('💰 Création transaction', [
+                'has_ressourceCompte' => !is_null($ressourceCompte),
+                'points' => $points,
+                'ressourceCompte_id' => $ressourceCompte->id ?? null,
+            ]);
+
             if ($ressourceCompte && $points > 0) {
                 $reference = 'REC-' . strtoupper(Str::random(8));
+                \Log::info('📝 Création transaction ressource', [
+                    'reference' => $reference,
+                    'montant' => $points,
+                    'ressourcecompte_id' => $ressourceCompte->id,
+                ]);
+
                 Ressourcetransaction::create([
                     'montant' => $points,
                     'reference' => $reference,
                     'ressourcecompte_id' => $ressourceCompte->id,
                     'datetransaction' => Carbon::now(),
                     'operationtype_id' => 1,
-                    'description' => "Récompense pour l’action : " . $action->titre,
+                    'description' => "Récompense pour l'action : " . $action->titre,
                     'spotlight' => 0,
                     'etat' => 1,
                 ]);
 
                 $ressourceCompte->increment('solde', $points);
+                \Log::info('✅ Solde mis à jour', ['nouveau_solde' => $ressourceCompte->fresh()->solde]);
             }
 
             // 5) Créer une alerte
+            \Log::info('🔔 Création alerte');
+            
             $lien = Route::has('recompense.mesRecompenses')
                 ? route('recompense.mesRecompenses')
                 : (Route::has('dashboard') ? route('dashboard') : '#');
+
+            \Log::info('📝 Données alerte', [
+                'titre' => "🎉 Félicitations !",
+                'contenu' => "Vous avez gagné {$points} {$action->ressourcetype->titre} pour : {$action->titre}",
+                'lien' => $lien,
+            ]);
 
             $alerte = Alerte::create([
                 'titre' => "🎉 Félicitations !",
@@ -223,26 +256,42 @@ class RecompenseService
                 'etat' => 1,
             ]);
 
+            \Log::info('✅ Alerte créée', ['alerte_id' => $alerte->id]);
+
             // 6) Envoi de notification Laravel (database + mail)
+            \Log::info('📧 Envoi notification');
+            
             $notifTarget = null;
 
             if (method_exists($membre, 'notify')) {
                 $notifTarget = $membre;
+                \Log::info('✅ Cible trouvée : Membre');
             } elseif (isset($membre->user) && method_exists($membre->user, 'notify')) {
                 $notifTarget = $membre->user;
+                \Log::info('✅ Cible trouvée : User');
             }
 
             if ($notifTarget) {
+                \Log::info('📤 Envoi notification Laravel', [
+                    'target_class' => get_class($notifTarget),
+                    'action_titre' => $action->titre,
+                    'points' => $points,
+                ]);
+                
                 Notification::send($notifTarget, new RecompenseNotification(
                     $action->titre,
                     $points,
                     $lien
                 ));
+                
+                \Log::info('✅ Notification envoyée');
             } else {
-                Log::warning("Aucune cible notifiable trouvée pour membre id={$membre->id} lors de l'attribution d'une récompense.");
+                Log::warning("❌ Aucune cible notifiable trouvée pour membre id={$membre->id} lors de l'attribution d'une récompense.");
             }
 
+            \Log::info('💾 COMMIT transaction');
             DB::commit();
+            \Log::info('✅ Transaction commitée avec succès');
 
             return $recompense;
 
