@@ -40,12 +40,12 @@ foreach ($actions as $action) {
 }
 
 // 3. Tester avec un membre
-$membre = Membre::find(1);
+$membre = Membre::first();
 if (!$membre) {
     echo "❌ Aucun membre trouvé pour le test\n";
     exit;
 }
-    
+
 echo "\nMembre de test : {$membre->prenom} {$membre->nom} ({$membre->email})\n\n";
 
 // 4. Tester l'attribution de récompense
