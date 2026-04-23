@@ -28,7 +28,7 @@ foreach ($actions as $action) {
 }
 
 // 3. Tester avec un membre
-$membre = Membre::first();
+$membre = Membre::find(18);
 if (!$membre) {
     echo "❌ Aucun membre trouvé pour le test\n";
     exit;
