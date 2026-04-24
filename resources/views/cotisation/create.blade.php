@@ -139,7 +139,13 @@
                                     @if(isset($ressourcecomptes) && $ressourcecomptes->count() > 0)
                                         @foreach($ressourcecomptes as $ressource)
                                             <option value="{{ $ressource->id }}">
-                                                {{ $ressource->nom_complet ?? 'Compte #' . $ressource->id }} 
+                                                @if($ressource->entreprise_id)
+                                                    🏢 {{ $ressource->entreprise->nom ?? 'Entreprise #' . $ressource->entreprise_id }}
+                                                @elseif($ressource->membre)
+                                                    👤 {{ $ressource->membre->nom . ' ' . $ressource->membre->prenom }}
+                                                @else
+                                                    📋 Compte #{{ $ressource->id }}
+                                                @endif
                                                 (Solde: {{ number_format($ressource->solde, 2) }} FCFA)
                                             </option>
                                         @endforeach
