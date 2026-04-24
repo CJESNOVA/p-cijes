@@ -156,17 +156,7 @@
             </a>
 @endif
             
-            
-@if($membretype !== 3)
-            <!-- Abonnements -->
-            <a href="{{ env('APP_URL') }}abonnements/abonnements"
-                class="flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 {{ $routePrefix === 'abonnements' ? 'text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-navy-600 bg-primary/10 dark:text-accent-light dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90' : 'hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25' }}"
-                x-tooltip.placement.right="'Abonnements'">
-                <svg class="size-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h18M8 7v10h8M8 17l-3-3m0 0l3 3m-3 3h-6" />
-                </svg>
-            </a>
-@endif
+
             
         </div>
         <!-- Bottom Links -->
