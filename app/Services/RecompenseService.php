@@ -271,20 +271,23 @@ class RecompenseService
                 \Log::info('✅ Cible trouvée : User');
             }
 
+            // Préparer les données pour la notification (envoi APRÈS le commit)
+            $notificationData = null;
             if ($notifTarget) {
-                \Log::info('📤 Envoi notification Laravel', [
+                \Log::info('📤 Préparation notification Laravel', [
                     'target_class' => get_class($notifTarget),
                     'action_titre' => $action->titre,
                     'points' => $points,
                 ]);
                 
-                Notification::send($notifTarget, new RecompenseNotification(
-                    $action->titre,
-                    $points,
-                    $lien
-                ));
-                
-                \Log::info('✅ Notification envoyée');
+                $notificationData = [
+                    'target' => $notifTarget,
+                    'notification' => new RecompenseNotification(
+                        $action->titre,
+                        $points,
+                        $lien
+                    )
+                ];
             } else {
                 Log::warning("❌ Aucune cible notifiable trouvée pour membre id={$membre->id} lors de l'attribution d'une récompense.");
             }
@@ -292,6 +295,32 @@ class RecompenseService
             \Log::info('💾 COMMIT transaction');
             DB::commit();
             \Log::info('✅ Transaction commitée avec succès');
+
+            // 📧 ENVOI DE LA NOTIFICATION EN DEHORS DE LA TRANSACTION
+            if ($notificationData) {
+                try {
+                    \Log::info('📤 Envoi notification (hors transaction)', [
+                        'target_class' => get_class($notificationData['target']),
+                        'action_titre' => $action->titre,
+                        'points' => $points,
+                    ]);
+                    
+                    Notification::send($notificationData['target'], $notificationData['notification']);
+                    \Log::info('✅ Notification envoyée avec succès');
+                    
+                } catch (\Exception $e) {
+                    // 🚨 NE PAS FAIRE DE ROLLBACK - juste logger l'erreur
+                    \Log::error('❌ Erreur envoi notification (sans rollback) : ' . $e->getMessage(), [
+                        'membre_id' => $membre->id,
+                        'action' => $action->titre,
+                        'recompense_id' => $recompense->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    
+                    // L'action principale a réussi, on continue
+                    \Log::info('ℹ️ Action principale réussie malgré l\'échec de l\'email');
+                }
+            }
 
             return $recompense;
 

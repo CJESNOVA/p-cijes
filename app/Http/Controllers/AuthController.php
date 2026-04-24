@@ -317,9 +317,17 @@ public function register(Request $request)
             ]);
             
             // Envoyer la notification
-            $user->notify(new PasswordResetNotification($resetToken, $user->name));
+            try {
+                $user->notify(new PasswordResetNotification($resetToken, $user->name));
+            } catch (\Exception $e) {
+                // Logger l'erreur mais continuer - le token est déjà en base
+                \Log::warning('Email de réinitialisation non envoyé: ' . $e->getMessage(), [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                ]);
+            }
             
-            // Succès explicite
+            // Succès explicite (même si l'email échoue, le token est créé)
             return back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse e-mail.');
             
         } catch (\Exception $e) {
