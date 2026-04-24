@@ -57,7 +57,7 @@ class CotisationController extends Controller
         
         // Types de cotisations spécifiques au profil
         $cotisationtypes = Cotisationtype::where('etat', 1)
-            ->where('entrepriseprofil_id', $entreprise->entrepriseprofil_id)
+            //->where('entrepriseprofil_id', $entreprise->entrepriseprofil_id)
             ->with('entrepriseprofil')
             ->get();
 
