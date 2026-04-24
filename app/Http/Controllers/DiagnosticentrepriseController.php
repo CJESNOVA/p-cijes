@@ -27,13 +27,12 @@ class DiagnosticentrepriseController extends Controller
     protected $diagnosticStatutService;
     protected $recompenseService;
 
-    public function __construct(DiagnosticStatutService $diagnosticStatutService, RecompenseService $recompenseService)
+    public function __construct(RecompenseService $recompenseService)
     {
-        $this->diagnosticStatutService = $diagnosticStatutService;
         $this->recompenseService = $recompenseService;
         
-        // Injecter le RecompenseService dans le DiagnosticStatutService
-        $this->diagnosticStatutService->recompenseService = $recompenseService;
+        // Créer le DiagnosticStatutService avec le RecompenseService injecté
+        $this->diagnosticStatutService = new DiagnosticStatutService($recompenseService);
     }
 
     public function indexForm()

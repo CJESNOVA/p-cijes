@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class ModuleRessourceController extends Controller
+class ModuleressourceController extends Controller
 {
     /**
      * Lister les modules ressources

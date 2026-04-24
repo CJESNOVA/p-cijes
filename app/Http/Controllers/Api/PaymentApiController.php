@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\ModuleRessourceController;
+use App\Http\Controllers\ModuleressourceController;
 use App\Models\Membre;
 use App\Models\Entreprise;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ class PaymentApiController extends Controller
 {
     protected $moduleController;
 
-    public function __construct(ModuleRessourceController $moduleController)
+    public function __construct(ModuleressourceController $moduleController)
     {
         $this->moduleController = $moduleController;
     }
@@ -126,7 +126,7 @@ class PaymentApiController extends Controller
                 'reference' => $paymentData['reference']
             ]);
 
-            // Appeler le ModuleRessourceController
+            // Appeler le ModuleressourceController
             $resultat = $this->moduleController->attribuerModuleViaAction(
                 'api', // Type de source API
                 $request->diagnostic_id ?? 0,
