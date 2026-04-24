@@ -14,13 +14,6 @@
                 </div>
             </div>
         </div>
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </li>
-            <li>{{ $plan->exists ? 'Modifier le Plan' : 'Créer un Plan' }}</li>
-          </ul> -->
-        </div>
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
 
@@ -39,25 +32,31 @@
               >
 <div>
     <label class="block">
-        <span>Objectif</span>
+        <span>Objectif <span class="text-red-500">*</span></span>
         <textarea
             class="form-textarea w-full rounded-lg border border-slate-300 bg-transparent p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
             name="objectif"
             placeholder="Ex: Augmenter le chiffre d'affaires de 20%"
             required
-        />{{ old('objectif', $plan->objectif ?? '') }}</textarea>
+            minlength="10"
+            maxlength="500"
+        >{{ old('objectif', $plan->objectif ?? '') }}</textarea>
+        <small class="text-slate-500 text-xs">Minimum 10 caractères, maximum 500 caractères</small>
     </label>
 </div>
 
 <div>
     <label class="block">
-        <span>Action prioritaire</span>
+        <span>Action prioritaire <span class="text-red-500">*</span></span>
         <textarea
             class="form-textarea w-full rounded-lg border border-slate-300 bg-transparent p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
             name="actionprioritaire"
             placeholder="Ex: Lancer une nouvelle campagne marketing"
             required
-        />{{ old('actionprioritaire', $plan->actionprioritaire ?? '') }}</textarea>
+            minlength="10"
+            maxlength="500"
+        >{{ old('actionprioritaire', $plan->actionprioritaire ?? '') }}</textarea>
+        <small class="text-slate-500 text-xs">Minimum 10 caractères, maximum 500 caractères</small>
     </label>
 </div>
 
@@ -69,7 +68,7 @@
                     class="form-input peer w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     placeholder="Date du plan"
                     type="text" name="dateplan" value="{{ old('dateplan', $plan->dateplan ?? '') }}" required
-                  />
+                  >
     <span
       class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent"
     >
