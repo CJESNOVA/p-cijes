@@ -436,7 +436,7 @@ class DiagnosticentrepriseQualificationController extends Controller
             $recompenseService->attribuerRecompense('TEST_CLASSIFICATION', $membre, $diagnostic->entreprise, $diagnostic->id, null);
 
             // 💰 Nouveau système : Attribuer module ressource via action TEST_CLASSIFICATION_V2
-            $moduleController = new \App\Http\Controllers\ModuleressourceController();
+            $moduleController = new \App\Http\Controllers\ModuleRessourceController();
             
             $resultatModule = $moduleController->attribuerModuleViaAction(
                 'diagnostics',              // module_type

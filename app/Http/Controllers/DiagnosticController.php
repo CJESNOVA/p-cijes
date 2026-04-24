@@ -916,7 +916,7 @@ class DiagnosticController extends Controller
             $recompense = $recompenseService->attribuerRecompense('DIAG_DIRIGEANT', $membre, null, $diagnostic->id, null);
             
             // 🏆 Ajout du paiement PREMIER_DIAG_DIRIGEANT
-            $moduleController = new \App\Http\Controllers\ModuleressourceController();
+            $moduleController = new \App\Http\Controllers\ModuleRessourceController();
             $resultatModule = $moduleController->attribuerModuleViaAction(
                 'diagnostics',
                 $diagnostic->id,
@@ -937,7 +937,7 @@ class DiagnosticController extends Controller
             // 🏁 Déclenche le paiement AUTRE_DIAG_DIRIGEANT pour les diagnostics suivants
             \Log::info('Diagnostic suivant détecté - Attribution AUTRE_DIAG_DIRIGEANT');
             
-            $moduleController = new \App\Http\Controllers\ModuleressourceController();
+            $moduleController = new \App\Http\Controllers\ModuleRessourceController();
             $resultatModule = $moduleController->attribuerModuleViaAction(
                 'diagnostics',
                 $diagnostic->id,

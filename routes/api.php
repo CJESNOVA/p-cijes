@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RessourceCompteCallbackController;
 use App\Http\Controllers\Api\RewardApiController;
 use App\Http\Controllers\Api\PaymentApiController;
-use App\Http\Controllers\ModuleressourceController;
+use App\Http\Controllers\ModuleRessourceController;
 
 Route::post('/callback/ressourcecompte/{transaction}', 
     [RessourceCompteCallbackController::class, 'handle']
@@ -26,8 +26,8 @@ Route::prefix('payments')->group(function () {
 
 // Routes API pour la gestion des modules ressources
 Route::prefix('modules')->group(function () {
-    Route::get('/', [ModuleressourceController::class, 'index']);
-    Route::get('/{id}', [ModuleressourceController::class, 'show']);
-    Route::post('/attribute', [ModuleressourceController::class, 'attribuerModuleRessource']);
+    Route::get('/', [ModuleRessourceController::class, 'index']);
+    Route::get('/{id}', [ModuleRessourceController::class, 'show']);
+    Route::post('/attribute', [ModuleRessourceController::class, 'attribuerModuleRessource']);
 });
 
