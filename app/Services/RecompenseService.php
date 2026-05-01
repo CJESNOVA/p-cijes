@@ -298,36 +298,28 @@ class RecompenseService
 
             // 📧 ENVOI DE LA NOTIFICATION EN DEHORS DE LA TRANSACTION
             if ($notificationData) {
-                // 🚨 TEMPORAIREMENT DÉSACTIVÉ POUR ÉVITER LES TIMEOUT SMTP
-                // try {
-                //     \Log::info('📤 Envoi notification (hors transaction)', [
-                //         'target_class' => get_class($notificationData['target']),
-                //         'action_titre' => $action->titre,
-                //         'points' => $points,
-                //     ]);
+                try {
+                    \Log::info('📤 Envoi notification (hors transaction)', [
+                        'target_class' => get_class($notificationData['target']),
+                        'action_titre' => $action->titre,
+                        'points' => $points,
+                    ]);
                     
-                //     Notification::send($notificationData['target'], $notificationData['notification']);
-                //     \Log::info('✅ Notification envoyée avec succès');
+                    Notification::send($notificationData['target'], $notificationData['notification']);
+                    \Log::info('✅ Notification envoyée avec succès');
                     
-                // } catch (\Exception $e) {
-                //     // 🚨 NE PAS FAIRE DE ROLLBACK - juste logger l'erreur
-                //     \Log::error('❌ Erreur envoi notification (sans rollback) : ' . $e->getMessage(), [
-                //         'membre_id' => $membre->id,
-                //         'action' => $action->titre,
-                //         'recompense_id' => $recompense->id,
-                //         'error' => $e->getMessage(),
-                //     ]);
+                } catch (\Exception $e) {
+                    // 🚨 NE PAS FAIRE DE ROLLBACK - juste logger l'erreur
+                    \Log::error('❌ Erreur envoi notification (sans rollback) : ' . $e->getMessage(), [
+                        'membre_id' => $membre->id,
+                        'action' => $action->titre,
+                        'recompense_id' => $recompense->id,
+                        'error' => $e->getMessage(),
+                    ]);
                     
-                //     // L'action principale a réussi, on continue
-                //     \Log::info('ℹ️ Action principale réussie malgré l\'échec de l\'email');
-                // }
-                
-                \Log::info('📧 Notification désactivée temporairement (éviter timeout SMTP)', [
-                    'target_class' => get_class($notificationData['target']),
-                    'action_titre' => $action->titre,
-                    'points' => $points,
-                    'recompense_id' => $recompense->id,
-                ]);
+                    // L'action principale a réussi, on continue
+                    \Log::info('ℹ️ Action principale réussie malgré l\'échec de l\'email');
+                }
             }
 
             return $recompense;

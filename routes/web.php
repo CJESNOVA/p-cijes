@@ -71,7 +71,7 @@ Route::post('bons/ressourcecompte/{id}/callback',
 )->name('ressourcecompte.callback');
 
 
-/*use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Mail;
 
 Route::get('/test-mail', function () {
     try {
@@ -84,10 +84,10 @@ Route::get('/test-mail', function () {
     } catch (\Exception $e) {
         return '❌ Erreur : ' . $e->getMessage();
     }
-});*/
+});
 
 
-/*Route::get('/test-mail-recompense', function () {
+Route::get('/test-mail-recompense', function () {
     // Récupérer un membre pour le test (remplacez l'ID par un vrai membre)
     $membre = App\Models\Membre::first(); // ou Membre::find(1);
     if (!$membre) {
@@ -121,7 +121,7 @@ Route::get('/test-mail', function () {
         \Log::error('Erreur envoi mail test : ' . $e->getMessage());
         return "Erreur lors de l'envoi du mail : " . $e->getMessage();
     }
-});*/
+});
 
 
 /*
@@ -165,7 +165,7 @@ Route::middleware(['web', 'guest'])->group(function () {
 
 Route::get('/emails/verify', [\App\Http\Controllers\AuthController::class, 'emailVerified'])->name('emails.verify');
 
-// Routes de test pour les emails (à retirer en production)
+// Routes de test pour les emails
 Route::get('/test-mail', [\App\Http\Controllers\MailTestController::class, 'testMail'])->name('test.mail');
 Route::get('/test-notification', [\App\Http\Controllers\MailTestController::class, 'testNotification'])->name('test.notification');
 Route::get('/test-password-reset-notification', [\App\Http\Controllers\MailTestController::class, 'testPasswordResetNotification'])->name('test.password-reset-notification');
@@ -634,4 +634,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/entreprises/abonnements/payes/{id}', [AbonnementressourceController::class, 'show'])->name('abonnementressource.show');
 
 
+});
+
+// Routes Admin pour le CRUD dynamique
+Route::prefix('admin')->name('admin.')->group(function () {
+    // Routes d'authentification (publiques)
+    Route::middleware('admin.guest')->group(function () {
+        Route::get('/login', [\App\Http\Controllers\Admin\LoginController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\Admin\LoginController::class, 'login'])->name('login.submit');
+    });
+
+    // Routes protégées (admin connecté)
+    Route::middleware('admin.auth')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::post('/logout', [\App\Http\Controllers\Admin\LoginController::class, 'logout'])->name('logout');
+        
+        // Routes CRUD dynamique
+        Route::get('/crud', [\App\Http\Controllers\Admin\CrudController::class, 'index'])->name('crud.index');
+        Route::get('/crud/{table}', [\App\Http\Controllers\Admin\CrudController::class, 'showTable'])->name('crud.table');
+        Route::get('/crud/{table}/{id}', [\App\Http\Controllers\Admin\CrudController::class, 'show'])->name('crud.show');
+        Route::get('/crud/{table}/create', [\App\Http\Controllers\Admin\CrudController::class, 'create'])->name('crud.create');
+        Route::post('/crud/{table}', [\App\Http\Controllers\Admin\CrudController::class, 'store'])->name('crud.store');
+        Route::get('/crud/{table}/{id}/edit', [\App\Http\Controllers\Admin\CrudController::class, 'edit'])->name('crud.edit');
+        Route::put('/crud/{table}/{id}', [\App\Http\Controllers\Admin\CrudController::class, 'update'])->name('crud.update');
+        Route::delete('/crud/{table}/{id}', [\App\Http\Controllers\Admin\CrudController::class, 'destroy'])->name('crud.destroy');
+        Route::post('/crud/{table}/{id}/toggle/{column}', [\App\Http\Controllers\Admin\CrudController::class, 'toggleBoolean'])->name('crud.toggle');
+    });
 });
