@@ -113,22 +113,51 @@ class RecompenseService
                     'depasse' => $nbRecompenses >= $action->limite,
                 ]);
 
-                if ($nbRecompenses >= $action->limite) {
-                    \Log::warning('❌ Limite de récompense atteinte', [
+                // 🎯 CAS SPÉCIAL: Actions de type CONNEXION_X (ex: CONNEXION_50)
+                // La récompense n'est accordée que lorsqu'on atteint exactement la Xème connexion
+                if (str_starts_with($actionCode, 'CONNEXION_')) {
+                    \Log::info('🔍 Vérification spéciale pour action CONNEXION_X', [
                         'action_code' => $actionCode,
                         'nb_recompenses' => $nbRecompenses,
                         'limite' => $action->limite,
-                        'entreprise_id' => $entreprise->id ?? null,
-                        'membre_id' => $membre->id
+                        'condition_exacte' => $nbRecompenses + 1 == $action->limite
                     ]);
-                    DB::rollBack();
-                    return false;
+
+                    // La récompense n'est accordée que si on est exactement à la connexion cible
+                    if ($nbRecompenses + 1 != $action->limite) {
+                        \Log::info('❌ Condition CONNEXION_X non remplie', [
+                            'action_code' => $actionCode,
+                            'connexion_actuelle' => $nbRecompenses + 1,
+                            'connexion_cible' => $action->limite,
+                            'raison' => 'Pas encore la connexion cible'
+                        ]);
+                        DB::rollBack();
+                        return false;
+                    }
+                    
+                    \Log::info('✅ Condition CONNEXION_X remplie - Attribution à la connexion exacte', [
+                        'action_code' => $actionCode,
+                        'connexion_numero' => $nbRecompenses + 1
+                    ]);
                 } else {
-                    \Log::info('✅ Limite OK, attribution possible', [
-                        'nb_recompenses' => $nbRecompenses,
-                        'limite' => $action->limite,
-                        'restant' => $action->limite - $nbRecompenses,
-                    ]);
+                    // 📋 Logique normale pour les autres actions
+                    if ($nbRecompenses >= $action->limite) {
+                        \Log::warning('❌ Limite de récompense atteinte', [
+                            'action_code' => $actionCode,
+                            'nb_recompenses' => $nbRecompenses,
+                            'limite' => $action->limite,
+                            'entreprise_id' => $entreprise->id ?? null,
+                            'membre_id' => $membre->id
+                        ]);
+                        DB::rollBack();
+                        return false;
+                    } else {
+                        \Log::info('✅ Limite OK, attribution possible', [
+                            'nb_recompenses' => $nbRecompenses,
+                            'limite' => $action->limite,
+                            'restant' => $action->limite - $nbRecompenses,
+                        ]);
+                    }
                 }
             }
 
