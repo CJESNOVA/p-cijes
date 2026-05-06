@@ -68,6 +68,11 @@ class Diagnosticquestion extends Model
         return $this->hasMany(Diagnosticreponse::class, 'diagnosticquestion_id');
     }
 
+    public function reponses()
+    {
+        return $this->hasMany(Diagnosticreponse::class, 'diagnosticquestion_id');
+    }
+
     public function diagnosticresultats()
 {
     return $this->hasMany(Diagnosticresultat::class, 'diagnosticquestion_id');
