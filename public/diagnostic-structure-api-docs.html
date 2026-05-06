@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Structure des Diagnostics - Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">API Structure des Diagnostics</h1>
+                <p class="lead">Documentation pour l'API de récupération de la structure complète des diagnostics (modules, questions, réponses)</p>
+                
+                <div class="alert alert-success">
+                    <strong>API Publique :</strong> Cette API ne nécessite pas d'authentification. Toutes les routes sont accessibles librement.
+                </div>
+            </div>
+        </div>
+
+        <!-- Structure Complète -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Structure Complète</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>GET /api/v1/diagnostic-structure/complete</h5>
+                        <p>Récupère la structure complète de tous les modules organisés par catégories, avec leurs questions et réponses possibles.</p>
+                        <p class="text-muted"><strong>Filtrage :</strong> Uniquement les modules actifs (etat = 1) de type 1, organisés par ordre de position.</p>
+                        
+                        <h6>Exemple de requête :</h6>
+                        <pre><code class="language-bash">curl -X GET "http://localhost:8000/api/v1/diagnostic-structure/complete" \
+     -H "Content-Type: application/json"</code></pre>
+                        
+                        <h6>Exemple de réponse :</h6>
+                        <pre><code class="language-json">{
+    "success": true,
+    "message": "Structure complète des diagnostics récupérée avec succès",
+    "data": {
+        "categories": [
+            {
+                "id": 1,
+                "titre": "Catégorie Psychologique",
+                "modules": [
+                    {
+                        "id": 1,
+                        "titre": "Tests psychotechniques",
+                        "description": "Module d'évaluation psychotechnique",
+                        "ordre": 1,
+                        "diagnosticmoduletype_id": 1,
+                        "diagnosticmodulecategory_id": 1,
+                        "entrepriseprofil_id": null,
+                        "questions": [
+                            {
+                                "id": 1,
+                                "titre": "Comment gérez-vous le stress ?",
+                                "description": "Évaluez votre capacité à gérer le stress",
+                                "ordre": 1,
+                                "diagnosticmodule_id": 1,
+                                "diagnosticquestiontype_id": 1,
+                                "score_max": 10,
+                                "obligatoire": false,
+                                "reponses_possibles": [
+                                    {
+                                        "id": 1,
+                                        "titre": "Très bien",
+                                        "explication": "Excellente gestion du stress",
+                                        "description": null,
+                                        "score": 10,
+                                        "ordre": 1,
+                                        "diagnosticquestion_id": 1
+                                    },
+                                    {
+                                        "id": 2,
+                                        "titre": "Bien",
+                                        "explication": "Bonne gestion du stress",
+                                        "description": null,
+                                        "score": 7,
+                                        "ordre": 2,
+                                        "diagnosticquestion_id": 1
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "total_categories": 2,
+        "total_modules": 3,
+        "total_questions": 25,
+        "total_reponses": 75
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Structure par Module -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3>Structure par Module</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>GET /api/v1/diagnostic-structure/module/{moduleId}</h5>
+                        <p>Récupère la structure détaillée d'un module spécifique avec ses questions et réponses possibles.</p>
+                        <p class="text-muted"><strong>Filtrage :</strong> Uniquement les modules actifs (etat = 1) de type 1.</p>
+                        
+                        <h6>Exemple de requête :</h6>
+                        <pre><code class="language-bash">curl -X GET "http://localhost:8000/api/v1/diagnostic-structure/module/1" \
+     -H "Content-Type: application/json"</code></pre>
+                        
+                        <h6>Exemple de réponse :</h6>
+                        <pre><code class="language-json">{
+    "success": true,
+    "message": "Structure du module récupérée avec succès",
+    "data": {
+        "module": {
+            "id": 1,
+            "titre": "Tests psychotechniques",
+            "description": "Module d'évaluation psychotechnique",
+            "ordre": 1,
+            "diagnosticmoduletype_id": 1,
+            "entrepriseprofil_id": null,
+            "questions": [
+                {
+                    "id": 1,
+                    "titre": "Comment gérez-vous le stress ?",
+                    "description": "Évaluez votre capacité à gérer le stress",
+                    "ordre": 1,
+                    "diagnosticmodule_id": 1,
+                    "diagnosticquestiontype_id": 1,
+                    "score_max": 10,
+                    "obligatoire": false,
+                    "reponses_possibles": [
+                        {
+                            "id": 1,
+                            "titre": "Très bien",
+                            "explication": "Excellente gestion du stress",
+                            "description": null,
+                            "score": 10,
+                            "ordre": 1,
+                            "diagnosticquestion_id": 1
+                        }
+                    ]
+                }
+            ]
+        },
+        "total_questions": 8,
+        "total_reponses": 24
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des Modules -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h3>Liste des Modules</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>GET /api/v1/diagnostic-structure/modules</h5>
+                        <p>Récupère uniquement la liste des modules actifs de type 1, organisés par ordre de position.</p>
+                        <p class="text-muted"><strong>Filtrage :</strong> Uniquement les modules actifs (etat = 1) de type 1.</p>
+                        
+                        <h6>Exemple de requête :</h6>
+                        <pre><code class="language-bash">curl -X GET "http://localhost:8000/api/v1/diagnostic-structure/modules" \
+     -H "Content-Type: application/json"</code></pre>
+                        
+                        <h6>Exemple de réponse :</h6>
+                        <pre><code class="language-json">{
+    "success": true,
+    "message": "Liste des modules récupérée avec succès",
+    "data": {
+        "modules": [
+            {
+                "id": 1,
+                "titre": "Tests psychotechniques",
+                "description": "Module d'évaluation psychotechnique",
+                "position": 1,
+                "diagnosticmoduletype_id": 1,
+                "entrepriseprofil_id": null
+            },
+            {
+                "id": 2,
+                "titre": "Niveaux de structuration",
+                "description": "Évaluation des niveaux de structuration",
+                "position": 2,
+                "diagnosticmoduletype_id": 1,
+                "entrepriseprofil_id": null
+            }
+        ],
+        "total": 3
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions par Module -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h3>Questions par Module</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>GET /api/v1/diagnostic-structure/module/{moduleId}/questions</h5>
+                        <p>Récupère uniquement les questions d'un module spécifique (sans les réponses possibles).</p>
+                        <p class="text-muted"><strong>Filtrage :</strong> Uniquement les questions actives (etat = 1) des modules de type 1.</p>
+                        
+                        <h6>Exemple de requête :</h6>
+                        <pre><code class="language-bash">curl -X GET "http://localhost:8000/api/v1/diagnostic-structure/module/1/questions" \
+     -H "Content-Type: application/json"</code></pre>
+                        
+                        <h6>Exemple de réponse :</h6>
+                        <pre><code class="language-json">{
+    "success": true,
+    "message": "Questions du module récupérées avec succès",
+    "data": {
+        "questions": [
+            {
+                "id": 1,
+                "titre": "Comment gérez-vous le stress ?",
+                "description": "Évaluez votre capacité à gérer le stress",
+                "ordre": 1
+            },
+            {
+                "id": 2,
+                "titre": "Quelle est votre motivation ?",
+                "description": "Évaluez vos motivations personnelles",
+                "ordre": 2
+            }
+        ],
+        "total": 8
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Structure par Profil -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h3>Structure par Profil d'Entreprise</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>GET /api/v1/diagnostic-structure/profil/{profilId}</h5>
+                        <p>Récupère la structure des diagnostics spécifique à un profil d'entreprise, organisée par catégories.</p>
+                        <p class="text-muted"><strong>Filtrage :</strong> Modules génériques (entrepriseprofil_id = null) ou spécifiques au profil, uniquement les modules actifs de type 1.</p>
+                        
+                        <h6>Exemple de requête :</h6>
+                        <pre><code class="language-bash">curl -X GET "http://localhost:8000/api/v1/diagnostic-structure/profil/1" \
+     -H "Content-Type: application/json"</code></pre>
+                        
+                        <h6>Exemple de réponse :</h6>
+                        <pre><code class="language-json">{
+    "success": true,
+    "message": "Structure du diagnostic par profil récupérée avec succès",
+    "data": {
+        "profil_id": 1,
+        "categories": [
+            {
+                "id": 1,
+                "titre": "Catégorie Spécifique",
+                "modules": [
+                    {
+                        "id": 2,
+                        "titre": "Module spécifique au profil",
+                        "description": "Module adapté à ce profil",
+                        "ordre": 1,
+                        "diagnosticmoduletype_id": 1,
+                        "diagnosticmodulecategory_id": 1,
+                        "entrepriseprofil_id": 1,
+                        "questions": [
+                            {
+                                "id": 5,
+                                "titre": "Question spécifique",
+                                "description": "Question pour ce profil",
+                                "ordre": 1,
+                                "obligatoire": true,
+                                "type": "Choix multiple",
+                                "categorie": "Spécifique",
+                                "reponses": [
+                                    {
+                                        "id": 10,
+                                        "titre": "Réponse A",
+                                        "score": 5,
+                                        "ordre": 1
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "total_categories": 1,
+        "total_modules": 2
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Types de Modules -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h3>Types de Modules</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>GET /api/v1/diagnostic-structure/types</h5>
+                        <p>Récupère la liste des types de modules disponibles.</p>
+                        <p class="text-muted"><strong>Filtrage :</strong> Uniquement les types actifs (etat = 1).</p>
+                        
+                        <h6>Exemple de requête :</h6>
+                        <pre><code class="language-bash">curl -X GET "http://localhost:8000/api/v1/diagnostic-structure/types" \
+     -H "Content-Type: application/json"</code></pre>
+                        
+                        <h6>Exemple de réponse :</h6>
+                        <pre><code class="language-json">{
+    "success": true,
+    "message": "Types de modules récupérés avec succès",
+    "data": [
+        {
+            "id": 1,
+            "titre": "Diagnostic principal",
+            "description": "Module de diagnostic principal",
+            "etat": 1
+        },
+        {
+            "id": 2,
+            "titre": "Diagnostic secondaire",
+            "description": "Module de diagnostic secondaire",
+            "etat": 1
+        }
+    ]
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profils d'Entreprise -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-light text-dark">
+                        <h3>Profils d'Entreprise</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>GET /api/v1/diagnostic-structure/profils</h5>
+                        <p>Récupère la liste des profils d'entreprise disponibles.</p>
+                        <p class="text-muted"><strong>Filtrage :</strong> Uniquement les profils actifs (etat = 1).</p>
+                        
+                        <h6>Exemple de requête :</h6>
+                        <pre><code class="language-bash">curl -X GET "http://localhost:8000/api/v1/diagnostic-structure/profils" \
+     -H "Content-Type: application/json"</code></pre>
+                        
+                        <h6>Exemple de réponse :</h6>
+                        <pre><code class="language-json">{
+    "success": true,
+    "message": "Profils d'entreprise récupérés avec succès",
+    "data": [
+        {
+            "id": 1,
+            "titre": "Entreprise individuelle",
+            "description": "Profil pour les entreprises individuelles",
+            "etat": 1
+        },
+        {
+            "id": 2,
+            "titre": "PME",
+            "description": "Profil pour les PME",
+            "etat": 1
+        }
+    ]
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Codes d'erreur -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h3>Codes d'erreur</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Message</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>404</td>
+                                    <td>Not Found</td>
+                                    <td>Module non trouvé ou ressource inexistante</td>
+                                </tr>
+                                <tr>
+                                    <td>500</td>
+                                    <td>Internal Server Error</td>
+                                    <td>Erreur serveur lors du traitement de la requête</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
