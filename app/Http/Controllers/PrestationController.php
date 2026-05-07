@@ -676,7 +676,7 @@ public function inscrireStore(Request $request, $id)
         
         // Appeler l'API de paiement
         try {
-            $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+            $moduleController = new \App\Http\Controllers\ModuleressourceController();
             $resultat = $moduleController->attribuerModuleViaAction(
                 'prestations',
                 $prestation->id,

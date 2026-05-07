@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\PaymentApiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DiagnosticController;
 use App\Http\Controllers\Api\DiagnosticStructureController;
-use App\Http\Controllers\ModuleRessourceController;
+use App\Http\Controllers\ModuleressourceController;
 
 Route::post('/callback/ressourcecompte/{transaction}', 
     [RessourceCompteCallbackController::class, 'handle']
@@ -29,9 +29,9 @@ Route::prefix('payments')->group(function () {
 
 // Routes API pour la gestion des modules ressources
 Route::prefix('modules')->group(function () {
-    Route::get('/', [ModuleRessourceController::class, 'index']);
-    Route::get('/{id}', [ModuleRessourceController::class, 'show']);
-    Route::post('/attribute', [ModuleRessourceController::class, 'attribuerModuleRessource']);
+    Route::get('/', [ModuleressourceController::class, 'index']);
+    Route::get('/{id}', [ModuleressourceController::class, 'show']);
+    Route::post('/attribute', [ModuleressourceController::class, 'attribuerModuleRessource']);
 });
 
 Route::prefix('v1')->group(function () {
