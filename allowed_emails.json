@@ -1,0 +1,7 @@
+{
+    "allowed_emails": [
+        "test@example.com",
+        "admin@example.com",
+        "user@example.com"
+    ]
+}

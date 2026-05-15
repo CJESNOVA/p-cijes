@@ -187,7 +187,20 @@ public function register(Request $request)
         'condition_general.required' => 'Les Conditions d\'Utilisation et la Politique de Confidentialité sont requises.',
     ]);
 
-    // 🔗 Redirection après vérification email
+    // � Vérifier si l'email est autorisé (whitelist)
+    $allowedEmailsFile = base_path('allowed_emails.json');
+    if (file_exists($allowedEmailsFile)) {
+        $allowedEmailsData = json_decode(file_get_contents($allowedEmailsFile), true);
+        $allowedEmails = $allowedEmailsData['allowed_emails'] ?? [];
+        
+        if (!in_array(strtolower($request->email), array_map('strtolower', $allowedEmails))) {
+            return back()->withErrors([
+                'email' => 'La plateforme n\'est pas encore ouverte à tous. Votre adresse email n\'est pas autorisée à s\'inscrire pour le moment.'
+            ])->withInput();
+        }
+    }
+
+    // �🔗 Redirection après vérification email
     $redirectUrl = env('APP_URL') . '/emails/verify';
     
     // Appel Supabase signup
