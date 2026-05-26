@@ -53,6 +53,9 @@
                         </button>
                         <span id="syncStatus" class="text-xs text-slate-500">Dernière synchro : jamais</span>
                     </div> -->
+
+                    @include('dashboard.partials.support')
+
                 </div>
             </div>
         </div>
