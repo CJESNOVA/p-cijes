@@ -288,21 +288,7 @@
                                                                         </div>
                                                                         <div class="flex-1">
                                                                             <p class="font-semibold text-slate-800 dark:text-navy-50 text-base">
-                                                                                {{ number_format($tx->montant, 2) }} 
-                                                                                
-                                                                                @if(strtoupper($tx->ressourcecompte->ressourcetype->titre) == 'BON')
-                                                                                        <img src="{{ asset('images/ICON_BON.png') }}" alt="BON" class="w-6 h-6 object-contain">
-                                                                                    @elseif(strtoupper($tx->ressourcecompte->ressourcetype->titre) == 'CORIS')
-                                                                                        <img src="{{ asset('images/ICON_CORIS.png') }}" alt="CORIS" class="w-6 h-6 object-contain">
-                                                                                    @elseif(strtoupper($tx->ressourcecompte->ressourcetype->titre) == 'KOBO')
-                                                                                        <img src="{{ asset('images/ICON_KOBO.png') }}" alt="KOBO" class="w-6 h-6 object-contain">
-                                                                                    @elseif(strtoupper($tx->ressourcecompte->ressourcetype->titre) == 'SIKA')
-                                                                                        <img src="{{ asset('images/ICON_SIKA.png') }}" alt="SIKA" class="w-6 h-6 object-contain">
-                                                                                    @else
-                                                                                        <svg class="w-5 h-5 text-[#4FBE96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                                                                                        </svg>
-                                                                                    @endif
+                                                                                {{ number_format($tx->montant, 2) }} {{ $tx->ressourcecompte->ressourcetype->titre }}                                                                                
                                                                             </p>
                                                                             <p class="text-sm text-slate-500 dark:text-navy-300">
                                                                                 {{ optional($tx->created_at)->format('d M Y à H:i') }}
