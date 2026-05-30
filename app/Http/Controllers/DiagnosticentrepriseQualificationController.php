@@ -526,25 +526,27 @@ class DiagnosticentrepriseQualificationController extends Controller
             }
 
             // Déterminer la réponse majoritaire et le profil correspondant
+            // FORCER LE PROFIL 1 quel que soit le résultat
+            $profil = 1;
             if ($countA > $countB && $countA > $countC) {
-                $profil = 1;
+                //$profil = 1;
                 $reponseMajoritaire = 'A';
             } elseif ($countB > $countA && $countB > $countC) {
-                $profil = 2;
+                //$profil = 2;
                 $reponseMajoritaire = 'B';
             } elseif ($countC > $countA && $countC > $countB) {
-                $profil = 3;
+                //$profil = 3;
                 $reponseMajoritaire = 'C';
             } else {
                 // En cas d'égalité, on peut choisir la réponse la plus haute ou une logique spécifique
                 if ($countC >= $countB && $countC >= $countA) {
-                    $profil = 3;
+                    //$profil = 3;
                     $reponseMajoritaire = 'C';
                 } elseif ($countB >= $countA && $countB >= $countC) {
-                    $profil = 2;
+                    //$profil = 2;
                     $reponseMajoritaire = 'B';
                 } else {
-                    $profil = 1;
+                    //$profil = 1;
                     $reponseMajoritaire = 'A';
                 }
             }
@@ -624,25 +626,27 @@ class DiagnosticentrepriseQualificationController extends Controller
         }
 
         // Déterminer la réponse majoritaire et le profil correspondant
+        // FORCER LE PROFIL 1 quel que soit le résultat
+        $profil = 1;
         if ($countA > $countB && $countA > $countC) {
-            $profil = 1;
+            //$profil = 1;
             $reponseMajoritaire = 'A';
         } elseif ($countB > $countA && $countB > $countC) {
-            $profil = 2;
+            //$profil = 2;
             $reponseMajoritaire = 'B';
         } elseif ($countC > $countA && $countC > $countB) {
-            $profil = 3;
+            //$profil = 3;
             $reponseMajoritaire = 'C';
         } else {
             // En cas d'égalité, on peut choisir la réponse la plus haute ou une logique spécifique
             if ($countC >= $countB && $countC >= $countA) {
-                $profil = 3;
+                //$profil = 3;
                 $reponseMajoritaire = 'C';
             } elseif ($countB >= $countA && $countB >= $countC) {
-                $profil = 2;
+                //$profil = 2;
                 $reponseMajoritaire = 'B';
             } else {
-                $profil = 1;
+                //$profil = 1;
                 $reponseMajoritaire = 'A';
             }
         }

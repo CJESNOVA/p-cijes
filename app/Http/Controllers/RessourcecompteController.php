@@ -330,7 +330,7 @@ public function store(Request $request)
     'client'       => [
         'lastname'  => $membre->nom ?? 'Inconnu',
         'firstname' => $membre->prenom ?? '',
-        'phone'     => '+228' . ($membre->telephone ?? '90000000'),
+        'phone'     => '228' . substr($membre->telephone, -8),
     ],
     'callback_url' => route('api.callback.ressourcecompte', ['transaction' => $transaction->id], true),
     //'callback_url' => route('ressourcecompte.callback', [$transaction->id]),

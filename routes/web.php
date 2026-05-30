@@ -538,10 +538,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/bons/ressourcecomptes/demande', [RessourcecompteController::class, 'storeDemande'])->name('ressourcecompte.storeDemande');
 
     // Routes pour la gestion des demandes (documents)
-    Route::get('/demandes', [DemandeController::class, 'index'])->name('demande.index');
-    Route::get('/demandes/form', [DemandeController::class, 'indexForm'])->name('demande.form');
-    Route::post('/demandes/store', [DemandeController::class, 'storeOrUpdateDemandes'])->name('demande.store');
-    Route::get('/demandes/{id}/download', [DemandeController::class, 'download'])->name('demande.download');
+    Route::get('/bons/demandes', [DemandeController::class, 'index'])->name('demande.index');
+    Route::get('/bons/demandes/form', [DemandeController::class, 'indexForm'])->name('demande.form');
+    Route::post('/bons/demandes/store', [DemandeController::class, 'storeOrUpdateDemandes'])->name('demande.store');
+    Route::get('/bons/demandes/{id}/download', [DemandeController::class, 'download'])->name('demande.download');
 
     Route::get('/prestations/prestationressources', [PrestationressourceController::class, 'index'])->name('prestationressource.index');
 

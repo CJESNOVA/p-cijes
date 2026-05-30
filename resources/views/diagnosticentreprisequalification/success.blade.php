@@ -79,7 +79,7 @@
                                 <h4 class="text-lg font-semibold text-[#4FBE96] dark:text-[#4FBE96]/80 mb-4">
                                     Votre profil de classification
                                 </h4>
-                                <div class="text-2xl font-bold text-slate-800 dark:text-navy-100 mb-3">
+                                <!-- <div class="text-2xl font-bold text-slate-800 dark:text-navy-100 mb-3">
                                     @if(isset($reponseMajoritaire) && $reponseMajoritaire)
                                         <span class="inline-flex items-center px-4 py-2 rounded-full text-lg font-medium
                                             {{ $reponseMajoritaire === 'A' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' : 
@@ -95,7 +95,7 @@
                                             <i class="fas fa-question-circle mr-2"></i>Non déterminé
                                         </span>
                                     @endif
-                                </div>
+                                </div> -->
                                 <p class="text-sm text-slate-600 dark:text-navy-400">
                                     Basé sur {{ ($countA ?? 0) + ($countB ?? 0) + ($countC ?? 0) }} réponses au total
                                 </p>
@@ -113,17 +113,17 @@
                                         @switch($entreprise->entrepriseprofil_id)
                                             @case(1)
                                                 <span class="text-yellow-600 dark:text-yellow-400">
-                                                    <i class="fas fa-seedling mr-2"></i>{{ $entreprise->entrepriseprofil->titre ?? 'Débutant' }}
+                                                    <i class="fas fa-seedling mr-2"></i>{{ $entreprise->entrepriseprofil->titre ?? 'Pépite' }}
                                                 </span>
                                                 @break
                                             @case(2)
                                                 <span class="text-[#152737] dark:text-[#152737]/80">
-                                                    <i class="fas fa-chart-line mr-2"></i>{{ $entreprise->entrepriseprofil->titre ?? 'Intermédiaire' }}
+                                                    <i class="fas fa-chart-line mr-2"></i>{{ $entreprise->entrepriseprofil->titre ?? 'Emergeante' }}
                                                 </span>
                                                 @break
                                             @case(3)
                                                 <span class="text-[#4FBE96] dark:text-[#4FBE96]/80">
-                                                    <i class="fas fa-trophy mr-2"></i>{{ $entreprise->entrepriseprofil->titre ?? 'Avancé' }}
+                                                    <i class="fas fa-trophy mr-2"></i>{{ $entreprise->entrepriseprofil->titre ?? 'Elite' }}
                                                 </span>
                                                 @break
                                             @default

@@ -186,17 +186,19 @@ class DashboardController extends Controller
         ->pluck('entreprise_id')
         ->toArray();
 
-    // Calcul des revenus du mois courant et du mois précédent
+    // Calcul des revenus du mois courant et du mois précédent (uniquement transactions réussies)
     $revenue_current_month = Ressourcetransaction::whereHas('ressourcecompte', function ($q) use ($membre, $entrepriseIds) {
         $q->where('membre_id', $membre->id)
           ->orWhereIn('entreprise_id', $entrepriseIds);
-    })->whereMonth('created_at', now()->month)
+    })->where('etat', 1) // Uniquement les transactions réussies
+      ->whereMonth('created_at', now()->month)
       ->sum('montant');
 
     $revenue_last_month = Ressourcetransaction::whereHas('ressourcecompte', function ($q) use ($membre, $entrepriseIds) {
         $q->where('membre_id', $membre->id)
           ->orWhereIn('entreprise_id', $entrepriseIds);
-    })->whereMonth('created_at', now()->subMonth()->month)
+    })->where('etat', 1) // Uniquement les transactions réussies
+      ->whereMonth('created_at', now()->subMonth()->month)
       ->sum('montant');
 
     $variation = $revenue_last_month > 0
@@ -237,6 +239,17 @@ class DashboardController extends Controller
         })
         ->sum('solde');
 
+        // Solde cumulé par type de ressource
+$soldeParType = Ressourcecompte::selectRaw('ressourcetype_id, SUM(solde) as total_solde')
+    ->where(function($q) use ($membre, $entrepriseIds) {
+        $q->where('membre_id', $membre->id)
+          ->orWhereIn('entreprise_id', $entrepriseIds);
+    })
+    ->groupBy('ressourcetype_id')
+    ->with('ressourcetype')
+    ->get();
+
+
     return [
         'revenue_month'     => $revenue_current_month,
         'revenue_variation' => round($variation, 2),
@@ -249,6 +262,7 @@ class DashboardController extends Controller
         'membres_associes'  => $membres_associes,
         'pme'               => $pme,
         'earning_series'    => [$revenue_current_month * 0.1, $revenue_current_month * 0.25, $revenue_current_month * 0.3, $revenue_current_month * 0.4, $revenue_current_month * 0.6, $revenue_current_month * 0.45, $revenue_current_month * 0.7], // à adapter selon ton graphique
+        'solde_par_type'    => $soldeParType,
     ];
 }
 

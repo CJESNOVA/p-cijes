@@ -24,20 +24,34 @@
             {{-- 💰 Card 2 : Revenu + Bouton de synchro --}}
             <div class="col-span-12 lg:col-span-6">
                 <div class="bg-white shadow-md rounded-xl p-6 flex flex-col justify-between space-y-4">
-                    <!--<div>
-                        <p class="text-sm font-medium opacity-80">Revenu ce mois</p>
-                        <p class="text-3xl font-bold">{{ number_format($stats['revenue_month'] ?? 0) }} FCFA</p>
-                        <p class="mt-1 text-sm opacity-70">
-                            +{{ $stats['revenue_variation'] ?? 0 }}% par rapport au mois précédent 
-                        </p>
-                        
-                        @if(isset($stats['solde_type1']) && $stats['solde_type1'] > 0)
-                            <div class="mt-3 pt-3 border-t border-gray-200">
-                                <p class="text-sm font-medium opacity-80">Solde disponible</p>
-                                <p class="text-xl font-semibold text-green-600">{{ number_format($stats['solde_type1'], 2) }} FCFA</p>
-                            </div>
-                        @endif
-                    </div>-->
+                    <div>
+    <!-- <p class="text-sm font-medium opacity-80">Revenu ce mois</p>
+    <p class="text-3xl font-bold">{{ number_format($stats['revenue_month'] ?? 0) }} FCFA</p>
+
+    <p class="mt-1 text-sm opacity-70">
+        +{{ $stats['revenue_variation'] ?? 0 }}% par rapport au mois précédent
+    </p> -->
+
+    @if(isset($stats['solde_par_type']) && $stats['solde_par_type']->count() > 0)
+        <div class="mt-3 pt-3 border-t border-gray-200">
+            <p class="text-sm font-medium opacity-80 mb-2">
+                Soldes par type de ressource
+            </p>
+
+            @foreach($stats['solde_par_type'] as $item)
+                <div class="flex justify-between items-center py-1">
+                    <span class="text-sm text-gray-600">
+                        {{ $item->ressourcetype->titre ?? 'Non défini' }}
+                    </span>
+
+                    <span class="font-semibold text-green-600">
+                        {{ number_format($item->total_solde, 0, ',', ' ') }} 
+                    </span>
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
 
                     <a href="https://academy.cjes.africa/login" 
                        target="_blank" 

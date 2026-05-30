@@ -109,7 +109,7 @@ class SidebarPanel
     {
         $type = self::membreType();
 
-        if ($type !== 'conseille') {
+        if ($type === 'incube') {
 
         return [
             'title' => 'Diagnostics',
@@ -633,8 +633,8 @@ class SidebarPanel
             self::experts(), 
             self::prestations(), 
             self::bons(), 
-            self::forums(),
-            self::dashboards()
+            self::forums()//,
+            //self::dashboards()
         ];
     }
 }
