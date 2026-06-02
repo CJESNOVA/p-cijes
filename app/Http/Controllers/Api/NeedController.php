@@ -16,7 +16,7 @@ class NeedController extends Controller
         $userId = auth()->id();
         $membre = Membre::where('user_id', $userId)->firstOrFail();
 
-        $entreprises = Entreprise::whereHas('entreprisemembres', function ($q) use ($membre) {
+        $entreprises = Entreprise::whereHas('entreprisesmembres', function ($q) use ($membre) {
             $q->where('membre_id', $membre->id);
         })->get();
 
@@ -41,7 +41,7 @@ class NeedController extends Controller
         $userId = auth()->id();
         $membre = Membre::where('user_id', $userId)->firstOrFail();
         
-        $entreprise = Entreprise::whereHas('entreprisemembres', function ($q) use ($membre) {
+        $entreprise = Entreprise::whereHas('entreprisesmembres', function ($q) use ($membre) {
             $q->where('membre_id', $membre->id);
         })->findOrFail($request->entreprise_id);
 
