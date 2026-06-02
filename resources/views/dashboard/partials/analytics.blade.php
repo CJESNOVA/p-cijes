@@ -53,7 +53,7 @@
     @endif
 </div>
 
-                    <a href="https://academy.cjes.africa/login" 
+                    <a href="https://academy.cjes.africa/fr/login" 
                        target="_blank" 
                        rel="noopener noreferrer"
                        class="inline-flex items-center px-6 py-3 bg-[#1DA8BB] text-white rounded-lg hover:bg-[#1DA8BB]/90 transition-colors shadow-lg">

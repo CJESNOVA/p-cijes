@@ -55,38 +55,51 @@ class ExpertController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->firstOrFail();
+{
+    $userId = Auth::id();
+    $membre = Membre::where('user_id', $userId)->firstOrFail();
 
-        $request->validate([
-            'domaine' => 'required|string|max:255',
-            'experttype_id' => 'required|exists:experttypes,id',
-            'secteur_id' => 'nullable|exists:secteurs,id',
-            'fichier' => 'nullable|file|max:2048',
-        ]);
+    $request->validate([
+        'domaine' => 'required|string|max:255',
+        'experttype_id' => 'required|exists:experttypes,id',
+        'secteur_id' => 'nullable|exists:secteurs,id',
+        'fichier' => 'nullable|file|max:2048',
+    ]);
 
-        //$path = $request->file('fichier')?->store('experts', 'public');
+    $path = null;
 
-                $storage = new \App\Services\SupabaseStorageService();
-                $file = $request->file('fichier');
-                $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
-                $path = 'experts/' . time() . '_' . $cleanName;
-                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
-                //$path = $path;
+    if ($request->hasFile('fichier')) {
 
-        Expert::create([
-            'domaine' => $request->domaine,
-            'experttype_id' => $request->experttype_id,
-            'secteur_id' => $request->secteur_id,
-            'expertvalide_id' => 1,
-            'membre_id' => $membre->id,
-            'fichier' => $path,
-            'etat' => 1,
-        ]);
+        $storage = new \App\Services\SupabaseStorageService();
 
-        return redirect()->route('expert.index')->with('success', '✅ Expert créé avec succès.');
+        $file = $request->file('fichier');
+
+        $cleanName = \App\Helpers\FileHelper::sanitizeFileName(
+            $file->getClientOriginalName()
+        );
+
+        $path = 'experts/' . time() . '_' . $cleanName;
+
+        $storage->upload(
+            $path,
+            file_get_contents($file->getRealPath())
+        );
     }
+
+    Expert::create([
+        'domaine' => $request->domaine,
+        'experttype_id' => $request->experttype_id,
+        'secteur_id' => $request->secteur_id,
+        'expertvalide_id' => 1,
+        'membre_id' => $membre->id,
+        'fichier' => $path,
+        'etat' => 1,
+    ]);
+
+    return redirect()
+        ->route('expert.index')
+        ->with('success', '✅ Expert créé avec succès.');
+}
 
     public function edit(Expert $expert)
     {
@@ -103,39 +116,53 @@ class ExpertController extends Controller
     }
 
     public function update(Request $request, Expert $expert)
-    {
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->firstOrFail();
+{
+    $userId = Auth::id();
+    $membre = Membre::where('user_id', $userId)->firstOrFail();
 
-        if ($expert->membre_id !== $membre->id) {
-            abort(403, 'Action non autorisée.');
-        }
-
-        $request->validate([
-            'domaine' => 'required|string|max:255',
-            'experttype_id' => 'required|exists:experttypes,id',
-            'secteur_id' => 'nullable|exists:secteurs,id',
-            'fichier' => 'nullable|file|max:2048',
-        ]);
-
-        //$path = $request->file('fichier')?->store('experts', 'public');
-
-                $storage = new \App\Services\SupabaseStorageService();
-                $file = $request->file('fichier');
-                $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());
-                $path = 'experts/' . time() . '_' . $cleanName;
-                $url = $storage->upload($path, file_get_contents($file->getRealPath()));
-                //$path = $path;
-
-        $expert->update([
-            'domaine' => $request->domaine,
-            'experttype_id' => $request->experttype_id,
-            'secteur_id' => $request->secteur_id,
-            'fichier' => $path ?? $expert->fichier,
-        ]);
-
-        return redirect()->route('expert.index')->with('success', '✅ Expert mis à jour.');
+    if ($expert->membre_id !== $membre->id) {
+        abort(403, 'Action non autorisée.');
     }
+
+    $request->validate([
+        'domaine' => 'required|string|max:255',
+        'experttype_id' => 'required|exists:experttypes,id',
+        'secteur_id' => 'nullable|exists:secteurs,id',
+        'fichier' => 'nullable|file|max:2048',
+    ]);
+
+    // Conserver l'ancien fichier par défaut
+    $path = $expert->fichier;
+
+    if ($request->hasFile('fichier')) {
+
+        $storage = new \App\Services\SupabaseStorageService();
+
+        $file = $request->file('fichier');
+
+        $cleanName = \App\Helpers\FileHelper::sanitizeFileName(
+            $file->getClientOriginalName()
+        );
+
+        $path = 'experts/' . time() . '_' . $cleanName;
+
+        $storage->upload(
+            $path,
+            file_get_contents($file->getRealPath())
+        );
+    }
+
+    $expert->update([
+        'domaine' => $request->domaine,
+        'experttype_id' => $request->experttype_id,
+        'secteur_id' => $request->secteur_id,
+        'fichier' => $path,
+    ]);
+
+    return redirect()
+        ->route('expert.index')
+        ->with('success', '✅ Expert mis à jour.');
+}
 
     public function destroy(Expert $expert)
     {
