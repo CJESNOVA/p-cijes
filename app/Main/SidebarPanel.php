@@ -148,7 +148,7 @@ class SidebarPanel
     {
         $type = self::membreType();
 
-        if ($type !== 'conseille') {
+        if ($type === 'incube') {
 
         return [
             'title' => 'Accompagnements',
