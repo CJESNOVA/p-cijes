@@ -49,10 +49,7 @@ class NeedController extends Controller
 
         if (!$startupId) {
             Log::warning("Entreprise {$entreprise->id} has no supabase_startup_id");
-            return response()->json([
-                'success' => false,
-                'message' => 'Entreprise non configurée pour l\'API'
-            ], 400);
+            return redirect()->back()->with('error', 'Entreprise non configurée pour l\'API');
         }
 
         try {
@@ -71,19 +68,13 @@ class NeedController extends Controller
                     'status' => $loginResponse->status(),
                     'body' => $loginResponse->body()
                 ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erreur d\'authentification API'
-                ], 500);
+                return redirect()->back()->with('error', 'Erreur d\'authentification API');
             }
 
             $token = $loginResponse->json('access_token');
             if (!$token) {
                 Log::error('No access token received from API');
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token API manquant'
-                ], 500);
+                return redirect()->back()->with('error', 'Token API manquant');
             }
 
             // FILE UPLOAD
@@ -116,11 +107,7 @@ class NeedController extends Controller
                     'status' => $needResponse->status(),
                     'body' => $needResponse->body()
                 ]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erreur lors de la création du besoin',
-                    'error' => $needResponse->json('message') ?? 'Erreur inconnue'
-                ], 500);
+                return redirect()->back()->with('error', 'Erreur lors de la création du besoin : ' . ($needResponse->json('message') ?? 'Erreur inconnue'));
             }
 
             Log::info('Need created successfully', [
@@ -129,15 +116,7 @@ class NeedController extends Controller
                 'api_response' => $needResponse->json()
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Besoin publié avec succès',
-                'data' => [
-                    'need_id' => $needResponse->json('id'),
-                    'file_url' => $fileUrl,
-                    'api_response' => $needResponse->json()
-                ]
-            ]);
+            return redirect()->back()->with('success', 'Besoin publié avec succès !');
 
         } catch (\Exception $e) {
             Log::error('Exception in NeedController@store', [
@@ -146,10 +125,7 @@ class NeedController extends Controller
                 'line' => $e->getLine()
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Une erreur est survenue : ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
 }

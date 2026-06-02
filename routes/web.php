@@ -640,11 +640,11 @@ Route::middleware('auth')->group(function () {
 
 
     // afficher le formulaire
-    Route::get('/needs/create', [NeedController::class, 'create'])
+    Route::get('/prestations/needs/create', [NeedController::class, 'create'])
         ->name('needs.create');
 
     // envoyer le formulaire (appel API)
-    Route::post('/needs', [NeedController::class, 'store'])
+    Route::post('/prestations/needs', [NeedController::class, 'store'])
         ->name('needs.store');
 
 
