@@ -344,7 +344,13 @@ class SidebarPanel
                     'prestationressource' => [
                         'title' => 'Prestations payées',
                         'route_name' => 'prestationressource.index'
-                    ],/*
+                    ],
+                    'needs' => [
+                        'title' => 'Publier un besoin',
+                        'route_name' => 'needs.create'
+                    ],
+                    
+                    /*
                     'participant' => [
                         'title' => 'Les formations ouvertes',
                         'route_name' => 'formation.liste'

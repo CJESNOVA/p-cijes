@@ -40,5 +40,11 @@ return [
         'key' => env('SUPABASE_API_KEY'),
     ],
 
+    'api' => [
+        'email' => env('API_EMAIL'),
+        'password' => env('API_PASSWORD'),
+        'url' => env('API_URL', 'https://api.example.com'),
+        'country_id' => env('API_COUNTRY_ID', 'TG'),
+    ],
 
 ];

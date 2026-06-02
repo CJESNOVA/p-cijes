@@ -2,7 +2,11 @@
 
 use App\Http\Controllers\PagesController;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\SyncController;
+use App\Http\Controllers\RessourceSyncController;
+use App\Http\Controllers\DemandeController;
+use App\Http\Controllers\Api\NeedController;
 use App\Http\Controllers\MembreController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PieceController;
@@ -50,14 +54,9 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PropositionMembreController;
 use App\Http\Controllers\AbonnementtypeController;
 
-use App\Http\Controllers\RessourceSyncController;
-use App\Http\Controllers\DemandeController;
-
 Route::post('/ressourcecomptes/sync', [RessourceSyncController::class, 'syncToSupabase'])
     ->name('ressourcecomptes.sync')
     ->middleware('auth');
-    
-use App\Http\Controllers\SyncController;
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/sync/supabase', [SyncController::class, 'triggerSync'])
@@ -65,62 +64,69 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
+
 // Callback SEMOA (public, pas de CSRF)
 Route::post('bons/ressourcecompte/{id}/callback', 
     [\App\Http\Controllers\RessourcecompteController::class, 'callback']
 )->name('ressourcecompte.callback');
 
+// Routes de test (protégées - admin seulement)
+Route::middleware('admin.auth')->group(function () {
+    Route::get('/test-mail', function () {
+        try {
+            Mail::raw('Ceci est un test depuis Laravel local.', function ($message) {
+                $message->to(config('mail.test_email', 'yokamly@gmail.com'))
+                        ->subject('Test Mail CJES Africa');
+            });
 
-use Illuminate\Support\Facades\Mail;
-
-Route::get('/test-mail', function () {
-    try {
-        Mail::raw('Ceci est un test depuis Laravel local.', function ($message) {
-            $message->to('yokamly@gmail.com')
-                    ->subject('Test Mail CJES Africa');
-        });
-
-        return '✅ Mail envoyé avec succès !';
-    } catch (\Exception $e) {
-        return '❌ Erreur : ' . $e->getMessage();
-    }
-});
+            return '✅ Mail envoyé avec succès !';
+        } catch (\Exception $e) {
+            return '❌ Erreur : ' . $e->getMessage();
+        }
+    });
 
 
-Route::get('/test-mail-recompense', function () {
-    // Récupérer un membre pour le test (remplacez l'ID par un vrai membre)
-    $membre = App\Models\Membre::first(); // ou Membre::find(1);
-    if (!$membre) {
-        return "Aucun membre trouvé pour le test.";
-    }
+    Route::get('/test-mail-recompense', function () {
+        // Récupérer un membre pour le test (remplacez l'ID par un vrai membre)
+        $membre = App\Models\Membre::first(); // ou Membre::find(1);
+        if (!$membre) {
+            return "Aucun membre trouvé pour le test.";
+        }
 
-    // Créer un objet Action fictif
-    $action = new App\Models\Action([
-        'titre' => 'Test Action',
-        'point' => 50,
-    ]);
+        // Créer un objet Action fictif
+        $action = new App\Models\Action([
+            'titre' => 'Test Action',
+            'point' => 50,
+        ]);
 
-    // Créer un objet Recompense fictif
-    $recompense = new App\Models\Recompense([
-        'updated_at' => Carbon\Carbon::now(),
-    ]);
+        // Créer un objet Recompense fictif
+        $recompense = new App\Models\Recompense([
+            'updated_at' => \Carbon\Carbon::now(),
+        ]);
 
-    try {
-        Mail::send('emails.recompense', [
-            'membre' => $membre,
-            'action' => $action,
-            'recompense' => $recompense,
-        ], function ($message) use ($membre) {
-            $message->to($membre->email ?? 'yokamly@gmail.com')
-                    ->subject('🎁 Nouvelle récompense obtenue - CJES Africa');
-        });
+        try {
+            Mail::send('emails.recompense', [
+                'membre' => $membre,
+                'action' => $action,
+                'recompense' => $recompense,
+            ], function ($message) use ($membre) {
+                $message->to($membre->email ?? config('mail.test_email', 'yokamly@gmail.com'))
+                        ->subject('🎁 Nouvelle récompense obtenue - CJES Africa');
+            });
 
-        return "Mail envoyé avec succès à : " . ($membre->email ?? 'yokamly@gmail.com');
+            return "Mail envoyé avec succès à : " . ($membre->email ?? config('mail.test_email', 'yokamly@gmail.com'));
 
-    } catch (\Exception $e) {
-        \Log::error('Erreur envoi mail test : ' . $e->getMessage());
-        return "Erreur lors de l'envoi du mail : " . $e->getMessage();
-    }
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi mail test : ' . $e->getMessage());
+            return "Erreur lors de l'envoi du mail : " . $e->getMessage();
+        }
+    });
+
+    Route::get('/test-supabase-register', function () {
+        $supabase = new App\Services\SupabaseService(); // selon ton chemin
+        $result = $supabase->signUp('test@example.com', 'Password123', ['full_name' => 'Test User'], 'http://localhost:8000/emails/verify');
+        dd($result);
+    });
 });
 
 
@@ -171,12 +177,6 @@ Route::get('/test-notification', [\App\Http\Controllers\MailTestController::clas
 Route::get('/test-password-reset-notification', [\App\Http\Controllers\MailTestController::class, 'testPasswordResetNotification'])->name('test.password-reset-notification');
 Route::get('/test-all-notifications', [\App\Http\Controllers\MailTestController::class, 'testAllNotifications'])->name('test.all-notifications');
 
-
-Route::get('/test-supabase-register', function () {
-    $supabase = new App\Services\SupabaseService(); // selon ton chemin
-    $result = $supabase->signUp('test@example.com', 'Password123', ['full_name' => 'Test User'], 'http://localhost:8000/emails/verify');
-    dd($result);
-});
 
 
 //Route::middleware(['web', 'auth'])->group(function () {
@@ -632,6 +632,21 @@ Route::middleware('auth')->group(function () {
     // Abonnements payés
     Route::get('/entreprises/abonnements/payes', [AbonnementressourceController::class, 'index'])->name('abonnementressource.index');
     Route::get('/entreprises/abonnements/payes/{id}', [AbonnementressourceController::class, 'show'])->name('abonnementressource.show');
+
+
+
+
+
+
+
+    // afficher le formulaire
+    Route::get('/needs/create', [NeedController::class, 'create'])
+        ->name('needs.create');
+
+    // envoyer le formulaire (appel API)
+    Route::post('/needs', [NeedController::class, 'store'])
+        ->name('needs.store');
+
 
 
 });
