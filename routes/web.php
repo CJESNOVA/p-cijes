@@ -549,6 +549,20 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/evenements/evenementressources', [EvenementressourceController::class, 'index'])->name('evenementressource.index');
 
+    // Routes pour les besoins PME
+    Route::get('/prestations/besoins', [NeedController::class, 'index'])->name('needs.index');
+    Route::get('/prestations/besoins/create', [NeedController::class, 'create'])->name('needs.create');
+    Route::post('/prestations/besoins', [NeedController::class, 'store'])->name('needs.store');
+    Route::get('/prestations/besoins/{needId}', [NeedController::class, 'show'])->name('needs.show');
+    
+    // Routes pour les candidatures
+    Route::get('/prestations/besoins/{needId}/candidatures', [NeedController::class, 'listApplications'])->name('needs.applications.index');
+    Route::get('/prestations/besoins/{needId}/postuler', function($needId) {
+        return view('needs.applications.create', ['needId' => $needId]);
+    })->name('needs.applications.create');
+    Route::post('/prestations/besoins/{needId}/candidatures', [NeedController::class, 'storeApplication'])->name('needs.storeApplication');
+    Route::put('/prestations/besoins/{needId}/candidatures/{applicationId}/attribuer', [NeedController::class, 'awardApplication'])->name('needs.awardApplication');
+
     Route::get('/evenements/espaceressources', [EspaceressourceController::class, 'index'])->name('espaceressource.index');
 
 
@@ -633,19 +647,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/entreprises/abonnements/payes', [AbonnementressourceController::class, 'index'])->name('abonnementressource.index');
     Route::get('/entreprises/abonnements/payes/{id}', [AbonnementressourceController::class, 'show'])->name('abonnementressource.show');
 
-
-
-
-
-
-
-    // afficher le formulaire
-    Route::get('/prestations/needs/create', [NeedController::class, 'create'])
-        ->name('needs.create');
-
-    // envoyer le formulaire (appel API)
-    Route::post('/prestations/needs', [NeedController::class, 'store'])
-        ->name('needs.store');
 
 
 
