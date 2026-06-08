@@ -172,7 +172,7 @@
     <option value="">Choisir un pays</option>
     @foreach ($payss as $pays)
         <option value="{{ $pays->id }}" {{ (old('pays_id', $entreprise->pays_id ?? '') == $pays->id) ? 'selected' : '' }}>
-            {{ $pays->calling_code }} ({{ $pays->name }})
+            <!-- {{ $pays->calling_code }} -->+228 ({{ $pays->name }})
         </option>
     @endforeach
 </select>
