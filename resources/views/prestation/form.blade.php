@@ -14,13 +14,6 @@
                 </div>
             </div>
         </div>
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </li>
-            <li>Définir ma disponibilité </li>
-          </ul> -->
-        </div>
         <div class="grid grid-cols-12 lg:gap-6">
             <div class="col-span-12 pt-6 lg:col-span-8 lg:pb-6">
 

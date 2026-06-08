@@ -143,7 +143,7 @@ private function getReductionsApplicables($membre, $espace)
     }
 
     // Récupérer toutes les réductions applicables (génériques + spécifiques aux profils des entreprises du membre)
-    $toutesReductions = Reductiontype::where('etat', true)
+    $toutesReductions = Reductiontype::where('etat', 1)
         ->where('offretype_id', 4) // 4 = espaces
         ->where(function($query) use ($entrepriseIds) {
             $query->where('entrepriseprofil_id', 0) // Génériques
@@ -273,7 +273,7 @@ private function getReductionsApplicables($membre, $espace)
         
         return Cotisation::where('entreprise_id', $entrepriseId)
             ->where('statut', 'paye')
-            ->where('est_a_jour', true)
+            ->where('est_a_jour', 1)
             ->where('date_fin', '>=', now())
             ->exists();
     }
@@ -288,7 +288,7 @@ private function getReductionsApplicables($membre, $espace)
         // Si c'est une entreprise CJES à jour
         if ($contexte['type'] === 'entreprise' || $contexte['type'] === 'accompagnement_entreprise') {
             if ($contexte['est_cjes'] && $contexte['cotisation_a_jour'] && $contexte['profil_id']) {
-                $reductions = Reductiontype::where('etat', true)
+                $reductions = Reductiontype::where('etat', 1)
                     ->where('offretype_id', 4) // 4 = espaces
                     ->where('entrepriseprofil_id', $contexte['profil_id'])
                     ->where(function($query) {
@@ -303,7 +303,7 @@ private function getReductionsApplicables($membre, $espace)
         }
         
         // Ajouter les réductions génériques (profil_id = 0)
-        $reductionsGeneriques = Reductiontype::where('etat', true)
+        $reductionsGeneriques = Reductiontype::where('etat', 1)
             ->where('offretype_id', 4) // 4 = espaces
             ->where('entrepriseprofil_id', 0) // Génériques
             ->where(function($query) {
@@ -345,7 +345,7 @@ private function getReductionsApplicables($membre, $espace)
         // Vérifier si au moins une entreprise CJES est à jour dans ses cotisations
         $cotisationValide = \App\Models\Cotisation::whereIn('entreprise_id', $entreprisesCjes->pluck('id'))
             ->where('statut', 'paye')
-            ->where('est_a_jour', true)
+            ->where('est_a_jour', 1)
             ->where('date_fin', '>=', now())
             ->exists();
 

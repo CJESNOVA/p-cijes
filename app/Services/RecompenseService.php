@@ -31,10 +31,28 @@ class RecompenseService
      */
     public function attribuerRecompense(string $actionCode, $membre, $entreprise = null, $source = null, $montant = null)
     {
+        // 📝 LOG DÉBUT
+        \Log::info('🚀 DÉBUT ATTRIBUTION RÉCOMPENSE', [
+            'action_code' => $actionCode,
+            'membre_id' => $membre->id ?? null,
+            'membre_nom' => ($membre->prenom ?? '') . ' ' . ($membre->nom ?? ''),
+            'entreprise_id' => $entreprise->id ?? null,
+            'source' => $source,
+            'montant' => $montant,
+        ]);
+
         $action = Action::where('code', $actionCode)->first();
         if (! $action) {
+            \Log::error('❌ Action non trouvée', ['action_code' => $actionCode]);
             return false;
         }
+
+        \Log::info('✅ Action trouvée', [
+            'action_id' => $action->id,
+            'action_titre' => $action->titre,
+            'action_point' => $action->point,
+            'action_limite' => $action->limite,
+        ]);
 
         // 🎯 CALCUL DES POINTS - Montant fixe ou pourcentage
         $points = (int) ($action->point ?? 0);
@@ -58,6 +76,11 @@ class RecompenseService
 
         try {
             // 1) 🚦 VÉRIFIER LIMITE D'ATTRIBUTION
+            \Log::info('🔍 Début vérification limite', [
+                'action_limite' => $action->limite,
+                'has_entreprise' => !is_null($entreprise),
+            ]);
+
             if ($action->limite) {
                 // 📊 Compter les récompenses existantes pour cette action
                 $query = Recompense::where('action_id', $action->id);
@@ -83,17 +106,58 @@ class RecompenseService
                 }
                 
                 $nbRecompenses = $query->count();
+                
+                \Log::info('📊 Résultat vérification limite', [
+                    'nb_recompenses' => $nbRecompenses,
+                    'limite' => $action->limite,
+                    'depasse' => $nbRecompenses >= $action->limite,
+                ]);
 
-                if ($nbRecompenses >= $action->limite) {
-                    \Log::warning('Limite de récompense atteinte', [
+                // 🎯 CAS SPÉCIAL: Actions de type CONNEXION_X (ex: CONNEXION_50)
+                // La récompense n'est accordée que lorsqu'on atteint exactement la Xème connexion
+                if (str_starts_with($actionCode, 'CONNEXION_')) {
+                    \Log::info('🔍 Vérification spéciale pour action CONNEXION_X', [
                         'action_code' => $actionCode,
                         'nb_recompenses' => $nbRecompenses,
                         'limite' => $action->limite,
-                        'entreprise_id' => $entreprise->id ?? null,
-                        'membre_id' => $membre->id
+                        'condition_exacte' => $nbRecompenses + 1 == $action->limite
                     ]);
-                    DB::rollBack();
-                    return false;
+
+                    // La récompense n'est accordée que si on est exactement à la connexion cible
+                    if ($nbRecompenses + 1 != $action->limite) {
+                        \Log::info('❌ Condition CONNEXION_X non remplie', [
+                            'action_code' => $actionCode,
+                            'connexion_actuelle' => $nbRecompenses + 1,
+                            'connexion_cible' => $action->limite,
+                            'raison' => 'Pas encore la connexion cible'
+                        ]);
+                        DB::rollBack();
+                        return false;
+                    }
+                    
+                    \Log::info('✅ Condition CONNEXION_X remplie - Attribution à la connexion exacte', [
+                        'action_code' => $actionCode,
+                        'connexion_numero' => $nbRecompenses + 1
+                    ]);
+                } else {
+                    // 📋 Logique normale pour les autres actions
+                    if ($nbRecompenses >= $action->limite) {
+                        \Log::warning('❌ Limite de récompense atteinte', [
+                            'action_code' => $actionCode,
+                            'nb_recompenses' => $nbRecompenses,
+                            'limite' => $action->limite,
+                            'entreprise_id' => $entreprise->id ?? null,
+                            'membre_id' => $membre->id
+                        ]);
+                        DB::rollBack();
+                        return false;
+                    } else {
+                        \Log::info('✅ Limite OK, attribution possible', [
+                            'nb_recompenses' => $nbRecompenses,
+                            'limite' => $action->limite,
+                            'restant' => $action->limite - $nbRecompenses,
+                        ]);
+                    }
                 }
             }
 
@@ -136,6 +200,12 @@ class RecompenseService
             }
 
             // 3) Créer la récompense
+            \Log::info('🎁 Création récompense', [
+                'points' => $points,
+                'action_id' => $action->id,
+                'membre_id' => $membre->id,
+            ]);
+
             $recompense = Recompense::create([
                 'valeur' => $points,
                 'commentaire' => "Récompense pour l’action : " . $action->titre,
@@ -148,32 +218,59 @@ class RecompenseService
                 'etat' => 1,
             ]);
 
+            \Log::info('✅ Récompense créée', [
+                'recompense_id' => $recompense->id,
+                'valeur' => $recompense->valeur,
+            ]);
+
             if ($entreprise) {
                 $recompense->entreprise_id = $entreprise->id;
                 $recompense->save();
+                \Log::info('✅ Récompense liée à entreprise', ['entreprise_id' => $entreprise->id]);
             }
 
             // 4) Transaction + mise à jour du solde
+            \Log::info('💰 Création transaction', [
+                'has_ressourceCompte' => !is_null($ressourceCompte),
+                'points' => $points,
+                'ressourceCompte_id' => $ressourceCompte->id ?? null,
+            ]);
+
             if ($ressourceCompte && $points > 0) {
                 $reference = 'REC-' . strtoupper(Str::random(8));
+                \Log::info('📝 Création transaction ressource', [
+                    'reference' => $reference,
+                    'montant' => $points,
+                    'ressourcecompte_id' => $ressourceCompte->id,
+                ]);
+
                 Ressourcetransaction::create([
                     'montant' => $points,
                     'reference' => $reference,
                     'ressourcecompte_id' => $ressourceCompte->id,
                     'datetransaction' => Carbon::now(),
                     'operationtype_id' => 1,
-                    'description' => "Récompense pour l’action : " . $action->titre,
+                    'description' => "Récompense pour l'action : " . $action->titre,
                     'spotlight' => 0,
                     'etat' => 1,
                 ]);
 
                 $ressourceCompte->increment('solde', $points);
+                \Log::info('✅ Solde mis à jour', ['nouveau_solde' => $ressourceCompte->fresh()->solde]);
             }
 
             // 5) Créer une alerte
+            \Log::info('🔔 Création alerte');
+            
             $lien = Route::has('recompense.mesRecompenses')
                 ? route('recompense.mesRecompenses')
                 : (Route::has('dashboard') ? route('dashboard') : '#');
+
+            \Log::info('📝 Données alerte', [
+                'titre' => "🎉 Félicitations !",
+                'contenu' => "Vous avez gagné {$points} {$action->ressourcetype->titre} pour : {$action->titre}",
+                'lien' => $lien,
+            ]);
 
             $alerte = Alerte::create([
                 'titre' => "🎉 Félicitations !",
@@ -188,47 +285,73 @@ class RecompenseService
                 'etat' => 1,
             ]);
 
+            \Log::info('✅ Alerte créée', ['alerte_id' => $alerte->id]);
+
             // 6) Envoi de notification Laravel (database + mail)
+            \Log::info('📧 Envoi notification');
+            
             $notifTarget = null;
 
             if (method_exists($membre, 'notify')) {
                 $notifTarget = $membre;
+                \Log::info('✅ Cible trouvée : Membre');
             } elseif (isset($membre->user) && method_exists($membre->user, 'notify')) {
                 $notifTarget = $membre->user;
+                \Log::info('✅ Cible trouvée : User');
             }
 
+            // Préparer les données pour la notification (envoi APRÈS le commit)
+            $notificationData = null;
             if ($notifTarget) {
-                Notification::send($notifTarget, new RecompenseNotification(
-                    $action->titre,
-                    $points,
-                    $lien
-                ));
-            } else {
-                Log::warning("Aucune cible notifiable trouvée pour membre id={$membre->id} lors de l'attribution d'une récompense.");
-            }
-
-            DB::commit();
-
-$returnRecompense = $recompense;
-
-        try { 
-            Mail::send('emails.recompense', [
-                'membre' => $membre,
-                'action' => $action,
-                'recompense' => $recompense,
-            ], function ($message) use ($membre) {
-                $message->to($membre->email ?? 'yokamly@gmail.com')
-                        ->subject('🎁 Nouvelle récompense obtenue - CJES Africa');
-            });
-
-            } catch (\Exception $e) { 
-                \Log::error('Erreur envoi mail récompense : ' . $e->getMessage(), [
-                    'membre_id' => $membre->id ?? null,
-                    'action' => $action->titre ?? null,
+                \Log::info('📤 Préparation notification Laravel', [
+                    'target_class' => get_class($notifTarget),
+                    'action_titre' => $action->titre,
+                    'points' => $points,
                 ]);
+                
+                $notificationData = [
+                    'target' => $notifTarget,
+                    'notification' => new RecompenseNotification(
+                        $action->titre,
+                        $points,
+                        $lien
+                    )
+                ];
+            } else {
+                Log::warning("❌ Aucune cible notifiable trouvée pour membre id={$membre->id} lors de l'attribution d'une récompense.");
             }
-            
-            return $returnRecompense;
+
+            \Log::info('💾 COMMIT transaction');
+            DB::commit();
+            \Log::info('✅ Transaction commitée avec succès');
+
+            // 📧 ENVOI DE LA NOTIFICATION EN DEHORS DE LA TRANSACTION
+            if ($notificationData) {
+                try {
+                    \Log::info('📤 Envoi notification (hors transaction)', [
+                        'target_class' => get_class($notificationData['target']),
+                        'action_titre' => $action->titre,
+                        'points' => $points,
+                    ]);
+                    
+                    Notification::send($notificationData['target'], $notificationData['notification']);
+                    \Log::info('✅ Notification envoyée avec succès');
+                    
+                } catch (\Exception $e) {
+                    // 🚨 NE PAS FAIRE DE ROLLBACK - juste logger l'erreur
+                    \Log::error('❌ Erreur envoi notification (sans rollback) : ' . $e->getMessage(), [
+                        'membre_id' => $membre->id,
+                        'action' => $action->titre,
+                        'recompense_id' => $recompense->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    
+                    // L'action principale a réussi, on continue
+                    \Log::info('ℹ️ Action principale réussie malgré l\'échec de l\'email');
+                }
+            }
+
+            return $recompense;
 
         } catch (\Throwable $e) {
             DB::rollBack();

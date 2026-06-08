@@ -109,7 +109,7 @@ class SidebarPanel
     {
         $type = self::membreType();
 
-        if ($type !== 'conseille') {
+        if ($type === 'incube') {
 
         return [
             'title' => 'Diagnostics',
@@ -148,7 +148,7 @@ class SidebarPanel
     {
         $type = self::membreType();
 
-        if ($type !== 'conseille') {
+        if ($type === 'incube') {
 
         return [
             'title' => 'Accompagnements',
@@ -344,7 +344,13 @@ class SidebarPanel
                     'prestationressource' => [
                         'title' => 'Prestations payées',
                         'route_name' => 'prestationressource.index'
-                    ],/*
+                    ],
+                    'needs' => [
+                        'title' => 'Publier un besoin',
+                        'route_name' => 'needs.create'
+                    ],
+                    
+                    /*
                     'participant' => [
                         'title' => 'Les formations ouvertes',
                         'route_name' => 'formation.liste'
@@ -633,8 +639,8 @@ class SidebarPanel
             self::experts(), 
             self::prestations(), 
             self::bons(), 
-            self::forums(),
-            self::dashboards()
+            self::forums()//,
+            //self::dashboards()
         ];
     }
 }

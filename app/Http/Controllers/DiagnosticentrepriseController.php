@@ -27,13 +27,12 @@ class DiagnosticentrepriseController extends Controller
     protected $diagnosticStatutService;
     protected $recompenseService;
 
-    public function __construct(DiagnosticStatutService $diagnosticStatutService, RecompenseService $recompenseService)
+    public function __construct(RecompenseService $recompenseService)
     {
-        $this->diagnosticStatutService = $diagnosticStatutService;
         $this->recompenseService = $recompenseService;
         
-        // Injecter le RecompenseService dans le DiagnosticStatutService
-        $this->diagnosticStatutService->recompenseService = $recompenseService;
+        // Créer le DiagnosticStatutService avec le RecompenseService injecté
+        $this->diagnosticStatutService = new DiagnosticStatutService($recompenseService);
     }
 
     public function indexForm()
@@ -591,7 +590,7 @@ class DiagnosticentrepriseController extends Controller
         $recompense = $recompenseService->attribuerRecompense('DIAG_ENTREPRISE', $membre, $entreprise ?? null, $diagnostic->id, null);
         
         // 🏆 Ajout du paiement PREMIER_DIAG_ENTREPRISE
-        $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+        $moduleController = new \App\Http\Controllers\ModuleressourceController();
         $resultatModule = $moduleController->attribuerModuleViaAction(
             'diagnostics',
             $diagnostic->id,
@@ -612,7 +611,7 @@ class DiagnosticentrepriseController extends Controller
         // 🏁 Déclenche le paiement AUTRE_DIAG_ENTREPRISE pour les diagnostics suivants
         \Log::info('Diagnostic entreprise suivant détecté - Attribution AUTRE_DIAG_ENTREPRISE');
         
-        $moduleController = new \App\Http\Controllers\ModuleRessourceController();
+        $moduleController = new \App\Http\Controllers\ModuleressourceController();
         $resultatModule = $moduleController->attribuerModuleViaAction(
             'diagnostics',
             $diagnostic->id,

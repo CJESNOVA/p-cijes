@@ -57,7 +57,7 @@
                     $membre = \App\Models\Membre::where('user_id', $userId)->first();
                     $ressourceKOBO = $membre ? \App\Models\Ressourcecompte::where('membre_id', $membre->id)
                                                 ->where('ressourcetype_id', 1)
-                                                ->where('etat', true)
+                                                ->where('etat', 1)
                                                 ->first() : null;
                 @endphp
                 

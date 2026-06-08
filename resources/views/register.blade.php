@@ -10,9 +10,9 @@
     <div class="hidden w-full place-items-center lg:grid">
         <div class="w-full max-w-lg p-6">
             <img class="w-full" x-show="!$store.global.isDarkModeEnabled"
-                src="{{ asset('images/illustrations/dashboard-meet.svg') }}" alt="image" />
+                src="{{ asset('images/inscription.jpeg') }}" alt="image" />
             <img class="w-full" x-show="$store.global.isDarkModeEnabled"
-                src="{{ asset('images/illustrations/dashboard-meet-dark.svg') }}" alt="image" />
+                src="{{ asset('images/inscription.jpeg') }}" alt="image" />
         </div>
     </div>
     <main class="flex w-full flex-col items-center bg-white dark:bg-navy-700 lg:max-w-md">
@@ -203,7 +203,7 @@
 
                 <button type="submit" style="background-color: #4FBE96 !important;"
                     class="btn mt-10 h-10 w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                    S'incrire
+                    S'inscrire
                 </button>
             </form>
             <div class="mt-4 text-center text-xs-plus">

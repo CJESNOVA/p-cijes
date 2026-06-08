@@ -77,6 +77,11 @@ class Diagnosticmodule extends Model
         return $this->hasMany(Diagnosticquestion::class, 'diagnosticmodule_id');
     }
 
+    public function questions()
+    {
+        return $this->hasMany(Diagnosticquestion::class, 'diagnosticmodule_id');
+    }
+
 // Dans Diagnosticmodule.php
 public function diagnosticresultats()
 {

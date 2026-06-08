@@ -132,7 +132,7 @@
                 </div>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{{ config('app.url') }}/dashboard" class="cta-button">Se connecter maintenant</a>
+                    <a href="{{ config('app.url') }}/membres/dashboard" class="cta-button">Se connecter maintenant</a>
                 </div>
                 
                 <p style="text-align: center; font-size: 14px; color: #666; margin-top: 25px;">

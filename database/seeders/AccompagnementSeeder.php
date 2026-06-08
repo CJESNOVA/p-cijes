@@ -14,9 +14,9 @@ class AccompagnementSeeder extends Seeder
     {
         // Niveaux d'accompagnement
         $niveaux = [
-            ['titre' => 'Initial', 'description' => 'Premier niveau d\'accompagnement', 'etat' => true],
-            ['titre' => 'Intermédiaire', 'description' => 'Niveau moyen d\'accompagnement', 'etat' => true],
-            ['titre' => 'Avancé', 'description' => 'Niveau avancé d\'accompagnement', 'etat' => true],
+            ['titre' => 'Initial', 'description' => 'Premier niveau d\'accompagnement', 'etat' => 1],
+            ['titre' => 'Intermédiaire', 'description' => 'Niveau moyen d\'accompagnement', 'etat' => 1],
+            ['titre' => 'Avancé', 'description' => 'Niveau avancé d\'accompagnement', 'etat' => 1],
         ];
 
         foreach ($niveaux as $niveau) {
@@ -31,10 +31,10 @@ class AccompagnementSeeder extends Seeder
 
         // Statuts d'accompagnement
         $statuts = [
-            ['titre' => 'En cours', 'description' => 'Accompagnement actuellement en cours', 'etat' => true],
-            ['titre' => 'Terminé', 'description' => 'Accompagnement terminé avec succès', 'etat' => true],
-            ['titre' => 'En attente', 'description' => 'Accompagnement en attente de démarrage', 'etat' => true],
-            ['titre' => 'Suspendu', 'description' => 'Accompagnement temporairement suspendu', 'etat' => true],
+            ['titre' => 'En cours', 'description' => 'Accompagnement actuellement en cours', 'etat' => 1],
+            ['titre' => 'Terminé', 'description' => 'Accompagnement terminé avec succès', 'etat' => 1],
+            ['titre' => 'En attente', 'description' => 'Accompagnement en attente de démarrage', 'etat' => 1],
+            ['titre' => 'Suspendu', 'description' => 'Accompagnement temporairement suspendu', 'etat' => 1],
         ];
 
         foreach ($statuts as $statut) {

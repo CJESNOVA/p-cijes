@@ -31,7 +31,7 @@ class RecompenseNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('� Nouvelle récompense obtenue !')
+            ->subject('🎁 Nouvelle récompense obtenue !')
             ->view('emails.recompense', [
                 'user' => $notifiable,
                 'userName' => $notifiable->name,

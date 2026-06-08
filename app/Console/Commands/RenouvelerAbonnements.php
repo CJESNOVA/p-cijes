@@ -27,7 +27,7 @@ class RenouvelerAbonnements extends Command
         
         // Récupérer les abonnements arrivés à échéance (aujourd'hui ou expirés)
         $abonnementsARenouveler = Abonnement::where('date_fin', '<=', now())
-            ->where('etat', true)
+            ->where('etat', 1)
             ->where('statut', 'paye')
             ->with(['entreprise', 'abonnementtype', 'entreprise.entreprisesmembres.membre'])
             ->get();
@@ -81,7 +81,7 @@ class RenouvelerAbonnements extends Command
         // Marquer l'abonnement comme en retard si aucun paiement n'est possible
         $ancienAbonnement->update([
             'statut' => 'retard',
-            'est_a_jour' => false,
+            'est_actif' => 0,
             'nombre_rappels' => $ancienAbonnement->nombre_rappels + 1
         ]);
 
@@ -120,11 +120,11 @@ class RenouvelerAbonnements extends Command
                 'date_echeance' => $dateEcheance,
                 'date_paiement' => now(),
                 'statut' => 'paye',
-                'est_a_jour' => true,
+                'est_actif' => 1,
                 'nombre_rappels' => 0,
                 'mode_paiement' => 'Ressource ' . $compte->ressourcetype->titre,
                 'commentaires' => 'Renouvellement automatique depuis l\'abonnement #' . $ancienAbonnement->id,
-                'etat' => true,
+                'etat' => 1,
             ]);
 
             // Créer la transaction de débit
@@ -134,7 +134,7 @@ class RenouvelerAbonnements extends Command
                 'ressourcecompte_id' => $compte->id,
                 'datetransaction' => now(),
                 'operationtype_id' => 2, // Débit
-                'spotlight' => true,
+                'spotlight' => 1,
                 'etat' => 1,
             ]);
 
@@ -150,8 +150,8 @@ class RenouvelerAbonnements extends Command
                 'membre_id' => $compte->membre_id,
                 'entreprise_id' => $entreprise->id,
                 'paiementstatut_id' => 1, // Payé
-                'spotlight' => true,
-                'etat' => true,
+                'spotlight' => 1,
+                'etat' => 1,
             ]);
 
             // Attribuer récompense si applicable

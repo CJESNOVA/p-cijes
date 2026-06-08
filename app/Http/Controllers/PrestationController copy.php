@@ -532,7 +532,7 @@ public function inscrireStore(Request $request, $id)
     {
         return Cotisation::where('entreprise_id', $entrepriseId)
             ->where('statut', 'paye')
-            ->where('est_a_jour', true)
+            ->where('est_a_jour', 1)
             ->where('date_fin', '>=', now())
             ->exists();
     }
@@ -547,7 +547,7 @@ public function inscrireStore(Request $request, $id)
         // Si c'est une entreprise CJES à jour
         if ($contexte['type'] === 'entreprise' || $contexte['type'] === 'accompagnement_entreprise') {
             if ($contexte['est_cjes'] && $contexte['cotisation_a_jour'] && $contexte['profil_id']) {
-                $reductions = Reductiontype::where('etat', true)
+                $reductions = Reductiontype::where('etat', 1)
                     ->where('offretype_id', 2) // 2 = prestations
                     ->where('entrepriseprofil_id', $contexte['profil_id'])
                     ->where(function($query) {
@@ -562,7 +562,7 @@ public function inscrireStore(Request $request, $id)
         }
         
         // Ajouter les réductions génériques (profil_id = 0)
-        $reductionsGeneriques = Reductiontype::where('etat', true)
+        $reductionsGeneriques = Reductiontype::where('etat', 1)
             ->where('offretype_id', 2) // 2 = prestations
             ->where('entrepriseprofil_id', 0) // Génériques
             ->where(function($query) {

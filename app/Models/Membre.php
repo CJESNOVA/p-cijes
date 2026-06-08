@@ -74,6 +74,16 @@ public function entreprises()
     return $this->belongsToMany(Entreprise::class, 'entreprisemembres', 'membre_id', 'entreprise_id');
 }
 
+public function alertes()
+{
+    return $this->hasMany(Alerte::class);
+}
+
+public function recompenses()
+{
+    return $this->hasMany(Recompense::class);
+}
+
 /**
      * Génère un numéro d'identifiant unique
      */

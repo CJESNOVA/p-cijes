@@ -2,184 +2,138 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
+use App\Models\Membre;
+use App\Models\Action;
+use App\Models\User;
 use App\Notifications\WelcomeNotification;
+use App\Notifications\RecompenseNotification;
 use App\Notifications\PasswordResetNotification;
 use App\Notifications\PasswordResetConfirmationNotification;
 use App\Notifications\EmailVerifiedNotification;
-use App\Notifications\RecompenseNotification;
-use App\Notifications\WelcomeNotificationBlade;
-use App\Notifications\PasswordResetNotificationBlade;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class MailTestController extends Controller
 {
+    /**
+     * Test d'envoi d'email simple
+     */
     public function testMail()
     {
         try {
-            // Test simple avec Mail::raw
-            Mail::raw('Ceci est un test email depuis CJES Africa', function ($message) {
-                $message->to('lookyyokamly@yahoo.fr')
-                    ->subject('📧 Test Email CJES Africa');
+            Mail::raw('Ceci est un test depuis Laravel local.', function ($message) {
+                $message->to('yokamly@gmail.com')
+                        ->subject('Test Mail CJES Africa');
             });
-            
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Email de test envoyé avec succès ! lookyyokamly@yahoo.fr',
-                'config' => [
-                    'from_address' => config('mail.from.address'),
-                    'from_name' => config('mail.from.name'),
-                    'mailer' => config('mail.default'),
-                ]
-            ]);
+
+            return '✅ Mail envoyé avec succès !';
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Erreur lors de l\'envoi: ' . $e->getMessage()
-            ]);
+            return '❌ Erreur : ' . $e->getMessage();
         }
     }
-    
+
+    /**
+     * Test de notification de bienvenue
+     */
     public function testNotification()
     {
         try {
-            $user = auth()->user();
+            // Créer un utilisateur de test
+            $user = User::first();
             if (!$user) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Utilisateur non connecté'
-                ]);
+                return '❌ Aucun utilisateur trouvé';
             }
-            
+
             $user->notify(new WelcomeNotification($user->name));
             
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Notification de test envoyée avec succès !'
-            ]);
+            return '✅ Notification de bienvenue envoyée à : ' . $user->email;
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Erreur lors de l\'envoi: ' . $e->getMessage()
-            ]);
+            return '❌ Erreur : ' . $e->getMessage();
         }
     }
 
+    /**
+     * Test de notification de réinitialisation de mot de passe
+     */
     public function testPasswordResetNotification()
     {
         try {
-            $user = auth()->user();
+            $user = User::first();
             if (!$user) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Utilisateur non connecté'
-                ]);
+                return '❌ Aucun utilisateur trouvé';
             }
 
-            // Simuler un token de réinitialisation
-            $resetToken = bin2hex(random_bytes(32));
-            
-            // Tester la notification de réinitialisation
+            $resetToken = Str::random(32);
             $user->notify(new PasswordResetNotification($resetToken, $user->name));
             
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Notification de réinitialisation de mot de passe envoyée avec succès à ' . $user->email,
-                'user_email' => $user->email,
-                'reset_token' => $resetToken,
-                'reset_url' => route('resetPasswordView', ['token' => $resetToken])
-            ]);
+            return '✅ Notification de réinitialisation envoyée à : ' . $user->email;
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Erreur lors de l\'envoi de la notification de réinitialisation: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            return '❌ Erreur : ' . $e->getMessage();
         }
     }
 
+    /**
+     * Test de toutes les notifications
+     */
     public function testAllNotifications()
     {
+        $results = [];
+        
+        // Test 1: Welcome Notification
         try {
-            $user = auth()->user();
-            if (!$user) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Utilisateur non connecté'
-                ]);
-            }
-
-            $results = [];
-            
-            // Tester WelcomeNotification
-            try {
+            $user = User::first();
+            if ($user) {
                 $user->notify(new WelcomeNotification($user->name));
-                $results['welcome'] = '✅ Success';
-            } catch (\Exception $e) {
-                $results['welcome'] = '❌ Error: ' . $e->getMessage();
+                $results[] = '✅ Welcome Notification envoyée à ' . $user->email;
+            } else {
+                $results[] = '❌ Aucun utilisateur trouvé pour Welcome Notification';
             }
-
-            // Tester PasswordResetNotification
-            try {
-                $resetToken = bin2hex(random_bytes(32));
-                $user->notify(new PasswordResetNotification($resetToken, $user->name));
-                $results['password_reset'] = '✅ Success';
-            } catch (\Exception $e) {
-                $results['password_reset'] = '❌ Error: ' . $e->getMessage();
-            }
-
-            // Tester EmailVerifiedNotification
-            try {
-                $user->notify(new EmailVerifiedNotification($user->name));
-                $results['email_verified'] = '✅ Success';
-            } catch (\Exception $e) {
-                $results['email_verified'] = '❌ Error: ' . $e->getMessage();
-            }
-
-            // Tester PasswordResetConfirmationNotification
-            try {
-                $user->notify(new PasswordResetConfirmationNotification($user->name));
-                $results['password_reset_confirmation'] = '✅ Success';
-            } catch (\Exception $e) {
-                $results['password_reset_confirmation'] = '❌ Error: ' . $e->getMessage();
-            }
-
-            // Tester RecompenseNotification
-            try {
-                $user->notify(new RecompenseNotification('Test action', 50, route('dashboard')));
-                $results['recompense'] = '✅ Success';
-            } catch (\Exception $e) {
-                $results['recompense'] = '❌ Error: ' . $e->getMessage();
-            }
-
-            // Tester WelcomeNotificationBlade (template Blade)
-            try {
-                $user->notify(new WelcomeNotificationBlade($user->name));
-                $results['welcome_blade'] = '✅ Success';
-            } catch (\Exception $e) {
-                $results['welcome_blade'] = '❌ Error: ' . $e->getMessage();
-            }
-
-            // Tester PasswordResetNotificationBlade (template Blade)
-            try {
-                $resetToken = bin2hex(random_bytes(16));
-                $user->notify(new PasswordResetNotificationBlade($resetToken, $user->name));
-                $results['password_reset_blade'] = '✅ Success';
-            } catch (\Exception $e) {
-                $results['password_reset_blade'] = '❌ Error: ' . $e->getMessage();
-            }
-
-            return response()->json([
-                'status' => 'completed',
-                'message' => 'Test de toutes les notifications terminé',
-                'user_email' => $user->email,
-                'results' => $results
-            ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Erreur générale: ' . $e->getMessage()
-            ]);
+            $results[] = '❌ Erreur Welcome Notification: ' . $e->getMessage();
         }
+
+        // Test 2: Email Verified Notification
+        try {
+            $user = User::first();
+            if ($user) {
+                $user->notify(new EmailVerifiedNotification($user->name));
+                $results[] = '✅ Email Verified Notification envoyée à ' . $user->email;
+            } else {
+                $results[] = '❌ Aucun utilisateur trouvé pour Email Verified Notification';
+            }
+        } catch (\Exception $e) {
+            $results[] = '❌ Erreur Email Verified Notification: ' . $e->getMessage();
+        }
+
+        // Test 3: Password Reset Confirmation
+        try {
+            $user = User::first();
+            if ($user) {
+                $user->notify(new PasswordResetConfirmationNotification($user->name));
+                $results[] = '✅ Password Reset Confirmation envoyée à ' . $user->email;
+            } else {
+                $results[] = '❌ Aucun utilisateur trouvé pour Password Reset Confirmation';
+            }
+        } catch (\Exception $e) {
+            $results[] = '❌ Erreur Password Reset Confirmation: ' . $e->getMessage();
+        }
+
+        // Test 4: Recompense Notification
+        try {
+            $membre = Membre::first();
+            if ($membre) {
+                $membre->notify(new RecompenseNotification('Test Action', 100, 'http://test.com'));
+                $results[] = '✅ Recompense Notification envoyée à ' . $membre->email;
+            } else {
+                $results[] = '❌ Aucun membre trouvé pour Recompense Notification';
+            }
+        } catch (\Exception $e) {
+            $results[] = '❌ Erreur Recompense Notification: ' . $e->getMessage();
+        }
+
+        return '<h3>Résultats des tests:</h3><ul><li>' . implode('</li><li>', $results) . '</li></ul>';
     }
 }

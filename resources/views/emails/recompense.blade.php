@@ -136,7 +136,7 @@
                 </h1>
 
                 <p style="text-align:center; font-size:16px;">
-                    Félicitations <strong>{{ $userName ?? $user->name }}</strong> !
+                    Félicitations <strong>{{ $userName ?? $notifiable->name }}</strong> !
                 </p>
 
                 <p style="text-align:center;">
