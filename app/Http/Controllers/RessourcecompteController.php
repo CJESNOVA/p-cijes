@@ -309,8 +309,8 @@ public function store(Request $request)
     // ----------------------------
     // 🔹 5. Préparer l'appel API SEMOA
     // ----------------------------
-    $login  = env('SEMOA_API_LOGIN', 'api_cashpay.cjet');
-    $apikey = env('SEMOA_API_KEY', 'k3cGVCzeetDmU4wuRx0gUyHilrhJB08dKprD');
+    $login  = env('SEMOA_API_LOGIN');
+    $apikey = env('SEMOA_API_KEY');
     $salt   = rand(100000, 999999); // identifiant unique
     $apiref = env('SEMOA_API_REFERENCE', '336');
 

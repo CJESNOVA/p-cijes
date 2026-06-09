@@ -12,7 +12,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between;">
             <div>
                 <div class="card-title" style="color: var(--primary); margin-bottom: 0.5rem;">🗄️ Tables</div>
-                <div style="font-size: 2rem; font-weight: 700; color: var(--dark);">{{ count(DB::select('SHOW TABLES')) - 4 }}</div>
+                <div style="font-size: 2rem; font-weight: 700; color: var(--dark);">{{ $tableCount }}</div>
                 <div style="color: var(--text-muted); font-size: 0.875rem;">Tables disponibles</div>
             </div>
             <div style="width: 48px; height: 48px; background: rgba(37, 99, 235, 0.1); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;">

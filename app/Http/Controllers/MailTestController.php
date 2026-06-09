@@ -25,7 +25,7 @@ class MailTestController extends Controller
     {
         try {
             Mail::raw('Ceci est un test depuis Laravel local.', function ($message) {
-                $message->to('yokamly@gmail.com')
+                $message->to(config('mail.test_email', 'test@example.com'))
                         ->subject('Test Mail CJES Africa');
             });
 
