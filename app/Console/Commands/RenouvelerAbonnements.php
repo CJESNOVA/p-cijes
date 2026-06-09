@@ -156,8 +156,12 @@ class RenouvelerAbonnements extends Command
 
             // Attribuer récompense si applicable
             if ($compte->membre) {
-                $recompenseService = app(RecompenseService::class);
-                $recompenseService->attribuerRecompense('PAIEMENT_ABONNEMENT', $compte->membre, $entreprise, $nouvelAbonnement->id, $abonnementType->montant);
+                try {
+                    $recompenseService = app(RecompenseService::class);
+                    $recompenseService->attribuerRecompense('PAIEMENT_ABONNEMENT', $compte->membre, $entreprise, $nouvelAbonnement->id, $abonnementType->montant);
+                } catch (\Exception $e) {
+                    $this->warn("Récompense non attribuée pour abonnement #{$nouvelAbonnement->id}: " . $e->getMessage());
+                }
             }
 
             // Archiver l'ancien abonnement

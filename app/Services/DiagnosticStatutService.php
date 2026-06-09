@@ -221,8 +221,14 @@ class DiagnosticStatutService
                 // Logique de récompense pour PASSAGE_NIVEAU
                 $membre = $this->getMembrePrincipalEntreprise($diagnostic->entreprise);
                 if ($membre) {
-                    // 💡 Utiliser le score global comme montant pour le calcul en pourcentage
-                    $this->recompenseService->attribuerRecompense('PASSAGE_NIVEAU', $membre, $diagnostic->entreprise, $diagnostic->id, null);
+                    try {
+                        $this->recompenseService->attribuerRecompense('PASSAGE_NIVEAU', $membre, $diagnostic->entreprise, $diagnostic->id, null);
+                    } catch (\Exception $e) {
+                        \Log::warning('Récompense PASSAGE_NIVEAU non attribuée: ' . $e->getMessage(), [
+                            'diagnostic_id' => $diagnostic->id,
+                            'membre_id' => $membre->id,
+                        ]);
+                    }
                 }
             }
 
@@ -377,8 +383,14 @@ class DiagnosticStatutService
                 // Logique de récompense pour PASSAGE_PROFIL
                 $membre = $this->getMembrePrincipalEntreprise($entreprise);
                 if ($membre) {
-                    // 💡 Utiliser le score global comme montant pour le calcul en pourcentage
-                    $this->recompenseService->attribuerRecompense('PASSAGE_PROFIL', $membre, $entreprise, $dernierDiagnostic->id, null);
+                    try {
+                        $this->recompenseService->attribuerRecompense('PASSAGE_PROFIL', $membre, $entreprise, $dernierDiagnostic->id, null);
+                    } catch (\Exception $e) {
+                        \Log::warning('Récompense PASSAGE_PROFIL non attribuée: ' . $e->getMessage(), [
+                            'entreprise_id' => $entreprise->id,
+                            'membre_id' => $membre->id,
+                        ]);
+                    }
                 }
             }
  

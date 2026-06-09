@@ -84,10 +84,13 @@ class MembreController extends Controller
         if ($wasCreated) {
         // 🔗 Récupérer le membre créé
         if ($membre) {
-            // 🎁 Attribuer récompense d'inscription 
-            // 💡 Pas de montant logique pour une inscription, utilisation de points fixes
-            // ✅ Le membre est correct : celui qui vient de s'inscrire
-            $this->recompenseService->attribuerRecompense('INSCRIPTION', $membre, null, $membre->id, null);
+            try {
+                $this->recompenseService->attribuerRecompense('INSCRIPTION', $membre, null, $membre->id, null);
+            } catch (\Exception $e) {
+                \Log::warning('Récompense INSCRIPTION non attribuée: ' . $e->getMessage(), [
+                    'membre_id' => $membre->id,
+                ]);
+            }
         }
             // Rediriger vers le tableau de bord après la création du profil
             return redirect()->route('dashboard')
@@ -95,10 +98,13 @@ class MembreController extends Controller
         } else {
         // 🔗 Récupérer le membre modifié
         if ($membre) {
-            // 🎁 Attribuer récompense de complétion du profil
-            // 💡 Pas de montant logique pour la complétion de profil, utilisation de points fixes
-            // ✅ Le membre est correct : celui qui vient de compléter son profil
-            $this->recompenseService->attribuerRecompense('PROFIL_COMPLET', $membre, null, $membre->id, null);
+            try {
+                $this->recompenseService->attribuerRecompense('PROFIL_COMPLET', $membre, null, $membre->id, null);
+            } catch (\Exception $e) {
+                \Log::warning('Récompense PROFIL_COMPLET non attribuée: ' . $e->getMessage(), [
+                    'membre_id' => $membre->id,
+                ]);
+            }
         }
             // Rediriger vers le tableau de bord après la modification du profil
             return redirect()->route('dashboard')

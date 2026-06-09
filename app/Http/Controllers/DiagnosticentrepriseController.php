@@ -586,8 +586,14 @@ class DiagnosticentrepriseController extends Controller
 
     if ($nbDiagnostics === 1) {
         // 🪙 Déclenche la récompense "DIAG_ENTREPRISE"
-        // 💡 Utiliser le score global du diagnostic comme base pour le calcul en pourcentage
-        $recompense = $recompenseService->attribuerRecompense('DIAG_ENTREPRISE', $membre, $entreprise ?? null, $diagnostic->id, null);
+        try {
+            $recompense = $recompenseService->attribuerRecompense('DIAG_ENTREPRISE', $membre, $entreprise ?? null, $diagnostic->id, null);
+        } catch (\Exception $e) {
+            \Log::warning('Récompense DIAG_ENTREPRISE non attribuée: ' . $e->getMessage(), [
+                'diagnostic_id' => $diagnostic->id,
+                'membre_id' => $membre->id,
+            ]);
+        }
         
         // 🏆 Ajout du paiement PREMIER_DIAG_ENTREPRISE
         $moduleController = new \App\Http\Controllers\ModuleressourceController();

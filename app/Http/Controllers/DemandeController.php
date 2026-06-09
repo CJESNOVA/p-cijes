@@ -147,7 +147,12 @@ class DemandeController extends Controller
                 ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
                 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erreur lors du téléchargement du fichier.');
+            \Log::error('Erreur téléchargement fichier demande', [
+                'demande_id' => $demande->id,
+                'fichier' => $demande->fichier,
+                'error' => $e->getMessage(),
+            ]);
+            return redirect()->back()->with('error', 'Erreur lors du téléchargement du fichier: ' . $e->getMessage());
         }
     }
 }

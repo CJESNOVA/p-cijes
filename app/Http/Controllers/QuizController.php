@@ -256,8 +256,14 @@ public function submit(Request $request, Formation $formation, Quiz $quiz, Recom
 
     // ✅ Si le score atteint ou dépasse le seuil de réussite → attribuer récompense
     if ($quiz->seuil_reussite && $scorePourcentage >= $quiz->seuil_reussite) {
-        // 💡 Utiliser le score en pourcentage comme base pour le calcul en pourcentage
-        $recompenseService->attribuerRecompense('QUIZ_FORMATION', $membre, null, $quiz->id, $scorePourcentage);
+        try {
+            $recompenseService->attribuerRecompense('QUIZ_FORMATION', $membre, null, $quiz->id, $scorePourcentage);
+        } catch (\Exception $e) {
+            \Log::warning('Récompense QUIZ_FORMATION non attribuée: ' . $e->getMessage(), [
+                'quiz_id' => $quiz->id,
+                'membre_id' => $membre->id,
+            ]);
+        }
     }
 
     return redirect()

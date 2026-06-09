@@ -32,43 +32,102 @@ class SupabaseService
     /** ===== CRUD sur les tables ===== **/
     public function get($table, $query = [], $useServiceRole = true)
     {
-        return Http::withHeaders($this->headers($useServiceRole))
-            ->get("{$this->baseUrl}/{$table}", $query)
-            ->json();
+        $response = Http::withHeaders($this->headers($useServiceRole))
+            ->get("{$this->baseUrl}/{$table}", $query);
+
+        if ($response->failed()) {
+            \Log::error('Supabase GET failed', [
+                'table' => $table,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \RuntimeException("Supabase GET {$table} failed with status {$response->status()}");
+        }
+
+        return $response->json();
     }
 
     public function insert($table, $data, $useServiceRole = true)
     {
-        return Http::withHeaders($this->headers($useServiceRole))
-            ->post("{$this->baseUrl}/{$table}", $data)
-            ->json();
+        $response = Http::withHeaders($this->headers($useServiceRole))
+            ->post("{$this->baseUrl}/{$table}", $data);
+
+        if ($response->failed()) {
+            \Log::error('Supabase INSERT failed', [
+                'table' => $table,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \RuntimeException("Supabase INSERT into {$table} failed with status {$response->status()}");
+        }
+
+        return $response->json();
     }
 
     public function update($table, $id, $data, $useServiceRole = true)
     {
-        return Http::withHeaders($this->headers($useServiceRole))
-            ->patch("{$this->baseUrl}/{$table}?id=eq.{$id}", $data)
-            ->json();
+        $response = Http::withHeaders($this->headers($useServiceRole))
+            ->patch("{$this->baseUrl}/{$table}?id=eq.{$id}", $data);
+
+        if ($response->failed()) {
+            \Log::error('Supabase UPDATE failed', [
+                'table' => $table,
+                'id' => $id,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \RuntimeException("Supabase UPDATE {$table} (id={$id}) failed with status {$response->status()}");
+        }
+
+        return $response->json();
     }
 
     public function delete($table, $id, $useServiceRole = true)
     {
-        return Http::withHeaders($this->headers($useServiceRole))
-            ->delete("{$this->baseUrl}/{$table}?id=eq.{$id}")
-            ->json();
+        $response = Http::withHeaders($this->headers($useServiceRole))
+            ->delete("{$this->baseUrl}/{$table}?id=eq.{$id}");
+
+        if ($response->failed()) {
+            \Log::error('Supabase DELETE failed', [
+                'table' => $table,
+                'id' => $id,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \RuntimeException("Supabase DELETE {$table} (id={$id}) failed with status {$response->status()}");
+        }
+
+        return $response->json();
     }
 
     /** ===== Authentification ===== **/
     public function login($email, $password)
     {
-        $response = Http::withHeaders([
-            'apikey' => $this->apiKey,
-            'Authorization' => 'Bearer ' . $this->apiKey,
-            'Content-Type' => 'application/json',
-        ])->post("{$this->authUrl}/token?grant_type=password", [
-            'email' => $email,
-            'password' => $password,
-        ]);
+        try {
+            $response = Http::withHeaders([
+                'apikey' => $this->apiKey,
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->post("{$this->authUrl}/token?grant_type=password", [
+                'email' => $email,
+                'password' => $password,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Supabase login network error', [
+                'email' => $email,
+                'error' => $e->getMessage(),
+            ]);
+            return ['error' => 'network_error', 'error_description' => 'Impossible de contacter le service d\'authentification.'];
+        }
+
+        if ($response->serverError()) {
+            \Log::error('Supabase login server error', [
+                'email' => $email,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return ['error' => 'server_error', 'error_description' => 'Le service d\'authentification est temporairement indisponible.'];
+        }
 
         return $response->json();
     }
@@ -106,11 +165,28 @@ class SupabaseService
         'user_metadata' => $data,
     ];
 
-    $response = Http::withHeaders([
-        'apikey' => $serviceKey,
-        'Authorization' => 'Bearer ' . $serviceKey,
-        'Content-Type' => 'application/json',
-    ])->post($url, $payload);
+    try {
+        $response = Http::withHeaders([
+            'apikey' => $serviceKey,
+            'Authorization' => 'Bearer ' . $serviceKey,
+            'Content-Type' => 'application/json',
+        ])->post($url, $payload);
+    } catch (\Exception $e) {
+        \Log::error('Supabase signUp network error', [
+            'email' => $email,
+            'error' => $e->getMessage(),
+        ]);
+        return ['error' => 'network_error', 'error_description' => 'Impossible de contacter le service d\'inscription.'];
+    }
+
+    if ($response->serverError()) {
+        \Log::error('Supabase signUp server error', [
+            'email' => $email,
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
+        return ['error' => 'server_error', 'error_description' => 'Le service d\'inscription est temporairement indisponible.'];
+    }
 
     return $response->json();
 }
@@ -190,21 +266,27 @@ class SupabaseService
         'email' => $email,
     ], $options);
 
-    $response = Http::withHeaders([
-        'apikey' => $apiKey,
-        'Content-Type' => 'application/json',
-    ])->post($url, $payload);
+    try {
+        $response = Http::withHeaders([
+            'apikey' => $apiKey,
+            'Content-Type' => 'application/json',
+        ])->post($url, $payload);
+    } catch (\Exception $e) {
+        \Log::error('Supabase resetPasswordForEmail network error', [
+            'email' => $email,
+            'error' => $e->getMessage(),
+        ]);
+        return ['error' => 'network_error', 'error_description' => 'Impossible de contacter le service de réinitialisation.'];
+    }
 
-/*dd([
-    'url' => $url,
-    'headers' => [
-        'apikey' => $apiKey,
-        'Content-Type' => 'application/json'
-    ],
-    'payload' => $payload,
-    'response_status' => $response->status(),
-    'response_body' => $response->body()
-]);*/
+    if ($response->failed()) {
+        \Log::error('Supabase resetPasswordForEmail failed', [
+            'email' => $email,
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
+    }
+
     return $response->json();
 }
 
@@ -216,11 +298,26 @@ class SupabaseService
 
         $url = $baseUrl . '/auth/v1/user';
 
-        $response = Http::withHeaders([
-            'apikey' => $apiKey,
-            'Authorization' => 'Bearer ' . $accessToken,
-            'Content-Type' => 'application/json',
-        ])->put($url, $data);
+        try {
+            $response = Http::withHeaders([
+                'apikey' => $apiKey,
+                'Authorization' => 'Bearer ' . $accessToken,
+                'Content-Type' => 'application/json',
+            ])->put($url, $data);
+        } catch (\Exception $e) {
+            \Log::error('Supabase updateUser network error', [
+                'error' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('Impossible de mettre à jour l\'utilisateur: ' . $e->getMessage(), 0, $e);
+        }
+
+        if ($response->failed()) {
+            \Log::error('Supabase updateUser failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \RuntimeException("Supabase updateUser failed with status {$response->status()}");
+        }
 
         return $response->json();
     }

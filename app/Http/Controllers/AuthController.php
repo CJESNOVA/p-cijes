@@ -106,9 +106,13 @@ class AuthController extends Controller
         // 🔗 Récupérer le membre lié
         $membre = Membre::where('user_id', $user->id)->first();
         if ($membre) {
-            // 🎁 Attribuer récompense de connexion fréquente
-        // 💡 Pas de montant logique pour une connexion, utilisation de points fixes
-        $recompenseService->attribuerRecompense('CONNEXION_50', $membre, null, $membre->id, null);
+            try {
+                $recompenseService->attribuerRecompense('CONNEXION_50', $membre, null, $membre->id, null);
+            } catch (\Exception $e) {
+                \Log::warning('Récompense de connexion non attribuée: ' . $e->getMessage(), [
+                    'membre_id' => $membre->id,
+                ]);
+            }
         }
 
         return redirect()->intended(route('dashboard'));
@@ -344,10 +348,11 @@ public function register(Request $request)
             return back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse e-mail.');
             
         } catch (\Exception $e) {
-            // Afficher l'erreur pour le debugging
-            \Log::error('Email de réinitialisation non envoyé: ' . $e->getMessage());
-            return back()->with('status', 'Un lien de réinitialisation a été envoyé à votre adresse e-mail.');
-            //return back()->with('error', 'Erreur lors de l\'envoi de l\'email: ' . $e->getMessage())->withInput();
+            \Log::error('Erreur lors de la réinitialisation du mot de passe: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+            return back()->with('error', 'Une erreur est survenue lors de la réinitialisation. Veuillez réessayer.')->withInput();
         }
     }
 
@@ -411,23 +416,23 @@ public function register(Request $request)
             return back()->withErrors(['email' => 'Lien invalide ou expiré.']);
         }
 
-        // 📧 Envoyer la confirmation de réinitialisation directement avec Laravel
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'Utilisateur introuvable.']);
+        }
+
+        // Mettre à jour le mot de passe localement
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Supprimer le token utilisé
+        \DB::table('password_reset_tokens')->where('token', $request->token)->delete();
+
+        // Envoyer la confirmation (non-bloquant)
         try {
-            $user = User::where('email', $request->email)->first();
-            
-            if ($user) {
-                // Mettre à jour le mot de passe localement
-                $user->password = Hash::make($request->password);
-                $user->save();
-                
-                // Supprimer le token utilisé
-                \DB::table('password_reset_tokens')->where('token', $request->token)->delete();
-                
-                // Envoyer la confirmation
-                $user->notify(new PasswordResetConfirmationNotification($user->name));
-            }
+            $user->notify(new PasswordResetConfirmationNotification($user->name));
         } catch (\Exception $e) {
-            // Continue même si l'email échoue
             \Log::warning('Email de confirmation de réinitialisation non envoyé: ' . $e->getMessage());
         }
 

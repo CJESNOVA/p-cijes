@@ -227,12 +227,13 @@ class ModuleressourceController extends Controller
             DB::rollBack();
             Log::error('Erreur attribution via action', [
                 'action_code' => $actionCode,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
-                'message' => 'Erreur lors de l\'attribution'
+                'message' => 'Erreur lors de l\'attribution: ' . $e->getMessage()
             ];
         }
     }
