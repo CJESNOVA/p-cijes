@@ -57,15 +57,15 @@
                             <!-- Identifiant du candidat -->
                             <div class="mb-6">
                                 <label class="block mb-2">
-                                    <span class="font-medium text-slate-700 dark:text-navy-100">Identifiant du candidat <span class="text-error">*</span></span>
+                                    <span class="font-medium text-slate-700 dark:text-navy-100">Identifiant du profil <span class="text-error">*</span></span>
                                 </label>
                                 <input type="text"
-                                       name="applicant_id"
-                                       value="{{ old('applicant_id', auth()->user()->email ?? '') }}"
+                                       name="profileId"
+                                       value="{{ old('profileId', auth()->user()->email ?? '') }}"
                                        class="form-input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent"
                                        placeholder="Votre email ou identifiant"
                                        required>
-                                @error('applicant_id')
+                                @error('profileId')
                                     <span class="text-xs text-error mt-1">{{ $message }}</span>
                                 @enderror
                             </div>
@@ -73,34 +73,34 @@
                             <!-- Grille 2 colonnes -->
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:gap-6 mb-6">
 
-                                <!-- Montant demandé -->
+                                <!-- Montant proposé (FCFA) -->
                                 <div>
                                     <label class="block mb-2">
-                                        <span class="font-medium text-slate-700 dark:text-navy-100">Montant demandé (FCFA)</span>
+                                        <span class="font-medium text-slate-700 dark:text-navy-100">Montant proposé (FCFA)</span>
                                     </label>
                                     <input type="number"
-                                           name="expected_amount"
-                                           value="{{ old('expected_amount') }}"
+                                           name="budgetProposal"
+                                           value="{{ old('budgetProposal') }}"
                                            step="0.01"
                                            min="0"
                                            class="form-input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent"
                                            placeholder="0">
-                                    @error('expected_amount')
+                                    @error('budgetProposal')
                                         <span class="text-xs text-error mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
 
-                                <!-- URL Portfolio -->
+                                <!-- URL Proposition -->
                                 <div>
                                     <label class="block mb-2">
-                                        <span class="font-medium text-slate-700 dark:text-navy-100">Lien vers votre portfolio</span>
+                                        <span class="font-medium text-slate-700 dark:text-navy-100">Lien vers votre proposition</span>
                                     </label>
                                     <input type="url"
-                                           name="portfolio_url"
-                                           value="{{ old('portfolio_url') }}"
+                                           name="proposalUrl"
+                                           value="{{ old('proposalUrl') }}"
                                            class="form-input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent"
                                            placeholder="https://example.com/portfolio">
-                                    @error('portfolio_url')
+                                    @error('proposalUrl')
                                         <span class="text-xs text-error mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>

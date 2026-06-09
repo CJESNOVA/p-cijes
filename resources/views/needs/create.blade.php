@@ -119,10 +119,10 @@
                                         <span class="font-medium text-slate-700 dark:text-navy-100">Date de clôture</span>
                                     </label>
                                     <input type="date"
-                                           name="deadline"
-                                           value="{{ old('deadline') }}"
+                                           name="closingDate"
+                                           value="{{ old('closingDate') }}"
                                            class="form-input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent">
-                                    @error('deadline')
+                                    @error('closingDate')
                                         <span class="text-xs text-error mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -132,11 +132,11 @@
                                     <label class="block mb-2">
                                         <span class="font-medium text-slate-700 dark:text-navy-100">Conditions d'éligibilité</span>
                                     </label>
-                                    <textarea name="conditions"
+                                    <textarea name="eligibility"
                                               rows="3"
                                               class="form-textarea w-full rounded-lg border border-slate-300 bg-white p-2.5 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent"
-                                              placeholder="Ex: 3 ans d'expérience minimum, disponible à partir du mois prochain...">{{ old('conditions') }}</textarea>
-                                    @error('conditions')
+                                              placeholder="Ex: 3 ans d'expérience minimum, disponible à partir du mois prochain...">{{ old('eligibility') }}</textarea>
+                                    @error('eligibility')
                                         <span class="text-xs text-error mt-1">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -174,9 +174,6 @@
 
                         </div>
                     </div>
-
-                    <!-- Priority (hidden) -->
-                    <input type="hidden" name="priority" value="1">
                 </form>
             </div>
 

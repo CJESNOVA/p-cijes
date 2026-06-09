@@ -14,14 +14,14 @@
             </div>
             <div class="flex items-start justify-between mb-8">
                 <div>
-                    <h1 class="text-3xl font-bold text-slate-800 dark:text-navy-50">{{ $need['category'] ?? 'Sans titre' }}</h1>
+                    <h1 class="text-3xl font-bold text-slate-800 dark:text-navy-50">{{ $need['title'] ?? 'Sans titre' }}</h1>
                     <div class="mt-3 flex items-center gap-4">
                         <span class="inline-block px-3 py-1 text-sm font-semibold text-white bg-blue-500 rounded-full">
-                            {{ $need['priority'] == 1 ? 'Priorité basse' : ($need['priority'] == 2 ? 'Priorité moyenne' : 'Priorité haute') }}
+                            {{ $need['status'] ?? 'Publié' }}
                         </span>
-                        @if($need['deadline'])
+                        @if($need['closingDate'])
                             <span class="text-sm text-slate-600 dark:text-navy-300">
-                                Clôture: <strong>{{ \Carbon\Carbon::parse($need['deadline'])->format('d/m/Y') }}</strong>
+                                Clôture: <strong>{{ \Carbon\Carbon::parse($need['closingDate'])->format('d/m/Y') }}</strong>
                             </span>
                         @endif
                     </div>
@@ -63,30 +63,35 @@
                             {{ $need['description'] ?? 'Pas de description' }}
                         </p>
 
-                        @if($need['profiles'])
+                        @if($need['profiles'] && is_array($need['profiles']))
+                            <div class="mb-6 p-4 bg-blue-50 dark:bg-navy-600 rounded-lg border border-blue-200 dark:border-navy-500">
+                                <h3 class="font-semibold text-slate-800 dark:text-navy-50 mb-2">Profils recherchés</h3>
+                                <p class="text-slate-700 dark:text-navy-200">{{ implode(', ', $need['profiles']) }}</p>
+                            </div>
+                        @elseif($need['profiles'])
                             <div class="mb-6 p-4 bg-blue-50 dark:bg-navy-600 rounded-lg border border-blue-200 dark:border-navy-500">
                                 <h3 class="font-semibold text-slate-800 dark:text-navy-50 mb-2">Profils recherchés</h3>
                                 <p class="text-slate-700 dark:text-navy-200">{{ $need['profiles'] }}</p>
                             </div>
                         @endif
 
-                        @if($need['conditions'])
+                        @if($need['eligibility'])
                             <div class="mb-6 p-4 bg-green-50 dark:bg-navy-600 rounded-lg border border-green-200 dark:border-navy-500">
                                 <h3 class="font-semibold text-slate-800 dark:text-navy-50 mb-2">Conditions d'éligibilité</h3>
-                                <p class="text-slate-700 dark:text-navy-200">{{ $need['conditions'] }}</p>
+                                <p class="text-slate-700 dark:text-navy-200">{{ $need['eligibility'] }}</p>
                             </div>
                         @endif
 
-                        @if($need['attachment'])
+                        @if($need['attachmentUrl'])
                             <div class="mb-6 p-4 bg-purple-50 dark:bg-navy-600 rounded-lg border border-purple-200 dark:border-navy-500">
                                 <h3 class="font-semibold text-slate-800 dark:text-navy-50 mb-2">Pièce jointe</h3>
-                                <a href="{{ asset('storage/' . $need['attachment']) }}" 
+                                <a href="{{ $need['attachmentUrl'] }}" 
                                    target="_blank"
                                    class="inline-flex items-center gap-2 text-primary dark:text-accent hover:underline">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                     </svg>
-                                    Télécharger
+                                    {{ $need['attachmentName'] ?? 'Télécharger' }}
                                 </a>
                             </div>
                         @endif

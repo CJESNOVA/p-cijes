@@ -70,7 +70,7 @@
                                 <div class="flex items-start justify-between mb-4">
                                     <div>
                                         <h3 class="text-lg font-bold text-slate-800 dark:text-navy-50">
-                                            {{ $application['applicant_id'] ?? 'Candidat' }}
+                                            {{ $application['profile']['name'] ?? $application['profileId'] ?? 'Candidat' }}
                                         </h3>
                                         <p class="text-sm text-slate-600 dark:text-navy-300 mt-1">
                                             @if($application['status'] == 'awarded')
@@ -92,10 +92,10 @@
 
                                 <!-- Informations candidat -->
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 mb-4 text-sm">
-                                    @if($application['portfolio_url'])
+                                    @if($application['proposalUrl'])
                                         <div>
-                                            <p class="text-slate-600 dark:text-navy-300">Portfolio:</p>
-                                            <a href="{{ $application['portfolio_url'] }}" 
+                                            <p class="text-slate-600 dark:text-navy-300">Proposition:</p>
+                                            <a href="{{ $application['proposalUrl'] }}" 
                                                target="_blank"
                                                class="text-primary dark:text-accent hover:underline font-medium">
                                                 Consulter
@@ -103,20 +103,11 @@
                                         </div>
                                     @endif
 
-                                    @if($application['expected_amount'])
+                                    @if($application['budgetProposal'])
                                         <div>
-                                            <p class="text-slate-600 dark:text-navy-300">Montant demandé:</p>
+                                            <p class="text-slate-600 dark:text-navy-300">Montant proposé:</p>
                                             <p class="font-semibold text-slate-800 dark:text-navy-50">
-                                                {{ number_format($application['expected_amount'], 0, ',', ' ') }} FCFA
-                                            </p>
-                                        </div>
-                                    @endif
-
-                                    @if($application['awarded_amount'])
-                                        <div>
-                                            <p class="text-slate-600 dark:text-navy-300">Montant attribué:</p>
-                                            <p class="font-semibold text-slate-800 dark:text-navy-50">
-                                                {{ number_format($application['awarded_amount'], 0, ',', ' ') }} FCFA
+                                                {{ number_format($application['budgetProposal'], 0, ',', ' ') }} FCFA
                                             </p>
                                         </div>
                                     @endif
@@ -125,28 +116,17 @@
                                 <!-- Actions -->
                                 @if($application['status'] != 'awarded' && $application['status'] != 'rejected')
                                     <div class="flex gap-2 pt-4 border-t border-slate-200 dark:border-navy-500">
-                                        <button type="button"
-                                                onclick="openAwardModal('{{ $application['id'] }}')"
-                                                class="btn rounded-lg bg-green-500 px-4 py-2 font-medium text-white hover:bg-green-600 text-sm flex-1">
-                                            <svg class="inline-block h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                            Attribuer
-                                        </button>
-                                        <button type="button"
-                                                onclick="rejectApplication('{{ $application['id'] }}')"
-                                                class="btn rounded-lg bg-red-500 px-4 py-2 font-medium text-white hover:bg-red-600 text-sm flex-1">
-                                            <svg class="inline-block h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                            Rejeter
-                                        </button>
-                                    </div>
-                                @endif
-
-                                @if($application['notes'])
-                                    <div class="mt-4 p-3 bg-yellow-50 dark:bg-navy-600 rounded-lg border border-yellow-200 dark:border-navy-500">
-                                        <p class="text-sm text-yellow-800 dark:text-yellow-300"><strong>Notes:</strong> {{ $application['notes'] }}</p>
+                                        <form method="POST" action="{{ route('needs.awardApplication', [$needId, $application['id']]) }}" style="display: inline;">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="submit"
+                                                    class="btn rounded-lg bg-green-500 px-4 py-2 font-medium text-white hover:bg-green-600 text-sm">
+                                                <svg class="inline-block h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Attribuer
+                                            </button>
+                                        </form>
                                     </div>
                                 @endif
                             </div>

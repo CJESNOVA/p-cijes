@@ -12,6 +12,8 @@ use App\Models\Membre;
 use App\Models\Diagnosticstatutregle;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 use App\Services\SupabaseStorageService;
 use App\Services\DiagnosticStatutService;
@@ -123,6 +125,17 @@ class EntrepriseController extends Controller
         $entreprise->etat = 1;
         $entreprise->save();
 
+        // SYNCHRONISER AVEC L'API STARTUPS
+        try {
+            $this->syncStartupCreate($entreprise);
+        } catch (\Exception $e) {
+            Log::warning('Synchronisation Startup échouée lors de la création de l\'entreprise', [
+                'entreprise_id' => $entreprise->id,
+                'error' => $e->getMessage()
+            ]);
+            $messageInfo = ($messageInfo ? $messageInfo . ' ' : '') . 'Entreprise créée localement mais synchronisation Startup échouée. Vous pourrez ressayer plus tard.';
+        }
+
         Entreprisemembre::create([
             'membre_id' => $membre->id,
             'entreprise_id' => $entreprise->id,
@@ -169,6 +182,17 @@ class EntrepriseController extends Controller
 
         $entreprise->update($validated);
 
+        // SYNCHRONISER AVEC L'API STARTUPS
+        try {
+            $this->syncStartupUpdate($entreprise);
+        } catch (\Exception $e) {
+            Log::warning('Synchronisation Startup échouée lors de la mise à jour de l\'entreprise', [
+                'entreprise_id' => $entreprise->id,
+                'error' => $e->getMessage()
+            ]);
+            $messageInfo = ($messageInfo ? $messageInfo . ' ' : '') . 'Entreprise mise à jour localement mais synchronisation Startup échouée. Vous pourrez ressayer plus tard.';
+        }
+
         Entreprisemembre::updateOrCreate(
             ['membre_id' => $membre->id, 'entreprise_id' => $entreprise->id],
             ['fonction' => $request->fonction, 'bio' => $request->bio, 'etat' => 1]
@@ -196,6 +220,161 @@ class EntrepriseController extends Controller
         ]);
     }
 
+    /**
+     * Obtenir le token d'authentification de l'API
+     */
+    private function getApiToken()
+    {
+        $apiUrl = config('services.api.url') ?? 'https://api.example.com';
+        
+        $loginResponse = Http::timeout(10)->post(
+            "{$apiUrl}/api/v1/auth/login",
+            [
+                'email' => config('services.api.email'),
+                'password' => config('services.api.password'),
+            ]
+        );
+
+        if ($loginResponse->failed()) {
+            Log::error('Erreur de connexion API', [
+                'status' => $loginResponse->status(),
+                'body' => $loginResponse->body()
+            ]);
+            throw new \Exception('Erreur d\'authentification API');
+        }
+
+        $token = $loginResponse->json('access_token');
+        if (!$token) {
+            Log::error('Aucun token d\'accès reçu de l\'API');
+            throw new \Exception('Token API manquant');
+        }
+
+        return $token;
+    }
+
+    /**
+     * Obtenir les en-têtes pour les requêtes API
+     */
+    private function getApiHeaders($token)
+    {
+        return [
+            'authorization' => 'Bearer ' . $token,
+            'x-country-id' => config('services.api.country_id', 'TG'),
+            'Accept' => 'application/json',
+        ];
+    }
+
+    /**
+     * Créer une Startup via l'API lors de la création de l'Entreprise
+     */
+    private function syncStartupCreate(Entreprise $entreprise)
+    {
+        try {
+            $apiUrl = config('services.api.url') ?? 'https://api.example.com';
+            $token = $this->getApiToken();
+
+            // Préparer le logo URL
+            $logoUrl = null;
+            if ($entreprise->vignette) {
+                $logoUrl = url('storage/' . $entreprise->vignette);
+            }
+
+            // Appel API pour créer la Startup
+            $response = Http::withHeaders($this->getApiHeaders($token))
+                ->timeout(10)
+                ->post("{$apiUrl}/api/v1/startups", [
+                    'name' => $entreprise->nom,
+                    'registrationNumber' => $entreprise->email, // Utiliser email comme identifiant unique
+                    'description' => $entreprise->description ?? '',
+                    'sectorId' => (string)$entreprise->secteur_id, // Convertir en string UUID si nécessaire
+                    'countryId' => (string)$entreprise->pays_id,
+                    'website' => '', // Pas de site web dans Entreprise
+                    'logoUrl' => $logoUrl,
+                ]);
+
+            if ($response->failed()) {
+                Log::error('Erreur lors de la création de la Startup', [
+                    'entreprise_id' => $entreprise->id,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                throw new \Exception('Erreur API: ' . ($response->json('message') ?? 'Erreur inconnue'));
+            }
+
+            // Stocker l'ID Supabase retourné
+            $startupId = $response->json('id') ?? $response->json();
+            if ($startupId) {
+                $entreprise->update(['supabase_startup_id' => $startupId]);
+                Log::info('Startup créée avec succès', [
+                    'entreprise_id' => $entreprise->id,
+                    'startup_id' => $startupId
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Exception dans syncStartupCreate', [
+                'entreprise_id' => $entreprise->id,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Mettre à jour la Startup via l'API lors de la modification de l'Entreprise
+     */
+    private function syncStartupUpdate(Entreprise $entreprise)
+    {
+        try {
+            // Si pas encore synchronisée, créer d'abord
+            if (!$entreprise->supabase_startup_id) {
+                return $this->syncStartupCreate($entreprise);
+            }
+
+            $apiUrl = config('services.api.url') ?? 'https://api.example.com';
+            $token = $this->getApiToken();
+
+            // Préparer le logo URL
+            $logoUrl = null;
+            if ($entreprise->vignette) {
+                $logoUrl = url('storage/' . $entreprise->vignette);
+            }
+
+            // Appel API pour mettre à jour la Startup
+            $response = Http::withHeaders($this->getApiHeaders($token))
+                ->timeout(10)
+                ->put("{$apiUrl}/api/v1/startups/{$entreprise->supabase_startup_id}", [
+                    'name' => $entreprise->nom,
+                    'registrationNumber' => $entreprise->email,
+                    'description' => $entreprise->description ?? '',
+                    'sectorId' => (string)$entreprise->secteur_id,
+                    'website' => '', // Pas de site web dans Entreprise
+                    'logoUrl' => $logoUrl,
+                ]);
+
+            if ($response->failed()) {
+                Log::error('Erreur lors de la mise à jour de la Startup', [
+                    'entreprise_id' => $entreprise->id,
+                    'startup_id' => $entreprise->supabase_startup_id,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                throw new \Exception('Erreur API: ' . ($response->json('message') ?? 'Erreur inconnue'));
+            }
+
+            Log::info('Startup mise à jour avec succès', [
+                'entreprise_id' => $entreprise->id,
+                'startup_id' => $entreprise->supabase_startup_id
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Exception dans syncStartupUpdate', [
+                'entreprise_id' => $entreprise->id,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
 
     public function destroy($id)
 {

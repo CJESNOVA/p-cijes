@@ -86,10 +86,11 @@ class NeedController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                return response()->json(['error' => 'Erreur lors de la récupération des besoins'], $response->status());
+                return redirect()->back()->with('error', 'Erreur lors de la récupération des besoins');
             }
 
-            return response()->json($response->json());
+            $needs = $response->json('data') ?? $response->json();
+            return view('needs.index', compact('needs'));
 
         } catch (\Exception $e) {
             Log::error('Exception dans NeedController@index', [
@@ -97,7 +98,7 @@ class NeedController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            return response()->json(['error' => 'Une erreur est survenue : ' . $e->getMessage()], 500);
+            return redirect()->back()->with('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
 
@@ -112,10 +113,9 @@ class NeedController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string|min:10',
             'entreprise_id' => 'required|exists:entreprises,id',
-            'deadline' => 'nullable|date|after:today',
+            'closingDate' => 'nullable|date|after:today',
             'profiles' => 'nullable|string|max:500',
-            'conditions' => 'nullable|string|max:1000',
-            'priority' => 'nullable|integer|between:1,3',
+            'eligibility' => 'nullable|string|max:1000',
             'file' => 'nullable|file|max:5120',
         ]);
 
@@ -127,9 +127,9 @@ class NeedController extends Controller
             $q->where('membre_id', $membre->id);
         })->findOrFail($request->entreprise_id);
 
-        $startupId = $entreprise->supabase_startup_id;
+        $organizationId = $entreprise->supabase_startup_id;
 
-        if (!$startupId) {
+        if (!$organizationId) {
             Log::warning("Entreprise {$entreprise->id} has no supabase_startup_id");
             return redirect()->back()->with('error', 'Entreprise non configurée pour l\'API');
         }
@@ -138,26 +138,37 @@ class NeedController extends Controller
             $apiUrl = config('services.api.url') ?? 'https://api.example.com';
             $token = $this->getApiToken();
 
-            // FILE UPLOAD
-            $fileUrl = null;
+            // FILE UPLOAD - génère URL publique et nom
+            $attachmentUrl = null;
+            $attachmentName = null;
             if ($request->hasFile('file')) {
-                $fileUrl = $request->file('file')->store('needs', 'public');
+                $file = $request->file('file');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('needs', $filename, 'public');
+                $attachmentUrl = asset('storage/' . $path);
+                $attachmentName = $file->getClientOriginalName();
             }
 
-            // APPEL À LA NOUVELLE API DE BESOINS
+            // Préparer les profils comme tableau si c'est une chaîne
+            $profiles = null;
+            if ($validated['profiles']) {
+                $profiles = array_map('trim', explode(',', $validated['profiles']));
+            }
+
+            // APPEL À L'API DE BESOINS AVEC MAPPING CORRECT
             $needResponse = Http::withHeaders($this->getApiHeaders($token))
                 ->timeout(10)
                 ->post(
                     "{$apiUrl}/api/v1/pme-needs",
                     [
-                        'category' => $validated['title'],
+                        'organizationId' => $organizationId,
+                        'title' => $validated['title'],
                         'description' => $validated['description'],
-                        'deadline' => $validated['deadline'] ?? null,
-                        'profiles' => $validated['profiles'] ?? null,
-                        'conditions' => $validated['conditions'] ?? null,
-                        'priority' => $validated['priority'] ?? 1,
-                        'attachment' => $fileUrl,
-                        'startup_id' => $startupId,
+                        'closingDate' => $validated['closingDate'] ?? null,
+                        'profiles' => $profiles,
+                        'eligibility' => $validated['eligibility'] ?? null,
+                        'attachmentUrl' => $attachmentUrl,
+                        'attachmentName' => $attachmentName,
                     ]
                 );
 
@@ -208,10 +219,11 @@ class NeedController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                return response()->json(['error' => 'Besoin non trouvé'], $response->status());
+                return redirect()->back()->with('error', 'Besoin non trouvé');
             }
 
-            return response()->json($response->json());
+            $need = $response->json('data') ?? $response->json();
+            return view('needs.show', compact('need', 'needId'));
 
         } catch (\Exception $e) {
             Log::error('Exception dans NeedController@show', [
@@ -219,7 +231,7 @@ class NeedController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            return response()->json(['error' => 'Une erreur est survenue : ' . $e->getMessage()], 500);
+            return redirect()->back()->with('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
 
@@ -230,10 +242,10 @@ class NeedController extends Controller
     public function storeApplication(Request $request, $needId)
     {
         $validated = $request->validate([
-            'applicant_id' => 'required|string',
+            'profileId' => 'required|string',
             'message' => 'nullable|string',
-            'portfolio_url' => 'nullable|url',
-            'expected_amount' => 'nullable|numeric|min:0',
+            'proposalUrl' => 'nullable|url',
+            'budgetProposal' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -253,7 +265,7 @@ class NeedController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                return response()->json(['error' => 'Erreur lors de la création de la candidature'], $response->status());
+                return redirect()->back()->with('error', 'Erreur lors de la création de la candidature : ' . ($response->json('message') ?? 'Erreur inconnue'));
             }
 
             Log::info('Candidature créée avec succès', [
@@ -261,7 +273,7 @@ class NeedController extends Controller
                 'api_response' => $response->json()
             ]);
 
-            return response()->json($response->json(), 201);
+            return redirect()->back()->with('success', 'Candidature envoyée avec succès !');
 
         } catch (\Exception $e) {
             Log::error('Exception dans NeedController@storeApplication', [
@@ -269,7 +281,7 @@ class NeedController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            return response()->json(['error' => 'Une erreur est survenue : ' . $e->getMessage()], 500);
+            return redirect()->back()->with('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
 
@@ -293,10 +305,11 @@ class NeedController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                return response()->json(['error' => 'Erreur lors de la récupération des candidatures'], $response->status());
+                return redirect()->back()->with('error', 'Erreur lors de la récupération des candidatures');
             }
 
-            return response()->json($response->json());
+            $applications = $response->json('data') ?? $response->json();
+            return view('needs.applications.index', compact('applications', 'needId'));
 
         } catch (\Exception $e) {
             Log::error('Exception dans NeedController@listApplications', [
@@ -304,21 +317,17 @@ class NeedController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            return response()->json(['error' => 'Une erreur est survenue : ' . $e->getMessage()], 500);
+            return redirect()->back()->with('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
 
     /**
      * Attribuer une candidature
      * PUT /api/v1/pme-needs/{need_id}/applications/{application_id}/award
+     * Note: Selon la spec API, pas de body - seul les paramètres d'URL sont utilisés
      */
     public function awardApplication(Request $request, $needId, $applicationId)
     {
-        $validated = $request->validate([
-            'awarded_amount' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string',
-        ]);
-
         try {
             $apiUrl = config('services.api.url') ?? 'https://api.example.com';
             $token = $this->getApiToken();
@@ -326,8 +335,7 @@ class NeedController extends Controller
             $response = Http::withHeaders($this->getApiHeaders($token))
                 ->timeout(10)
                 ->put(
-                    "{$apiUrl}/api/v1/pme-needs/{$needId}/applications/{$applicationId}/award",
-                    $validated
+                    "{$apiUrl}/api/v1/pme-needs/{$needId}/applications/{$applicationId}/award"
                 );
 
             if ($response->failed()) {
@@ -337,7 +345,7 @@ class NeedController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                return response()->json(['error' => 'Erreur lors de l\'attribution de la candidature'], $response->status());
+                return redirect()->back()->with('error', 'Erreur lors de l\'attribution de la candidature : ' . ($response->json('message') ?? 'Erreur inconnue'));
             }
 
             Log::info('Candidature attribuée avec succès', [
@@ -346,7 +354,7 @@ class NeedController extends Controller
                 'api_response' => $response->json()
             ]);
 
-            return response()->json($response->json());
+            return redirect()->back()->with('success', 'Candidature attribuée avec succès !');
 
         } catch (\Exception $e) {
             Log::error('Exception dans NeedController@awardApplication', [
@@ -354,7 +362,7 @@ class NeedController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            return response()->json(['error' => 'Une erreur est survenue : ' . $e->getMessage()], 500);
+            return redirect()->back()->with('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
 }

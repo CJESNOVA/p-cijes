@@ -52,17 +52,10 @@
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex-1">
                                 <h3 class="text-xl font-bold text-slate-800 dark:text-navy-50">
-                                    {{ $need['category'] ?? 'Sans titre' }}
+                                    {{ $need['title'] ?? 'Sans titre' }}
                                 </h3>
                                 <p class="text-sm text-slate-600 dark:text-navy-300 mt-1">
-                                    Priorité: 
-                                    @if($need['priority'] == 1)
-                                        <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-green-500 rounded">Basse</span>
-                                    @elseif($need['priority'] == 2)
-                                        <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-yellow-500 rounded">Moyenne</span>
-                                    @else
-                                        <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-red-500 rounded">Haute</span>
-                                    @endif
+                                    Statut: <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-blue-500 rounded">{{ $need['status'] ?? 'Publié' }}</span>
                                 </p>
                             </div>
                         </div>
@@ -72,26 +65,26 @@
                         </p>
 
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 mb-4 text-sm">
-                            @if($need['deadline'])
+                            @if($need['closingDate'])
                                 <div>
                                     <p class="text-slate-600 dark:text-navy-300">Clôture:</p>
                                     <p class="font-semibold text-slate-800 dark:text-navy-50">
-                                        {{ \Carbon\Carbon::parse($need['deadline'])->format('d/m/Y') }}
+                                        {{ \Carbon\Carbon::parse($need['closingDate'])->format('d/m/Y') }}
                                     </p>
                                 </div>
                             @endif
 
-                            @if($need['profiles'])
+                            @if($need['profiles'] && is_array($need['profiles']))
                                 <div>
                                     <p class="text-slate-600 dark:text-navy-300">Profils:</p>
-                                    <p class="font-semibold text-slate-800 dark:text-navy-50">{{ $need['profiles'] }}</p>
+                                    <p class="font-semibold text-slate-800 dark:text-navy-50">{{ implode(', ', $need['profiles']) }}</p>
                                 </div>
                             @endif
 
                             <div>
                                 <p class="text-slate-600 dark:text-navy-300">Candidatures:</p>
                                 <p class="font-semibold text-slate-800 dark:text-navy-50">
-                                    {{ $need['applications_count'] ?? 0 }}
+                                    {{ count($need['applications'] ?? []) }}
                                 </p>
                             </div>
                         </div>
