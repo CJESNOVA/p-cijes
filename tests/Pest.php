@@ -15,6 +15,9 @@ pest()->extend(Tests\TestCase::class)
  // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
+pest()->extend(Tests\TestCase::class)
+    ->in('Unit/Auth', 'Unit/Middleware', 'Unit/Models', 'Unit/Notifications');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
