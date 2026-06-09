@@ -7,53 +7,57 @@ use App\Models\Formationniveau;
 use App\Models\Formationtype;
 use App\Models\Participant;
 use App\Models\Participantstatut;
-use App\Models\Membre;
-use App\Models\Entreprisemembre;
 use App\Models\Expert;
+use App\Models\Entreprise;
+use App\Models\Entreprisemembre;
 use App\Models\Ressourcecompte;
-use App\Models\Ressourcetransaction;
 use App\Models\Formationressource;
-use App\Models\Ressourcetypeoffretype;
 use App\Models\Accompagnement;
+use App\Services\MembreService;
+use App\Services\PaiementService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
 use App\Services\RecompenseService;
 
 class FormationController extends Controller
 {
-    public function index()
-{
-    $userId = Auth::id();
-    $membre = Membre::where('user_id', $userId)->first();
+    protected MembreService $membreService;
+    protected PaiementService $paiementService;
 
-    if (!$membre) {
-        return redirect()->route('membre.createOrEdit')
-            ->with('error', '⚠️ Vous devez d’abord créer votre profil membre.');
+    private const OFFRETYPE_FORMATION = 2;
+
+    public function __construct(MembreService $membreService, PaiementService $paiementService)
+    {
+        $this->membreService = $membreService;
+        $this->paiementService = $paiementService;
     }
 
-    // récupérer tous les experts liés à ce membre
-    $experts = Expert::where('membre_id', $membre->id)->pluck('id');
+    public function index()
+    {
+        $membre = $this->membreService->getAuthenticatedMembre();
 
-    // récupérer les formations liées à ces experts
-    $formations = Formation::whereIn('expert_id', $experts)
-        ->orderByDesc('id')
-        ->get();
+        if (!$membre) {
+            return redirect()->route('membre.createOrEdit')
+                ->with('error', '⚠️ Vous devez d\'abord créer votre profil membre.');
+        }
 
-    return view('formation.index', compact('formations'));
-}
+        $experts = Expert::where('membre_id', $membre->id)->pluck('id');
 
+        $formations = Formation::whereIn('expert_id', $experts)
+            ->orderByDesc('id')
+            ->get();
+
+        return view('formation.index', compact('formations'));
+    }
 
     public function create()
     {
         $formationniveaux = Formationniveau::where('etat', 1)->get();
         $formationtypes = Formationtype::where('etat', 1)->get();
 
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->firstOrFail();
+        $membre = $this->membreService->getAuthenticatedMembreOrFail();
         $experts = Expert::where('membre_id', $membre->id)->get();
 
         return view('formation.form', [
@@ -66,8 +70,7 @@ class FormationController extends Controller
 
     public function store(Request $request)
     {
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->firstOrFail();
+        $membre = $this->membreService->getAuthenticatedMembreOrFail();
 
         $validated = $request->validate([
             'titre' => 'required|string|max:255',
@@ -80,7 +83,6 @@ class FormationController extends Controller
             'expert_id' => 'required|exists:experts,id',
         ]);
 
-        // Vérifier que l’expert appartient bien au membre connecté
         $expert = Expert::where('membre_id', $membre->id)
             ->where('id', $validated['expert_id'])
             ->firstOrFail();
@@ -96,13 +98,10 @@ class FormationController extends Controller
 
     public function edit($id)
     {
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->firstOrFail();
+        $membre = $this->membreService->getAuthenticatedMembreOrFail();
 
-        // Récupérer tous les experts du membre
         $expertIds = Expert::where('membre_id', $membre->id)->pluck('id');
 
-        // Formation doit appartenir à l’un de ses experts
         $formation = Formation::whereIn('expert_id', $expertIds)->findOrFail($id);
 
         $formationniveaux = Formationniveau::where('etat', 1)->get();
@@ -114,8 +113,7 @@ class FormationController extends Controller
 
     public function update(Request $request, $id)
     {
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->firstOrFail();
+        $membre = $this->membreService->getAuthenticatedMembreOrFail();
 
         $expertIds = Expert::where('membre_id', $membre->id)->pluck('id');
         $formation = Formation::whereIn('expert_id', $expertIds)->findOrFail($id);
@@ -131,7 +129,6 @@ class FormationController extends Controller
             'expert_id' => 'required|exists:experts,id',
         ]);
 
-        // Vérifier que l’expert sélectionné appartient bien au membre connecté
         $expert = Expert::where('membre_id', $membre->id)
             ->where('id', $validated['expert_id'])
             ->firstOrFail();
@@ -143,11 +140,9 @@ class FormationController extends Controller
         return redirect()->route('formation.index')->with('success', 'Formation mise à jour avec succès.');
     }
 
-
     public function destroy($id)
     {
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->firstOrFail();
+        $membre = $this->membreService->getAuthenticatedMembreOrFail();
         $expert = Expert::where('membre_id', $membre->id)->firstOrFail();
 
         $formation = Formation::where('expert_id', $expert->id)->findOrFail($id);
@@ -156,274 +151,200 @@ class FormationController extends Controller
         return redirect()->route('formation.index')->with('success', 'Formation supprimée.');
     }
 
-
     public function show($id)
-{
-    $formation = Formation::with([
-        'formationniveau',
-        'formationtype',
-        'expert.membre',
-        'participants.membre',
-        'quizs' => function ($q) {
-            $q->withCount('quizquestions');
-        }
-    ])->findOrFail($id);
+    {
+        $formation = Formation::with([
+            'formationniveau',
+            'formationtype',
+            'expert.membre',
+            'participants.membre',
+            'quizs' => function ($q) {
+                $q->withCount('quizquestions');
+            }
+        ])->findOrFail($id);
 
-    return view('formation.show', compact('formation'));
-}
-
-
-    public function participants($id)
-{
-    $userId = Auth::id();
-    $membre = Membre::where('user_id', $userId)->firstOrFail();
-
-    // récupérer tous les experts liés à ce membre
-    $expertIds = Expert::where('membre_id', $membre->id)->pluck('id');
-
-    // formation appartenant à un des experts
-    $formation = Formation::findOrFail($id);//whereIn('expert_id', $expertIds)->
-
-    // récupérer les participants avec leurs infos
-    $participants = Participant::with(['membre', 'participantstatut'])
-        ->where('formation_id', $formation->id)
-        ->get();
-
-    return view('formation.participants', compact('formation', 'participants'));
-}
-
-    // Liste des formations ouvertes
-    public function liste()
-{
-    $userId = Auth::id();
-    $membre = Membre::where('user_id', $userId)->first();
-
-    if (!$membre) {
-        return redirect()->route('membre.createOrEdit')
-            ->with('error', '⚠️ Vous devez d’abord créer votre profil membre.');
+        return view('formation.show', compact('formation'));
     }
 
-    $expert = Expert::where('membre_id', $membre->id)->first();
-    $membreId = $membre->id;
+    public function participants($id)
+    {
+        $membre = $this->membreService->getAuthenticatedMembreOrFail();
 
-    // récupérer uniquement les formations du pays du membre connecté
-    $formations = Formation::with([
-        'participants',
-        'formationniveau',
-        'formationtype',
-        'expert.membre',
-        'quizs' => function ($query) {
-            $query->withCount('quizquestions');
+        $expertIds = Expert::where('membre_id', $membre->id)->pluck('id');
+
+        $formation = Formation::findOrFail($id);
+
+        $participants = Participant::with(['membre', 'participantstatut'])
+            ->where('formation_id', $formation->id)
+            ->get();
+
+        return view('formation.participants', compact('formation', 'participants'));
+    }
+
+    public function liste()
+    {
+        $membre = $this->membreService->getAuthenticatedMembre();
+
+        if (!$membre) {
+            return redirect()->route('membre.createOrEdit')
+                ->with('error', '⚠️ Vous devez d\'abord créer votre profil membre.');
         }
-    ])
-    ->where('etat', 1)
-    ->where('pays_id', $membre->pays_id)
-    ->orderByDesc('id')
-    ->get();   
 
-    return view('formation.liste', compact('formations', 'expert', 'membreId'));
-}
+        $expert = Expert::where('membre_id', $membre->id)->first();
+        $membreId = $membre->id;
 
+        $formations = Formation::with([
+            'participants',
+            'formationniveau',
+            'formationtype',
+            'expert.membre',
+            'quizs' => function ($query) {
+                $query->withCount('quizquestions');
+            }
+        ])
+        ->where('etat', 1)
+        ->where('pays_id', $membre->pays_id)
+        ->orderByDesc('id')
+        ->get();
 
-    // Formulaire d'inscription + paiement
+        return view('formation.liste', compact('formations', 'expert', 'membreId'));
+    }
+
     public function inscrireForm($id)
     {
-        $userId = Auth::id();
-        $membre = Membre::where('user_id', $userId)->first();
+        $membre = $this->membreService->getAuthenticatedMembre();
 
         if (!$membre) {
             return redirect()
                 ->route('membre.createOrEdit')
-                ->with('error', '⚠️ Vous devez d’abord créer votre profil membre.');
+                ->with('error', '⚠️ Vous devez d\'abord créer votre profil membre.');
         }
 
         $formation = Formation::where('etat', 1)->findOrFail($id);
 
-        // Récupérer les IDs des entreprises liées au membre
-        $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)
-            ->pluck('entreprise_id')
-            ->toArray();
+        $entrepriseIds = $this->membreService->getEntrepriseIds($membre);
+        $ressources = $this->membreService->getRessourceComptes($membre, $entrepriseIds);
 
-        // Comptes ressources du membre ou de ses entreprises
-        $ressources = Ressourcecompte::where(function ($q) use ($membre, $entrepriseIds) {
-                $q->where('membre_id', $membre->id);
-                if (!empty($entrepriseIds)) {
-                    $q->orWhereIn('entreprise_id', $entrepriseIds);
-                }
-            })
-            ->where('etat', 1)
+        $accompagnements = Accompagnement::where('membre_id', $membre->id)
+            ->orWhereIn('entreprise_id', $entrepriseIds)
             ->get();
-
-    // Récupérer les accompagnements du membre ou de ses entreprises
-    $accompagnements = Accompagnement::where('membre_id', $membre->id)
-        ->orWhereIn('entreprise_id', $entrepriseIds)
-        ->get();
 
         return view('formation.inscrire', compact('formation', 'ressources', 'accompagnements'));
     }
 
-    // Inscription + paiement
     public function inscrireStore(Request $request, $id, RecompenseService $recompenseService)
-{
-    $membre = Membre::where('user_id', Auth::id())->firstOrFail();
+    {
+        $membre = $this->membreService->getAuthenticatedMembreOrFail();
 
-    // IDs des entreprises liées au membre
-    $entrepriseIds = Entreprisemembre::where('membre_id', $membre->id)
-        ->pluck('entreprise_id')
-        ->toArray();
+        $entrepriseIds = $this->membreService->getEntrepriseIds($membre);
 
-    $formation = Formation::where('etat', 1)->findOrFail($id);
+        $formation = Formation::where('etat', 1)->findOrFail($id);
 
-    // 🔒 Sécurité : le montant est toujours le prix réel
-    $montant = (float) ($formation->prix ?? 0);
-    $accompagnementId = $request->input('accompagnement_id');
+        $montant = (float) ($formation->prix ?? 0);
+        $accompagnementId = $request->input('accompagnement_id');
 
-    // Validation conditionnelle
-    $rules = [
-        'accompagnement_id' => 'required|exists:accompagnements,id',
-    ];
+        $rules = [
+            'accompagnement_id' => 'required|exists:accompagnements,id',
+        ];
 
-    // Si la formation est payante, on exige un compte de ressource
-    if ($montant > 0) {
-        $rules['ressourcecompte_id'] = 'required|exists:ressourcecomptes,id';
-    }
-
-    $request->validate($rules);
-
-    // Vérifier si déjà inscrit
-    if (Participant::where('membre_id', $membre->id)
-        ->where('formation_id', $formation->id)
-        ->exists()) {
-        return back()->withInput()->with('error', '⚠️ Vous êtes déjà inscrit à cette formation.');
-    }
-
-    $ressourcecompte = null;
-
-    // 💰 Gestion des formations payantes
-    if ($montant > 0) {
-        $ressourcecompte = Ressourcecompte::where('id', $request->ressourcecompte_id)
-            ->where(function ($q) use ($membre, $entrepriseIds) {
-                $q->where('membre_id', $membre->id)
-                    ->orWhereIn('entreprise_id', $entrepriseIds);
-            })
-            ->firstOrFail();
-    }
-
-    // Déterminer le receveur
-    $receveurMembreId = optional($formation->expert)->membre_id ?? null;
-    $receveurEntrepriseId = $formation->entreprise_id ?? null;
-
-    // Trouver ou créer le compte destinataire
-    if ($receveurEntrepriseId) {
-        $receveurCompte = Ressourcecompte::firstOrCreate(
-            ['entreprise_id' => $receveurEntrepriseId, 'ressourcetype_id' => 1],
-            ['membre_id' => $receveurMembreId, 'solde' => 0, 'etat' => 1, 'spotlight' => 0]
-        );
-    } elseif ($receveurMembreId) {
-        $receveurCompte = Ressourcecompte::firstOrCreate(
-            ['membre_id' => $receveurMembreId, 'ressourcetype_id' => 1],
-            ['entreprise_id' => null, 'solde' => 0, 'etat' => 1, 'spotlight' => 0]
-        );
-    } else {
-        return back()->withInput()->with('error', '⚠️ Impossible de déterminer le compte destinataire pour cette formation.');
-    }
-
-    DB::beginTransaction();
-
-    try {
-        $reference = 'PAI-FORM-' . strtoupper(Str::random(8));
-
-        // 💵 S’il y a paiement, on traite la transaction
         if ($montant > 0) {
-            $isCompatible = Ressourcetypeoffretype::where('ressourcetype_id', $ressourcecompte->ressourcetype_id)
-                ->where('offretype_id', 2)
-                ->exists();
+            $rules['ressourcecompte_id'] = 'required|exists:ressourcecomptes,id';
+        }
 
-            if (!$isCompatible) {
-                throw new \Exception("❌ Ce type de ressource ne peut pas payer une formation.");
+        $request->validate($rules);
+
+        if (Participant::where('membre_id', $membre->id)
+            ->where('formation_id', $formation->id)
+            ->exists()) {
+            return back()->withInput()->with('error', '⚠️ Vous êtes déjà inscrit à cette formation.');
+        }
+
+        $ressourcecompte = null;
+
+        if ($montant > 0) {
+            $ressourcecompte = $this->paiementService->validateAndGetRessourceCompte(
+                $request->ressourcecompte_id, $membre, $entrepriseIds
+            );
+        }
+
+        $receveurMembreId = optional($formation->expert)->membre_id ?? null;
+        $receveurEntrepriseId = $formation->entreprise_id ?? null;
+
+        if ($receveurEntrepriseId) {
+            $receveurCompte = Ressourcecompte::firstOrCreate(
+                ['entreprise_id' => $receveurEntrepriseId, 'ressourcetype_id' => 1],
+                ['membre_id' => $receveurMembreId, 'solde' => 0, 'etat' => 1, 'spotlight' => 0]
+            );
+        } elseif ($receveurMembreId) {
+            $receveurCompte = Ressourcecompte::firstOrCreate(
+                ['membre_id' => $receveurMembreId, 'ressourcetype_id' => 1],
+                ['entreprise_id' => null, 'solde' => 0, 'etat' => 1, 'spotlight' => 0]
+            );
+        } else {
+            return back()->withInput()->with('error', '⚠️ Impossible de déterminer le compte destinataire pour cette formation.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $reference = $this->paiementService->generateReference('PAI-FORM');
+
+            if ($montant > 0) {
+                if (!$this->paiementService->checkRessourceCompatibility($ressourcecompte, self::OFFRETYPE_FORMATION)) {
+                    throw new \Exception("❌ Ce type de ressource ne peut pas payer une formation.");
+                }
+
+                if ($ressourcecompte->solde < $montant) {
+                    throw new \Exception("⚠️ Solde insuffisant dans ce compte ressource.");
+                }
+
+                $this->paiementService->createDebitTransaction($ressourcecompte, $montant, $reference);
+                $this->paiementService->createCreditTransaction($receveurCompte, $montant, $reference);
             }
 
-            if ($ressourcecompte->solde < $montant) {
-                throw new \Exception("⚠️ Solde insuffisant dans ce compte ressource.");
-            }
-
-            // Débit du payeur
-            Ressourcetransaction::create([
-                'montant' => -$montant,
-                'reference' => $reference,
-                'ressourcecompte_id' => $ressourcecompte->id,
-                'datetransaction' => now(),
-                'operationtype_id' => 2,
-                'entreprise_id' => $ressourcecompte->entreprise_id,
-                'spotlight' => 0,
-                'etat' => 1,
-            ]);
-            $ressourcecompte->decrement('solde', $montant);
-
-            // Crédit du receveur
-            Ressourcetransaction::create([
+            Formationressource::create([
                 'montant' => $montant,
                 'reference' => $reference,
-                'ressourcecompte_id' => $receveurCompte->id,
-                'datetransaction' => now(),
-                'operationtype_id' => 1,
-                'entreprise_id' => $receveurCompte->entreprise_id,
+                'accompagnement_id' => $accompagnementId,
+                'ressourcecompte_id' => $montant > 0 ? $ressourcecompte->id : null,
+                'formation_id' => $formation->id,
+                'paiementstatut_id' => $montant > 0 ? 1 : 2,
+                'membre_id' => $membre->id,
+                'entreprise_id' => $formation->entreprise_id ?? $receveurEntrepriseId ?? null,
                 'spotlight' => 0,
                 'etat' => 1,
             ]);
-            $receveurCompte->increment('solde', $montant);
+
+            $statutDefaut = Participantstatut::where('etat', 1)->first();
+            Participant::create([
+                'membre_id' => $membre->id,
+                'formation_id' => $formation->id,
+                'dateparticipant' => now(),
+                'participantstatut_id' => $statutDefaut?->id,
+                'etat' => 1,
+                'spotlight' => 0,
+            ]);
+
+            if ($montant <= 0) {
+                $entreprise = Entreprise::findOrFail($formation->entreprise_id ?? $receveurEntrepriseId ?? null);
+                $recompenseService->attribuerRecompense('FORMATION_GRATUITE', $membre, $entreprise ?? null, $formation->id, null);
+            }
+
+            DB::commit();
+
+            return redirect()->route('formation.liste')
+                ->with('success', $montant > 0
+                    ? '✅ Inscription et paiement réussis.'
+                    : '✅ Inscription gratuite réussie. 🎁 Une récompense vous a été attribuée !'
+                );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Inscription formation error: ' . $e->getMessage(), [
+                'user_id' => $membre->id,
+                'formation_id' => $formation->id,
+            ]);
+            return back()->withInput()->with('error', '⚠️ Erreur : ' . $e->getMessage());
         }
-
-        // 📘 Trace du paiement (ou inscription gratuite)
-        Formationressource::create([
-            'montant' => $montant,
-            'reference' => $reference,
-            'accompagnement_id' => $accompagnementId,
-            'ressourcecompte_id' => $montant > 0 ? $ressourcecompte->id : null,
-            'formation_id' => $formation->id,
-            'paiementstatut_id' => $montant > 0 ? 1 : 2, // 1 = payé, 2 = gratuit
-            'membre_id' => $membre->id,
-            'entreprise_id' => $formation->entreprise_id ?? $receveurEntrepriseId ?? null,
-            'spotlight' => 0,
-            'etat' => 1,
-        ]);
-
-        // 🧍 Inscription du participant
-        $statutDefaut = Participantstatut::where('etat', 1)->first();
-        Participant::create([
-            'membre_id' => $membre->id,
-            'formation_id' => $formation->id,
-            'dateparticipant' => now(),
-            'participantstatut_id' => $statutDefaut?->id,
-            'etat' => 1,
-            'spotlight' => 0,
-        ]);
-
-        // 🎁 Récompense automatique si formation gratuite
-        if ($montant <= 0) {
-                
-        $entreprise = Entreprise::findOrFail($formation->entreprise_id ?? $receveurEntrepriseId ?? null);
-
-            // 💡 Pas de montant logique pour une formation gratuite, utilisation de points fixes
-            $recompenseService->attribuerRecompense('FORMATION_GRATUITE', $membre, $entreprise ?? null, $formation->id, null);
-        }
-
-        DB::commit();
-
-        return redirect()->route('formation.liste')
-            ->with('success', $montant > 0
-                ? '✅ Inscription et paiement réussis.'
-                : '✅ Inscription gratuite réussie. 🎁 Une récompense vous a été attribuée !'
-            );
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Inscription formation error: ' . $e->getMessage(), [
-            'user_id' => $membre->id,
-            'formation_id' => $formation->id,
-        ]);
-        return back()->withInput()->with('error', '⚠️ Erreur : ' . $e->getMessage());
     }
-}
-
 }
