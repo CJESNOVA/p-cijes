@@ -912,8 +912,14 @@ class DiagnosticController extends Controller
         // 🏁 Déclenche la récompense "DIAG_DIRIGEANT"
         if ($nbDiagnostics == 1) {
             \Log::info('Attribution récompense premier diagnostic');
-            // 💡 Utiliser le score total comme base pour le calcul en pourcentage
-            $recompense = $recompenseService->attribuerRecompense('DIAG_DIRIGEANT', $membre, null, $diagnostic->id, null);
+            try {
+                $recompense = $recompenseService->attribuerRecompense('DIAG_DIRIGEANT', $membre, null, $diagnostic->id, null);
+            } catch (\Exception $e) {
+                \Log::warning('Récompense DIAG_DIRIGEANT non attribuée: ' . $e->getMessage(), [
+                    'diagnostic_id' => $diagnostic->id,
+                    'membre_id' => $membre->id,
+                ]);
+            }
             
             // 🏆 Ajout du paiement PREMIER_DIAG_DIRIGEANT
             $moduleController = new \App\Http\Controllers\ModuleressourceController();
@@ -1367,7 +1373,11 @@ private function genererPlansAutomatiques($diagnostic)
             \Log::info("Mise à jour des plans existants : {$plansMaj} plans mis à jour pour le diagnostic {$diagnostic->id}");
             
         } catch (\Exception $e) {
-            \Log::error("Erreur lors de la mise à jour des plans existants : " . $e->getMessage());
+            \Log::error("Erreur lors de la mise à jour des plans existants : " . $e->getMessage(), [
+                'diagnostic_id' => $diagnostic->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
     }
 

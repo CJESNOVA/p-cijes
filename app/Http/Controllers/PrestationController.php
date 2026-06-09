@@ -652,6 +652,8 @@ public function inscrireStore(Request $request, $id)
 
     /**
      * Traiter le paiement de la prestation via notre système d'actions
+     *
+     * @throws \RuntimeException if the payment processing fails
      */
     private function traiterPaiementPrestationViaAction($montant, $entrepriseId, $ressourcecompte, $prestation, $membre)
     {
@@ -659,51 +661,46 @@ public function inscrireStore(Request $request, $id)
         $entreprise = \App\Models\Entreprise::find($entrepriseId);
         
         if (!$entreprise) {
-            \Log::warning('Entreprise non trouvée pour paiement prestation', ['entreprise_id' => $entrepriseId]);
-            return;
+            throw new \RuntimeException("Entreprise non trouvée pour paiement prestation (id={$entrepriseId})");
         }
         
         // Déterminer le code d'action
         $actionCode = $this->determinerCodeActionPrestation($entreprise->entrepriseprofil_id, $ressourcecompte->ressourcetype_id);
         
         if (!$actionCode) {
-            \Log::warning('Code action non déterminé', [
-                'entreprise_profil_id' => $entreprise->entrepriseprofil_id,
-                'ressource_type_id' => $ressourcecompte->ressourcetype_id
-            ]);
-            return;
+            throw new \RuntimeException("Code action non déterminé pour entreprise_profil_id={$entreprise->entrepriseprofil_id}, ressource_type_id={$ressourcecompte->ressourcetype_id}");
         }
         
         // Appeler l'API de paiement
-        try {
-            $moduleController = new \App\Http\Controllers\ModuleressourceController();
-            $resultat = $moduleController->attribuerModuleViaAction(
-                'prestations',
-                $prestation->id,
-                $actionCode,
-                $membre,
-                [
-                    'entreprise' => $entreprise,
-                    'montant' => $montant,
-                    'description' => "Paiement prestation {$actionCode}",
-                    'reference' => 'PI-' . $prestation->id . '-' . date('YmdHis')
-                ]
-            );
-            
-            if ($resultat['success']) {
-                \Log::info('Paiement prestation effectué avec succès', [
-                    'action_code' => $actionCode,
-                    'prestation_id' => $prestation->id,
-                    'montant' => $montant
-                ]);
-            }
-        } catch (\Exception $e) {
-            \Log::error('Erreur lors du paiement prestation via action', [
+        $moduleController = new \App\Http\Controllers\ModuleressourceController();
+        $resultat = $moduleController->attribuerModuleViaAction(
+            'prestations',
+            $prestation->id,
+            $actionCode,
+            $membre,
+            [
+                'entreprise' => $entreprise,
+                'montant' => $montant,
+                'description' => "Paiement prestation {$actionCode}",
+                'reference' => 'PI-' . $prestation->id . '-' . date('YmdHis')
+            ]
+        );
+        
+        if (!$resultat['success']) {
+            \Log::error('Paiement prestation via action échoué', [
                 'action_code' => $actionCode,
                 'prestation_id' => $prestation->id,
-                'erreur' => $e->getMessage()
+                'montant' => $montant,
+                'message' => $resultat['message'] ?? 'unknown',
             ]);
+            throw new \RuntimeException("Paiement prestation échoué: " . ($resultat['message'] ?? 'Erreur inconnue'));
         }
+
+        \Log::info('Paiement prestation effectué avec succès', [
+            'action_code' => $actionCode,
+            'prestation_id' => $prestation->id,
+            'montant' => $montant
+        ]);
     }
 
     /**

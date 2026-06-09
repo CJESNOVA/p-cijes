@@ -360,9 +360,13 @@ class RecompenseService
                 'membre_id' => $membre->id ?? null,
                 'entreprise_id' => $entreprise->id ?? null,
                 'montant' => $montant,
+                'trace' => $e->getTraceAsString(),
             ]);
-            //return $e->getMessage();
-            return false;
+            throw new \RuntimeException(
+                "Erreur lors de l'attribution de la récompense ({$actionCode}): " . $e->getMessage(),
+                0,
+                $e
+            );
         }
     }
 }

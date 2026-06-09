@@ -235,7 +235,14 @@ class RessourcecompteController extends Controller
         ]);
 
         // Attribuer récompense pour demande de SIKA
-        $this->recompenseService->attribuerRecompense('DEMANDE_SIKA', $membre, $entreprise, $transaction->id, null);
+        try {
+            $this->recompenseService->attribuerRecompense('DEMANDE_SIKA', $membre, $entreprise, $transaction->id, null);
+        } catch (\Exception $e) {
+            \Log::warning('Récompense DEMANDE_SIKA non attribuée: ' . $e->getMessage(), [
+                'transaction_id' => $transaction->id,
+                'membre_id' => $membre->id,
+            ]);
+        }
 
         $message = "Votre demande de SIKA d'un montant de {$request->montant_demande} FCFA a été soumise avec succès. Référence: {$reference}";
         
@@ -418,10 +425,14 @@ public function callback($id, Request $request)
         ]);
 
         if ($transaction->ressourcecompte->membre) {
-            // 🎁 Attribuer récompense de recharge
-            // 💡 Utiliser le montant de la transaction comme base pour le calcul en pourcentage
-            // ✅ Le membre et l'entreprise sont corrects : propriétaires du compte rechargé
-            $this->recompenseService->attribuerRecompense('RECHARGE_KOBO', $transaction->ressourcecompte->membre, $transaction->ressourcecompte->entreprise, $transaction->id, $transaction->montant);
+            try {
+                $this->recompenseService->attribuerRecompense('RECHARGE_KOBO', $transaction->ressourcecompte->membre, $transaction->ressourcecompte->entreprise, $transaction->id, $transaction->montant);
+            } catch (\Exception $e) {
+                \Log::warning('Récompense RECHARGE_KOBO non attribuée: ' . $e->getMessage(), [
+                    'transaction_id' => $transaction->id,
+                    'membre_id' => $transaction->ressourcecompte->membre->id,
+                ]);
+            }
         }
 
         return response()->json(['status' => 'ok'], 200);

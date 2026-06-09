@@ -187,10 +187,14 @@ class CotisationController extends Controller
 
         // 🔗 Récupérer le membre propriétaire du compte ressource
         if ($ressourcecompte->membre) {
-            // 🎁 Attribuer récompense de paiement cotisation
-            // 💡 Utiliser le montant de la cotisation comme base pour le calcul en pourcentage
-            // ✅ Le membre et l'entreprise sont corrects : propriétaire du compte qui a payé
-            $recompenseService->attribuerRecompense('PAIEMENT_COTISATION', $ressourcecompte->membre, $entreprise, $cotisation->id, $cotisation->montant ?? 0);
+            try {
+                $recompenseService->attribuerRecompense('PAIEMENT_COTISATION', $ressourcecompte->membre, $entreprise, $cotisation->id, $cotisation->montant ?? 0);
+            } catch (\Exception $e) {
+                \Log::warning('Récompense PAIEMENT_COTISATION non attribuée: ' . $e->getMessage(), [
+                    'cotisation_id' => $cotisation->id,
+                    'membre_id' => $ressourcecompte->membre->id,
+                ]);
+            }
         }
 
         return redirect()->route('cotisation.index')

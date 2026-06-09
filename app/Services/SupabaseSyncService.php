@@ -66,17 +66,21 @@ class SupabaseSyncService
                     'error'     => $response->body(),
                     'status'    => $response->status(),
                 ]);
-            } else {
-                Log::info("🔁 Compte Supabase mis à jour avec succès", [
-                    'compte_id'  => $compte->id,
-                ]);
+                throw new \RuntimeException("Sync pushAccount failed for compte {$compte->id}: HTTP {$response->status()}");
             }
+
+            Log::info("🔁 Compte Supabase mis à jour avec succès", [
+                'compte_id'  => $compte->id,
+            ]);
+        } catch (\RuntimeException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error("💥 Exception lors du push du compte Supabase", [
                 'compte_id' => $compte->id,
                 'message'   => $e->getMessage(),
                 'trace'     => $e->getTraceAsString(),
             ]);
+            throw new \RuntimeException("Sync pushAccount exception for compte {$compte->id}: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -117,22 +121,25 @@ class SupabaseSyncService
                     'error'          => $response->body(),
                     'status'         => $response->status(),
                 ]);
-            } else {
-                $responseData = $response->json();
-                $remoteId = $responseData['id'] ?? ($responseData[0]['id'] ?? null);
-
-                // On ne peut pas stocker l'ID distant
-                Log::info("✅ Transaction synchronisée avec succès.", [
-                    'transaction_id' => $transaction->id,
-                    'response'       => $responseData,
-                ]);
+                throw new \RuntimeException("Sync pushTransaction failed for transaction {$transaction->id}: HTTP {$response->status()}");
             }
+
+            $responseData = $response->json();
+            $remoteId = $responseData['id'] ?? ($responseData[0]['id'] ?? null);
+
+            Log::info("✅ Transaction synchronisée avec succès.", [
+                'transaction_id' => $transaction->id,
+                'response'       => $responseData,
+            ]);
+        } catch (\RuntimeException $e) {
+            throw $e;
         } catch (\Exception $e) {
-            Log::error("💥 Exception lors du push de la transaction Supabase", [
+            Log::error("Exception lors du push de la transaction Supabase", [
                 'transaction_id' => $transaction->id,
                 'message'        => $e->getMessage(),
                 'trace'          => $e->getTraceAsString(),
             ]);
+            throw new \RuntimeException("Sync pushTransaction exception for transaction {$transaction->id}: " . $e->getMessage(), 0, $e);
         }
     }
 

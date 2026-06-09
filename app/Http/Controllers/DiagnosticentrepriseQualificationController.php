@@ -432,8 +432,14 @@ class DiagnosticentrepriseQualificationController extends Controller
         // 🔗 Récupérer le membre lié
         if ($diagnostic->entreprise) {
             // 🎁 Attribuer récompense de test de classification (ancien système)
-            // 💡 Utiliser le score global du diagnostic comme base pour le calcul en pourcentage
-            $recompenseService->attribuerRecompense('TEST_CLASSIFICATION', $membre, $diagnostic->entreprise, $diagnostic->id, null);
+            try {
+                $recompenseService->attribuerRecompense('TEST_CLASSIFICATION', $membre, $diagnostic->entreprise, $diagnostic->id, null);
+            } catch (\Exception $e) {
+                \Log::warning('Récompense TEST_CLASSIFICATION non attribuée: ' . $e->getMessage(), [
+                    'diagnostic_id' => $diagnostic->id,
+                    'membre_id' => $membre->id,
+                ]);
+            }
 
             // 💰 Nouveau système : Attribuer module ressource via action TEST_CLASSIFICATION_V2
             $moduleController = new \App\Http\Controllers\ModuleressourceController();

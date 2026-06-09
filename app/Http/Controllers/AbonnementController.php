@@ -190,10 +190,14 @@ class AbonnementController extends Controller
 
         // 🔗 Récupérer le membre propriétaire du compte ressource
         if ($ressourcecompte->membre) {
-            // 🎁 Attribuer récompense de paiement abonnement
-            // 💡 Utiliser le montant de l'abonnement comme base pour le calcul en pourcentage
-            // ✅ Le membre et l'entreprise sont corrects : propriétaire du compte qui a payé
-            $recompenseService->attribuerRecompense('PAIEMENT_ABONNEMENT', $ressourcecompte->membre, $entreprise, $abonnement->id, $abonnement->montant ?? 0);
+            try {
+                $recompenseService->attribuerRecompense('PAIEMENT_ABONNEMENT', $ressourcecompte->membre, $entreprise, $abonnement->id, $abonnement->montant ?? 0);
+            } catch (\Exception $e) {
+                \Log::warning('Récompense PAIEMENT_ABONNEMENT non attribuée: ' . $e->getMessage(), [
+                    'abonnement_id' => $abonnement->id,
+                    'membre_id' => $ressourcecompte->membre->id,
+                ]);
+            }
         }
 
         return redirect()->route('abonnement.index')

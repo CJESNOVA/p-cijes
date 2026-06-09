@@ -55,9 +55,27 @@ class SupabaseStorageService
                 'Authorization' => 'Bearer ' . $this->key,
             ])->get("{$this->url}/storage/v1/object/{$this->bucket}/{$filePath}");
 
+            if ($response->status() === 404) {
+                return false;
+            }
+
+            if ($response->serverError()) {
+                \Log::warning('Supabase Storage fileExists server error', [
+                    'file' => $filePath,
+                    'status' => $response->status(),
+                ]);
+                throw new \RuntimeException("Supabase Storage returned status {$response->status()} for file check");
+            }
+
             return $response->successful();
+        } catch (\RuntimeException $e) {
+            throw $e;
         } catch (\Exception $e) {
-            return false;
+            \Log::error('Supabase Storage fileExists network error', [
+                'file' => $filePath,
+                'error' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('Unable to check file existence in Supabase Storage: ' . $e->getMessage(), 0, $e);
         }
     }
 }
