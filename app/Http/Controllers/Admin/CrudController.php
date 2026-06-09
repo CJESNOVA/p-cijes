@@ -11,6 +11,14 @@ use Illuminate\Support\Str;
 class CrudController extends Controller
 {
     /**
+     * Validate that a table name contains only safe characters.
+     */
+    private function isValidTableName(string $tableName): bool
+    {
+        return (bool) preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $tableName);
+    }
+
+    /**
      * Liste toutes les tables disponibles
      */
     public function index()
@@ -66,6 +74,10 @@ class CrudController extends Controller
     public function showTable(Request $request, $tableName)
     {
         try {
+            if (!$this->isValidTableName($tableName)) {
+                return redirect()->route('admin.crud.index')->with('error', 'Nom de table invalide.');
+            }
+
             // Vérifier si la table existe
             if (!Schema::hasTable($tableName)) {
                 return redirect()->route('admin.crud.index')->with('error', "La table '$tableName' n'existe pas.");
@@ -128,7 +140,7 @@ class CrudController extends Controller
     public function show($tableName, $id)
     {
         try {
-            if (!Schema::hasTable($tableName)) {
+            if (!$this->isValidTableName($tableName) || !Schema::hasTable($tableName)) {
                 return redirect()->route('admin.crud.index')->with('error', "La table '$tableName' n'existe pas.");
             }
             
@@ -175,7 +187,7 @@ class CrudController extends Controller
     public function create($tableName)
     {
         try {
-            if (!Schema::hasTable($tableName)) {
+            if (!$this->isValidTableName($tableName) || !Schema::hasTable($tableName)) {
                 return redirect()->route('admin.crud.index')->with('error', "La table '$tableName' n'existe pas.");
             }
             
@@ -218,7 +230,7 @@ class CrudController extends Controller
     public function edit($tableName, $id)
     {
         try {
-            if (!Schema::hasTable($tableName)) {
+            if (!$this->isValidTableName($tableName) || !Schema::hasTable($tableName)) {
                 return redirect()->route('admin.crud.index')->with('error', "La table '$tableName' n'existe pas.");
             }
             
@@ -266,7 +278,7 @@ class CrudController extends Controller
     public function store(Request $request, $tableName)
     {
         try {
-            if (!Schema::hasTable($tableName)) {
+            if (!$this->isValidTableName($tableName) || !Schema::hasTable($tableName)) {
                 return redirect()->route('admin.crud.index')->with('error', "La table '$tableName' n'existe pas.");
             }
             
@@ -327,7 +339,7 @@ class CrudController extends Controller
     public function update(Request $request, $tableName, $id)
     {
         try {
-            if (!Schema::hasTable($tableName)) {
+            if (!$this->isValidTableName($tableName) || !Schema::hasTable($tableName)) {
                 return redirect()->route('admin.crud.index')->with('error', "La table '$tableName' n'existe pas.");
             }
             
@@ -372,7 +384,7 @@ class CrudController extends Controller
     public function destroy($tableName, $id)
     {
         try {
-            if (!Schema::hasTable($tableName)) {
+            if (!$this->isValidTableName($tableName) || !Schema::hasTable($tableName)) {
                 return redirect()->route('admin.crud.index')->with('error', "La table '$tableName' n'existe pas.");
             }
             
@@ -393,7 +405,7 @@ class CrudController extends Controller
     private function getTableColumnsInfo($tableName)
     {
         $columns = [];
-        $columnInfo = DB::select("DESCRIBE {$tableName}");
+        $columnInfo = DB::select("DESCRIBE `" . str_replace('`', '``', $tableName) . "`");
         
         foreach ($columnInfo as $info) {
             $columns[$info->Field] = [
@@ -494,7 +506,7 @@ class CrudController extends Controller
     public function toggleBoolean($tableName, $id, $column)
     {
         try {
-            if (!Schema::hasTable($tableName)) {
+            if (!$this->isValidTableName($tableName) || !Schema::hasTable($tableName)) {
                 return response()->json(['error' => "La table '$tableName' n'existe pas."], 404);
             }
             

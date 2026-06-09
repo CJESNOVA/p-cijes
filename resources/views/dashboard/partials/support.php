@@ -5,7 +5,7 @@ require '../vendor/autoload.php';
 use Firebase\JWT\JWT;
 
 // --- CONFIGURATION (Doit matcher notre système) ---
-$secret_key = "e-cjes-support-secret-key-2024-very-long-key-for-hmac-sha256-encoding"; 
+$secret_key = env('SUPPORT_JWT_SECRET'); 
 $plateforme_code = "CIJES"; // Utiliser une plateforme qui existe dans notre base
 $callback_url = "https://support.cjes.africa/sso/callback";
 
