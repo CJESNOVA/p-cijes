@@ -346,8 +346,8 @@ class SidebarPanel
                         'route_name' => 'prestationressource.index'
                     ],
                     'needs' => [
-                        'title' => 'Publier un besoin',
-                        'route_name' => 'needs.create'
+                        'title' => 'Besoins PME',
+                        'route_name' => 'needs.index'
                     ],
                     
                     /*
