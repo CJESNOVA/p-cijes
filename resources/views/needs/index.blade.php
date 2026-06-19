@@ -45,71 +45,79 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 gap-6">
-            @if($needs && count($needs) > 0)
-                @foreach($needs as $need)
-                    <div class="card px-4 py-5 sm:px-5 hover:shadow-lg transition-shadow duration-300">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex-1">
-                                <h3 class="text-xl font-bold text-slate-800 dark:text-navy-50">
-                                    {{ $need['title'] ?? 'Sans titre' }}
-                                </h3>
-                                <p class="text-sm text-slate-600 dark:text-navy-300 mt-1">
-                                    Statut: <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-blue-500 rounded">{{ $need['status'] ?? 'Publié' }}</span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <p class="text-slate-700 dark:text-navy-200 mb-4 line-clamp-2">
-                            {{ $need['description'] ?? 'Pas de description' }}
-                        </p>
-
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 mb-4 text-sm">
-                            @if($need['closingDate'])
-                                <div>
-                                    <p class="text-slate-600 dark:text-navy-300">Clôture:</p>
-                                    <p class="font-semibold text-slate-800 dark:text-navy-50">
-                                        {{ \Carbon\Carbon::parse($need['closingDate'])->format('d/m/Y') }}
-                                    </p>
+        <div class="grid grid-cols-12 lg:gap-6">
+            <div class="col-span-12 lg:col-span-8">
+                <div class="grid grid-cols-1 gap-6">
+                    @if($needs && count($needs) > 0)
+                        @foreach($needs as $need)
+                            <div class="card px-4 py-5 sm:px-5 hover:shadow-lg transition-shadow duration-300">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold text-slate-800 dark:text-navy-50">
+                                            {{ $need['title'] ?? 'Sans titre' }}
+                                        </h3>
+                                        <p class="text-sm text-slate-600 dark:text-navy-300 mt-1">
+                                            Statut: <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-blue-500 rounded">{{ $need['status'] ?? 'Publié' }}</span>
+                                        </p>
+                                    </div>
                                 </div>
-                            @endif
 
-                            @if($need['profiles'] && is_array($need['profiles']))
-                                <div>
-                                    <p class="text-slate-600 dark:text-navy-300">Profils:</p>
-                                    <p class="font-semibold text-slate-800 dark:text-navy-50">{{ implode(', ', $need['profiles']) }}</p>
-                                </div>
-                            @endif
-
-                            <div>
-                                <p class="text-slate-600 dark:text-navy-300">Candidatures:</p>
-                                <p class="font-semibold text-slate-800 dark:text-navy-50">
-                                    {{ count($need['applications'] ?? []) }}
+                                <p class="text-slate-700 dark:text-navy-200 mb-4 line-clamp-2">
+                                    {{ $need['description'] ?? 'Pas de description' }}
                                 </p>
-                            </div>
-                        </div>
 
-                        <div class="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-navy-500">
-                            <a href="{{ route('needs.show', $need['id']) }}"
-                               class="btn rounded-lg bg-primary px-4 py-2 font-medium text-white hover:bg-primary-focus dark:bg-accent dark:hover:bg-accent-focus text-sm">
-                                <svg class="inline-block h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                </svg>
-                                Consulter
-                            </a>
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 mb-4 text-sm">
+                                    @if($need['closingDate'])
+                                        <div>
+                                            <p class="text-slate-600 dark:text-navy-300">Clôture:</p>
+                                            <p class="font-semibold text-slate-800 dark:text-navy-50">
+                                                {{ \Carbon\Carbon::parse($need['closingDate'])->format('d/m/Y') }}
+                                            </p>
+                                        </div>
+                                    @endif
+
+                                    @if($need['profiles'] && is_array($need['profiles']))
+                                        <div>
+                                            <p class="text-slate-600 dark:text-navy-300">Profils:</p>
+                                            <p class="font-semibold text-slate-800 dark:text-navy-50">{{ implode(', ', $need['profiles']) }}</p>
+                                        </div>
+                                    @endif
+
+                                    <div>
+                                        <p class="text-slate-600 dark:text-navy-300">Candidatures:</p>
+                                        <p class="font-semibold text-slate-800 dark:text-navy-50">
+                                            {{ count($need['applications'] ?? []) }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-navy-500">
+                                    <a href="{{ route('needs.show', $need['id']) }}"
+                                       class="btn rounded-lg bg-primary px-4 py-2 font-medium text-white hover:bg-primary-focus dark:bg-accent dark:hover:bg-accent-focus text-sm">
+                                        <svg class="inline-block h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        Consulter
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="card px-4 py-12 sm:px-5 text-center">
+                            <svg class="inline-block h-16 w-16 text-slate-400 dark:text-navy-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                            <p class="text-slate-600 dark:text-navy-300 text-lg">Aucun besoin trouvé</p>
+                            <p class="text-slate-500 dark:text-navy-400 mt-2">Revenez bientôt pour découvrir de nouveaux besoins</p>
                         </div>
-                    </div>
-                @endforeach
-            @else
-                <div class="card px-4 py-12 sm:px-5 text-center">
-                    <svg class="inline-block h-16 w-16 text-slate-400 dark:text-navy-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                    </svg>
-                    <p class="text-slate-600 dark:text-navy-300 text-lg">Aucun besoin trouvé</p>
-                    <p class="text-slate-500 dark:text-navy-400 mt-2">Revenez bientôt pour découvrir de nouveaux besoins</p>
+                    @endif
                 </div>
-            @endif
+            </div>
+
+            <div class="col-span-12 py-6 lg:sticky lg:bottom-0 lg:col-span-4 lg:self-end">
+                @include('layouts.sidebar')
+            </div>
         </div>
 
     </main>
