@@ -127,9 +127,9 @@ class NeedController extends Controller
             $q->where('membre_id', $membre->id);
         })->findOrFail($request->entreprise_id);
 
-        $organizationId = $entreprise->supabase_startup_id;
+        $startupId = $entreprise->supabase_startup_id;
 
-        if (!$organizationId) {
+        if (!$startupId) {
             Log::warning("Entreprise {$entreprise->id} has no supabase_startup_id");
             return redirect()->back()->with('error', 'Entreprise non configurée pour l\'API');
         }
@@ -161,7 +161,7 @@ class NeedController extends Controller
                 ->post(
                     "{$apiUrl}/api/v1/pme-needs",
                     [
-                        'organizationId' => $organizationId,
+                        'startupId' => $startupId,
                         'title' => $validated['title'],
                         'description' => $validated['description'],
                         'closingDate' => $validated['closingDate'] ?? null,
