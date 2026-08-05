@@ -225,7 +225,7 @@
                                             value="{{ old('telephone', $membre->telephone ?? '') }}" 
                                             required
                                             class="form-input w-full pl-10 rounded-lg border border-slate-300 bg-white px-3 py-2 focus:border-[#152737] focus:ring-2 focus:ring-[#152737]/20"
-                                            placeholder="+228 90 00 00 00"
+                                            placeholder="90203090"
                                         />
                                     </div>
                                 </div>
