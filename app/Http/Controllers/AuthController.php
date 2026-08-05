@@ -187,8 +187,8 @@ public function register(Request $request)
         'condition_general.required' => 'Les Conditions d\'Utilisation et la Politique de Confidentialité sont requises.',
     ]);
 
-    // Vérifier si l'email est autorisé (whitelist) — uniquement en production
-    if (app()->environment('production')) {
+    // Vérifier si l'email est autorisé (whitelist) — piloté par SIGNUP_WHITELIST_ENABLED
+    if (config('app.signup_whitelist_enabled')) {
         $allowedEmailsFile = base_path('allowed_emails.json');
         if (file_exists($allowedEmailsFile)) {
             $allowedEmailsData = json_decode(file_get_contents($allowedEmailsFile), true);

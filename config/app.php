@@ -116,4 +116,17 @@ return [
             : null,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Whitelist des emails à l'inscription
+    |--------------------------------------------------------------------------
+    |
+    | Quand activé, l'inscription vérifie l'email du candidat par rapport à
+    | allowed_emails.json. Indépendant de APP_ENV : à activer uniquement sur
+    | l'environnement où la restriction doit s'appliquer (ex. production).
+    |
+    */
+
+    'signup_whitelist_enabled' => (bool) env('SIGNUP_WHITELIST_ENABLED', false),
+
 ];
