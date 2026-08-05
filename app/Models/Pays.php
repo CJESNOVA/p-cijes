@@ -19,7 +19,17 @@ class Pays
      */
     public function all()
     {
-        return json_decode(json_encode($this->supabase->get($this->table)));
+        $response = $this->supabase->get($this->table);
+
+        // En cas d'erreur, Supabase renvoie un objet (ex: {"code":..., "message":...})
+        // au lieu d'une liste de pays : on l'ignore pour ne pas casser les vues qui
+        // itèrent sur le résultat en attendant des objets pays.
+        if (!is_array($response) || !array_is_list($response)) {
+            \Log::error("Réponse Supabase invalide pour la table {$this->table}", ['response' => $response]);
+            return [];
+        }
+
+        return json_decode(json_encode($response));
     }
 
     /**
