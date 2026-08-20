@@ -27,6 +27,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, \Illuminate\Http\Request $request) {
+            $message = 'Le fichier envoyé est trop volumineux. Taille maximale autorisée : ' . \App\Support\UploadLimit::label() . '.';
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 413);
+            }
+
+            return redirect()->back()->withInput()->with('error', $message);
+        });
     })
     ->create();

@@ -286,11 +286,15 @@
   >
     <input
       class="form-control"
+      id="vignette-input"
       type="file" name="vignette"
     />
-    
+
   </label>
-  
+  <span class="text-sm text-slate-500">Jusqu'à {{ \App\Support\UploadLimit::recommendedLabel() }}</span>
+  @error('vignette')
+      <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+  @enderror
 
               </div>
             </div>
@@ -333,4 +337,5 @@
 
         </div>
       </main>
+    @include('partials.upload-size-guard')
 </x-app-layout>

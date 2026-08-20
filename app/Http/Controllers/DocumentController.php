@@ -45,6 +45,9 @@ class DocumentController extends Controller
 
         $documenttypes = Documenttype::where('etat', 1)->get();
 
+        [$fileRules, $fileMessages] = \App\Support\UploadLimit::dynamicFileRules($documenttypes, 'document_');
+        $request->validate($fileRules, $fileMessages);
+
         foreach ($documenttypes as $documenttype) {
             $inputName = 'document_' . $documenttype->id;
 

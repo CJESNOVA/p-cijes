@@ -47,7 +47,9 @@ class MembreController extends Controller
             'membretype_id' => 'required|exists:membretypes,id',
             'pays_id' => 'required',
             //'membrestatut_id' => 'required|exists:membrestatuts,id',
-            'vignette' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'vignette' => 'nullable|image|mimes:jpg,jpeg,png|max:' . \App\Support\UploadLimit::recommendedKilobytes(),
+        ], [
+            'vignette.max' => 'L\'image ne doit pas dépasser ' . \App\Support\UploadLimit::recommendedLabel() . '.',
         ]);
 
         // Le numero_identifiant sera généré automatiquement par le modèle dans la méthode boot

@@ -81,6 +81,10 @@
                         <input type="file" name="vignette" id="vignette" class="hidden" accept="image/*">
                         <span>Choisir un fichier</span>
                     </label>
+                    <span class="text-sm text-slate-500 ml-2">Jusqu'à {{ \App\Support\UploadLimit::recommendedLabel() }}</span>
+                    @error('vignette')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
 
                     @if(!empty($sujet?->vignette))
                         <div class="mt-3">
@@ -118,5 +122,6 @@
 
         </div>
       </main>
+    @include('partials.upload-size-guard')
 </x-app-layout>
 

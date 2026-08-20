@@ -177,7 +177,9 @@ class SujetController extends Controller
             'titre' => 'required|string|max:255',
             'resume' => 'nullable|string|max:500',
             'description' => 'nullable|string',
-            'vignette' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:2048', // ou texte
+            'vignette' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:' . \App\Support\UploadLimit::recommendedKilobytes(), // ou texte
+        ], [
+            'vignette.max' => 'Le fichier ne doit pas dépasser ' . \App\Support\UploadLimit::recommendedLabel() . '.',
         ]);
     }
 

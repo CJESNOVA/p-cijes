@@ -193,7 +193,7 @@
                                                         </div>
                                                         
                                                         <p class="mt-1 text-xs text-gray-500">
-                                                            Formats acceptés : PDF, DOC, DOCX, JPG, JPEG, PNG (Max 10MB)
+                                                            Formats acceptés : PDF, DOC, DOCX, JPG, JPEG, PNG (max {{ \App\Support\UploadLimit::recommendedLabel() }})
                                                         </p>
                                                         @error('demande_'.$demandetype->id)
                                                             <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -263,3 +263,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@include('partials.upload-size-guard')

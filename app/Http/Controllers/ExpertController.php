@@ -63,7 +63,9 @@ class ExpertController extends Controller
         'domaine' => 'required|string|max:255',
         'experttype_id' => 'required|exists:experttypes,id',
         'secteur_id' => 'nullable|exists:secteurs,id',
-        'fichier' => 'nullable|file|max:2048',
+        'fichier' => 'nullable|file|max:' . \App\Support\UploadLimit::recommendedKilobytes(),
+    ], [
+        'fichier.max' => 'Le fichier ne doit pas dépasser ' . \App\Support\UploadLimit::recommendedLabel() . '.',
     ]);
 
     $path = null;
@@ -128,7 +130,9 @@ class ExpertController extends Controller
         'domaine' => 'required|string|max:255',
         'experttype_id' => 'required|exists:experttypes,id',
         'secteur_id' => 'nullable|exists:secteurs,id',
-        'fichier' => 'nullable|file|max:2048',
+        'fichier' => 'nullable|file|max:' . \App\Support\UploadLimit::recommendedKilobytes(),
+    ], [
+        'fichier.max' => 'Le fichier ne doit pas dépasser ' . \App\Support\UploadLimit::recommendedLabel() . '.',
     ]);
 
     // Conserver l'ancien fichier par défaut

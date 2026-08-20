@@ -146,12 +146,16 @@ class RessourcecompteController extends Controller
      */
     public function storeDemande(Request $request)
     {
+        $demandetypes = Demandetype::where('etat', 1)->get();
+
+        [$fileRules, $fileMessages] = \App\Support\UploadLimit::dynamicFileRules($demandetypes, 'demande_');
+
         // Validation
-        $request->validate([
+        $request->validate(array_merge([
             'montant_demande' => 'required|numeric|min:1000',
             'entreprise_id' => 'nullable|exists:entreprises,id',
             'description' => 'required|string|min:10|max:500',
-        ]);
+        ], $fileRules), $fileMessages);
 
         // Récupérer le membre connecté
         $userId = Auth::id();
@@ -183,8 +187,7 @@ class RessourcecompteController extends Controller
             ]
         );
 
-        // Traiter les fichiers uploadés selon les demandetypes
-        $demandetypes = Demandetype::where('etat', 1)->get();
+        // Traiter les fichiers uploadés selon les demandetypes (taille déjà validée ci-dessus)
         $fichiersTraites = 0;
 
         foreach ($demandetypes as $demandetype) {
@@ -192,9 +195,8 @@ class RessourcecompteController extends Controller
 
             if ($request->hasFile($inputName)) {
                 $file = $request->file($inputName);
-                
-                // Validation du fichier
-                if ($file->isValid() && $file->getSize() <= 10485760) { // Max 10MB
+
+                if ($file->isValid()) {
                     // Stockage du fichier avec Supabase
                     $storage = new \App\Services\SupabaseStorageService();
                     $cleanName = \App\Helpers\FileHelper::sanitizeFileName($file->getClientOriginalName());

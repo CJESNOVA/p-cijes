@@ -150,7 +150,7 @@
                                            name="file"
                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
                                            class="form-input w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-700 file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-white hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent">
-                                    <p class="text-xs text-slate-500 dark:text-navy-300 mt-1">Fichiers acceptés: PDF, Word, Excel, Images (max 5MB)</p>
+                                    <p class="text-xs text-slate-500 dark:text-navy-300 mt-1">Fichiers acceptés: PDF, Word, Excel, Images (max {{ \App\Support\UploadLimit::recommendedLabel() }})</p>
                                     @error('file')
                                         <span class="text-xs text-error mt-1">{{ $message }}</span>
                                     @enderror
@@ -184,5 +184,6 @@
         </div>
 
     </main>
+    @include('partials.upload-size-guard')
 
 </x-app-layout>

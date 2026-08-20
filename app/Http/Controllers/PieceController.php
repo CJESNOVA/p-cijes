@@ -63,6 +63,9 @@ class PieceController extends Controller
         // On récupère tous les types de pièces actifs
         $piecetypes = Piecetype::where('etat', 1)->get();
 
+        [$fileRules, $fileMessages] = \App\Support\UploadLimit::dynamicFileRules($piecetypes, 'piece_');
+        $request->validate($fileRules, $fileMessages);
+
         foreach ($piecetypes as $piecetype) {
             $inputName = 'piece_' . $piecetype->id;
 
