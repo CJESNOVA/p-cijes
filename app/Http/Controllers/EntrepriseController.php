@@ -190,9 +190,11 @@ class EntrepriseController extends Controller
             'annee_creation' => 'nullable|integer|min:1900|max:' . date('Y'),
             'est_membre_cijes' => 'nullable|boolean',
             'pays_id' => 'required',
-            'vignette' => 'nullable|image|max:2048',
+            'vignette' => 'nullable|image|max:' . \App\Support\UploadLimit::recommendedKilobytes(),
             'fonction' => 'nullable|string|max:255',
             'bio' => 'nullable|string|max:1000',
+        ], [
+            'vignette.max' => 'L\'image ne doit pas dépasser ' . \App\Support\UploadLimit::recommendedLabel() . '.',
         ]);
     }
 

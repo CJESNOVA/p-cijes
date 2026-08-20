@@ -54,6 +54,13 @@
                         </div>
                     @endif
 
+                    {{-- Message erreur --}}
+                    @if (session('error'))
+                        <div class="alert flex rounded-lg bg-error px-4 py-4 text-white sm:px-5 mb-4">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
                     <div class="card px-4 pb-4 sm:px-5">
                         <div class="max-w-xxl">
                             <div x-data="pages.formValidation.initFormValidationExample"
@@ -127,11 +134,12 @@
                                                    focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500
                                                    dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450
                                                    dark:active:bg-navy-450/90 cursor-pointer">
-                                            <input type="file" name="fichier"
+                                            <input type="file" name="fichier" id="fichier"
                                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.txt"
                                                    class="hidden">
                                             <span>Choisir un document</span>
                                         </label>
+                                        <span class="text-sm text-slate-500">Jusqu'à {{ \App\Support\UploadLimit::recommendedLabel() }}</span>
 
                                         @if($expert->fichier)
                                             <p class="mt-2 text-sm text-gray-600">
@@ -168,4 +176,5 @@
             </div>
         </div>
     </main>
+    @include('partials.upload-size-guard')
 </x-app-layout>

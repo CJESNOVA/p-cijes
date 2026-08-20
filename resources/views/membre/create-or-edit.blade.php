@@ -271,10 +271,13 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                             </svg>
                                             Parcourir
-                                            <input type="file" name="vignette" class="hidden" accept="image/*">
+                                            <input type="file" name="vignette" id="vignette-input" class="hidden" accept="image/*">
                                         </label>
-                                        <span class="text-sm text-slate-500">PNG, JPG jusqu'à 5MB</span>
+                                        <span class="text-sm text-slate-500">PNG, JPG jusqu'à {{ \App\Support\UploadLimit::recommendedLabel() }}</span>
                                     </div>
+                                    @error('vignette')
+                                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                    @enderror
                                     <p class="mt-2 text-xs text-slate-500">Une photo carrée est recommandée pour un meilleur affichage</p>
                                 </div>
                             </div>
@@ -344,4 +347,5 @@
             </div>    
         </div>
     </main>
+    @include('partials.upload-size-guard')
 </x-app-layout>

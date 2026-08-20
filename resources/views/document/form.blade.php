@@ -123,11 +123,14 @@
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                                         </svg>
                                                         {{ $existing ? 'Remplacer' : 'Choisir un fichier' }}
-                                                        <input type="file" name="document_{{ $documenttype->id }}" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                                        <input type="file" name="document_{{ $documenttype->id }}" id="document_{{ $documenttype->id }}" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                                     </label>
-                                                    <span class="text-sm text-slate-500">PDF, DOC, JPG jusqu'à 10MB</span>
+                                                    <span class="text-sm text-slate-500">PDF, DOC, JPG jusqu'à {{ \App\Support\UploadLimit::recommendedLabel() }}</span>
                                                 </div>
-                                                
+                                                @error('document_'.$documenttype->id)
+                                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                                                @enderror
+
                                                 <p class="text-xs text-slate-500 mt-2">
                                                     @if($existing)
                                                         Vous pouvez remplacer le document existant à tout moment
@@ -177,4 +180,5 @@
             </div>    
         </div>
     </main>
+    @include('partials.upload-size-guard')
 </x-app-layout>

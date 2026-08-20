@@ -116,7 +116,9 @@ class NeedController extends Controller
             'profiles' => 'nullable|string|max:500',
             'conditions' => 'nullable|string|max:1000',
             'priority' => 'nullable|integer|between:1,3',
-            'file' => 'nullable|file|max:5120',
+            'file' => 'nullable|file|max:' . \App\Support\UploadLimit::recommendedKilobytes(),
+        ], [
+            'file.max' => 'Le fichier ne doit pas dépasser ' . \App\Support\UploadLimit::recommendedLabel() . '.',
         ]);
 
         // AUTHORIZATION CHECK
